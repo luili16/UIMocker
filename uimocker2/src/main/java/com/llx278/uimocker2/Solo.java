@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 一些常用的api结合，组合了{@link Clicker},{@link Searcher},{@link ViewGetter},{@link Waiter}等一些类，
@@ -67,8 +68,8 @@ public class Solo {
      *
      * @return 获得到的view
      */
-    public ArrayList<View> getViewList() {
-        return mViewGetter.getViews();
+    public List<View> getViewList() {
+        return mViewGetter.getViewList();
     }
 
     /**
@@ -77,7 +78,7 @@ public class Solo {
      * @param delay 延时delay ms以后开始获取
      * @return 获得到的view
      */
-    public ArrayList<View> getViewList(long delay) {
+    public List<View> getViewList(long delay) {
         return getViewList(null, true, 0);
     }
 
@@ -87,7 +88,7 @@ public class Solo {
      * @param parent 指定的parentView
      * @return 返回子View的列表
      */
-    public ArrayList<View> getViewList(View parent) {
+    public List<View> getViewList(View parent) {
         return getViewList(parent, true, 0);
     }
 
@@ -98,7 +99,7 @@ public class Solo {
      * @param delay  延时delay ms以后获取
      * @return 返回子view的列表
      */
-    public ArrayList<View> getViewList(View parent, long delay) {
+    public List<View> getViewList(View parent, long delay) {
         return getViewList(parent, true, delay);
     }
 
@@ -110,11 +111,11 @@ public class Solo {
      * @param delay                 延时delay ms以后获取
      * @return 返回子view的列表
      */
-    public ArrayList<View> getViewList(View parent, boolean onlySufficientVisible, long delay) {
+    public List<View> getViewList(View parent, boolean onlySufficientVisible, long delay) {
         if (delay > 0) {
             mSleeper.sleep(delay);
         }
-        return mViewGetter.getViews(parent, onlySufficientVisible);
+        return mViewGetter.getViewList(parent, onlySufficientVisible);
     }
 
 
@@ -152,7 +153,7 @@ public class Solo {
         if (delay > 0) {
             mSleeper.sleep(delay);
         }
-        return mViewGetter.getViewsById(id, parent, onlySufficientVisible);
+        return mViewGetter.getViewListById(id, parent, onlySufficientVisible);
     }
 
     /**
@@ -231,7 +232,7 @@ public class Solo {
      * @return 符合条件的view的列表
      */
     public <T extends View> ArrayList<T> getViewList(Class<T> viewClass,boolean immediately) {
-        return mViewGetter.getViewsByClass(viewClass);
+        return mViewGetter.getViewListByClass(viewClass);
     }
 
     /**
@@ -242,7 +243,7 @@ public class Solo {
      * @return 符合指定类名字的view
      */
     public ArrayList<View> getCustomViews(String className, View parent) {
-        return mViewGetter.getViewsByName(className, parent, true);
+        return mViewGetter.getViewListByName(className, parent, true);
     }
 
     /**
@@ -336,8 +337,8 @@ public class Solo {
         return mViewGetter.getTopParent(view);
     }
 
-    public View[] getWindowDecorViews() {
-        return mViewGetter.getWindowDecorViews();
+    public List<View> getWindowDecorViews() {
+        return mViewGetter.getWindowViews();
     }
 
     public boolean waitForDecorViews(long timeout) {

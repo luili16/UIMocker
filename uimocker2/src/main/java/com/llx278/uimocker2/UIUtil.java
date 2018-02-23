@@ -6,7 +6,9 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -63,7 +65,7 @@ public class UIUtil {
      */
 
     public static ArrayList<View> filterViewsToSet(Class<View> classSet[], Iterable<View> viewList) {
-        ArrayList<View> filteredViews = new ArrayList<View>();
+        ArrayList<View> filteredViews = new ArrayList<>();
         for (View view : viewList) {
             if (view == null)
                 continue;

@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
+import java.util.List;
+
 /**
  * Contains the waitForDialogToClose() method.
  * 
@@ -99,7 +101,7 @@ class DialogUtils {
 
 	private boolean isDialogOpen(){
 		final Activity activity = activityUtils.getCurrentActivity();
-		final View[] views = viewGetter.getWindowDecorViews();
+		final List<View> views = viewGetter.getWindowViews();
 		View view = viewGetter.getRecentDecorView(views);
 		
 		if(!isDialog(activity, view)){
@@ -174,7 +176,7 @@ class DialogUtils {
 
 			if(!(focusedView instanceof EditText)) {
 				EditText freshestEditText =
-						viewGetter.getFreshestView(viewGetter.getViewsByClass(EditText.class, true,null));
+						viewGetter.getFreshestView(viewGetter.getViewListByClass(EditText.class, true,null));
 				if(freshestEditText != null){
 					focusedView = freshestEditText;
 				}

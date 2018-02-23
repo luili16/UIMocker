@@ -22,10 +22,13 @@ public class SoloThread extends Thread {
 
     @Override
     public void run() {
-        super.run();
         boolean ret = mSolo.waitForActivity("com.llx278.uimockerdemo.MainActivity");
         Assert.assertEquals(true,ret);
         ViewGetterTest viewGetterTest = new ViewGetterTest();
-        viewGetterTest.run(mSolo);
+        try {
+            viewGetterTest.run(mSolo);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

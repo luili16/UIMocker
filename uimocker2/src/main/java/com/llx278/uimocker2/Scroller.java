@@ -14,6 +14,7 @@ import android.widget.ScrollView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 实现了滚动相关的方法
@@ -129,7 +130,7 @@ public class Scroller {
      * @return
      */
     public boolean scroll(int direction, boolean allTheWay) {
-        ArrayList<View> viewList = UIUtil.removeInvisibleViews(mViewGetter.getViews(true));
+        ArrayList<View> viewList = UIUtil.removeInvisibleViews(mViewGetter.getViewList(true));
         //noinspection unchecked
         ArrayList<View> filteredViews = UIUtil.filterViewsToSet(new Class[]{ListView.class, ScrollView.class, GridView.class, WebView.class},
                 viewList);

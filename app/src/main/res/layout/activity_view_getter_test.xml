@@ -25,5 +25,69 @@
             android:text="button1"
             android:id="@+id/button1"
             />
+        <com.llx278.uimockerdemo.widget.MyTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="mytext1"
+            android:id="@+id/mytext1"
+            />
+        <com.llx278.uimockerdemo.widget.MyButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="mybutton1"
+            android:id="@+id/mybutton"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="I am inVisible"
+            android:id="@+id/inVisible_text"
+            android:visibility="invisible"
+            />
+        <com.llx278.uimockerdemo.widget.UniqueButton
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="40dp"
+            android:id="@+id/testbt"
+            android:text="buttonHollder"
+            />
+
+        <com.llx278.uimockerdemo.widget.UniqueButton
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="40dp"
+            android:id="@+id/testbt1"
+            android:text="buttonHollder"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="text1"
+            android:id="@+id/text2"
+            />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="button2"
+            android:id="@+id/button2"
+            />
+        <com.llx278.uimockerdemo.widget.MyTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="mytext1"
+            android:id="@+id/mytext2"
+            />
+        <com.llx278.uimockerdemo.widget.MyButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="mybutton1"
+            android:id="@+id/mybutton2"
+            />
     </LinearLayout>
 </LinearLayout>

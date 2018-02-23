@@ -57,7 +57,7 @@ public class Searcher {
             if (timedOut) {
                 break;
             }
-            ArrayList<T> currentViews = mViewGetter.getViewsByClass(viewClass, true,
+            ArrayList<T> currentViews = mViewGetter.getViewListByClass(viewClass, true,
                     null);
             //Logger.d("Searcher.SearchForText(Class,String,long,long,boolean,boolean) : currentViews : " + currentViews.toString());
             if (onlyVisible) {
@@ -117,7 +117,7 @@ public class Searcher {
             if (timedOut) {
                 break;
             }
-            ArrayList<T> currentViews = mViewGetter.getViewsByClass(viewClass, true,
+            ArrayList<T> currentViews = mViewGetter.getViewListByClass(viewClass, true,
                     null);
             if (onlyVisible) {
                 currentViews = UIUtil.removeInvisibleViews(currentViews);
@@ -152,7 +152,7 @@ public class Searcher {
             if (timedOut) {
                 break;
             }
-            ArrayList<View> viewsById = mViewGetter.getViewsById(id);
+            ArrayList<View> viewsById = mViewGetter.getViewListById(id);
             for (View view : viewsById) {
                 if (view == null) {
                     continue;
@@ -193,7 +193,7 @@ public class Searcher {
                 break;
             }
 
-            ArrayList<View> currentViews = mViewGetter.getViewsByName(className, parent, true);
+            ArrayList<View> currentViews = mViewGetter.getViewListByName(className, parent, true);
             if (onlyVisible) {
                 currentViews = UIUtil.removeInvisibleViews(currentViews);
             }
@@ -233,7 +233,7 @@ public class Searcher {
                 break;
             }
 
-            ArrayList<View> currentViews = mViewGetter.getViewsByName(className, parent, true);
+            ArrayList<View> currentViews = mViewGetter.getViewListByName(className, parent, true);
             if (onlyVisible) {
                 currentViews = UIUtil.removeInvisibleViews(currentViews);
             }
@@ -270,7 +270,7 @@ public class Searcher {
             if (timedOut) {
                 break;
             }
-            ArrayList<View> currentViews = mViewGetter.getViewsByName(className, parent, true);
+            ArrayList<View> currentViews = mViewGetter.getViewListByName(className, parent, true);
             if (onlyVisible) {
                 currentViews = UIUtil.removeInvisibleViews(currentViews);
             }
@@ -297,7 +297,7 @@ public class Searcher {
                 Logger.d("is timeout !!!!!!!!");
                 break;
             }
-            ArrayList<View> currentViews = mViewGetter.getViewsByName(className, parent, true);
+            ArrayList<View> currentViews = mViewGetter.getViewListByName(className, parent, true);
             Logger.d("currentViews : " + currentViews.toString());
             if (onlyVisible) {
                 currentViews = UIUtil.removeInvisibleViews(currentViews);

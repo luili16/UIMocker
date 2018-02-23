@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 等待一些东西出现在屏幕上（例如：文本，View，或者其他自定义的）
@@ -159,8 +160,8 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            View[] views = mViewGetter.getWindowDecorViews();
-            if (views != null && views.length != 0) {
+            List<View> views = mViewGetter.getWindowViews();
+            if (views != null && !views.isEmpty()) {
                 return true;
             }
         }
