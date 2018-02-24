@@ -253,7 +253,7 @@ public class Waiter {
      * @return true 符合条件的文本已经出现 false 超时
      */
     public boolean waitForTextAppear(String regex, long timeout) {
-        return waitForTextAppear(regex,timeout,true);
+        return waitForTextAppear(regex,timeout,false);
     }
 
     /**

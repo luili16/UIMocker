@@ -135,7 +135,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void addResults(Bundle results) {
         if (DEBUG) {
-            Logger.d(TAG,"sendStatus");
+            Logger.d(TAG,"addResults");
         }
         mInstrumentation.addResults(results);
     }
@@ -311,7 +311,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     public Instrumentation.ActivityMonitor addMonitor(
             IntentFilter filter, ActivityResult result, boolean block) {
         if (DEBUG) {
-            Logger.d(TAG,"registerMonitor");
+            Logger.d(TAG,"addMonitor");
         }
         return mInstrumentation.addMonitor(filter, result, block);
     }
@@ -321,7 +321,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     public Instrumentation.ActivityMonitor addMonitor(
             String cls, ActivityResult result, boolean block) {
         if (DEBUG) {
-            Logger.d(TAG,"registerMonitor");
+            Logger.d(TAG,"addMonitor");
         }
         return mInstrumentation.addMonitor(cls, result, block);
     }

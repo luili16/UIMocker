@@ -11,6 +11,7 @@ import android.view.ViewParent;
 import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.HorizontalScrollView;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -71,8 +72,9 @@ public class ViewGetter {
     /**
      * 找到当前parent里面的所有的view
      *
-     * @param parent                  待输出的view，如果parent是null的话，则输出当前activity所有的里面的所有的view
-     * @param onlySufficientlyVisible true 只返回在当前界面上可见的， false 返回所有
+     * @param parent 待输出的view，如果parent是null的话，则输出当前activity所有的里面的所有的view
+     * @param onlySufficientlyVisible true 只返回在当前window上可显示的（注意，如果当前屏幕上的view的状态是
+     *                                visible或是gone的话，也认为是显示的）， false 返回所有（包括超出可见范围的view）
      * @return 返回所有的view
      */
     public List<View> getViewList(View parent, boolean onlySufficientlyVisible) {
@@ -131,7 +133,6 @@ public class ViewGetter {
         return uniqueViews;
     }
 
-
     /**
      * 找到当前activity中所有的所有class为T的view
      *
@@ -161,7 +162,9 @@ public class ViewGetter {
      * @param parent          用来查询的parent
      * @return 符合条件的view
      */
-    public <T extends View> ArrayList<T> getViewListByClass(Class<T> classToFilterBy, boolean includeSubclass, View parent) {
+    public <T extends View> ArrayList<T> getViewListByClass(Class<T> classToFilterBy,
+                                                            boolean includeSubclass,
+                                                            View parent) {
         return getViewListByClass(classToFilterBy, includeSubclass, parent, true);
     }
 
@@ -175,7 +178,9 @@ public class ViewGetter {
      * @return 返回包含了过滤后的view的list
      */
     public <T extends View> ArrayList<T> getViewListByClass(Class<T> classToFilterBy,
-                                                            boolean includeSubclass, View parent, boolean onlySufficientlyVisible) {
+                                                            boolean includeSubclass,
+                                                            View parent,
+                                                            boolean onlySufficientlyVisible) {
         ArrayList<T> filteredViews = new ArrayList<>();
         List<View> allViews = getViewList(parent, onlySufficientlyVisible);
         for (View view : allViews) {
@@ -198,10 +203,10 @@ public class ViewGetter {
      * @param parent              用来查询的parent
      * @return 返回了过滤后的view的list
      */
-    public ArrayList<View> getViewListByName(String classNameToFilterBy, View parent, boolean onlySufficientlyVisible) {
+    public ArrayList<View> getViewListByName(String classNameToFilterBy, View parent,
+                                             boolean onlySufficientlyVisible) {
         ArrayList<View> filteredViews = new ArrayList<>();
         List<View> allViews = getViewList(parent, onlySufficientlyVisible);
-        //XposedBridge.log("allVIews: " + allViews.toString());
         for (View v : allViews) {
             if (v == null) {
                 continue;
@@ -236,12 +241,15 @@ public class ViewGetter {
      * @param view 待查询的view
      * @return 可以滚动的父view(listView scrollView) 或者返回空
      */
-    public View getScrollOrListParent(View view) {
+    public View getScrollParent(View view) {
 
         if (!(view instanceof android.widget.AbsListView) &&
-                !(view instanceof ScrollView) && !(view instanceof WebView)) {
+                !(view instanceof ScrollView) &&
+                !(view instanceof WebView) &&
+                !(view instanceof HorizontalScrollView) &&
+                !isRecyclerView(view)) {
             try {
-                return getScrollOrListParent((View) view.getParent());
+                return getScrollParent((View) view.getParent());
             } catch (Exception e) {
                 return null;
             }
@@ -251,76 +259,35 @@ public class ViewGetter {
     }
 
     /**
-     * Tries to guess which view is the most likely to be interesting. Returns
-     * the most recently drawn view, which presumably will be the one that the
-     * user was most recently interacting with.
-     *
-     * @param views A list of potentially interesting views, likely a collection
-     *              of views from a set of types, such as [{@link Button},
-     *              {@link TextView}] or [{@link ScrollView}, {@link ListView}]
-     * @return most recently drawn view, or null if no views were passed
+     * 最近被绘制（drawing）指的是这个view第一次被attach到window上的时候由AttachInfo所指定的，
+     * 具体参考view的源码
+     * @param viewList 指定的view的列表
+     * @return 返回指定的views中最近被绘制的view，如果viewList为空，则返回null
      */
-    public final <T extends View> T getFreshestView(ArrayList<T> views) {
-        final int[] locationOnScreen = new int[2];
-        T viewToReturn = null;
-        long drawingTime = 0;
-        if (views == null) {
+    public final <T extends View> T getFreshestView(List<T> viewList) {
+
+        if (viewList == null || viewList.isEmpty()) {
             return null;
         }
-        for (T view : views) {
+
+        T viewToReturn = null;
+        long drawingTime = 0;
+
+        for (T view : viewList) {
             if (view != null) {
-                view.getLocationOnScreen(locationOnScreen);
-
-                if (locationOnScreen[0] < 0 || !(view.getHeight() > 0)) {
-                    continue;
-                }
-
-                if (view.getDrawingTime() > drawingTime) {
-                    drawingTime = view.getDrawingTime();
-                    viewToReturn = view;
-                } else if (view.getDrawingTime() == drawingTime) {
-                    if (view.isFocused()) {
+                if (isViewSufficientlyShown(view)) {
+                    if (view.getDrawingTime() > drawingTime) {
+                        drawingTime = view.getDrawingTime();
                         viewToReturn = view;
+                    } else if (view.getDrawingTime() == drawingTime) {
+                        if (view.isFocused()) {
+                            viewToReturn = view;
+                        }
                     }
                 }
-
             }
         }
-        views = null;
         return viewToReturn;
-    }
-
-    public <T extends View> ViewGroup getRecyclerView(int recyclerViewIndex, int timeOut) {
-        final long endTime = SystemClock.uptimeMillis() + timeOut;
-
-        while (SystemClock.uptimeMillis() < endTime) {
-            View recyclerView = getRecyclerView(true, recyclerViewIndex);
-            if (recyclerView != null) {
-                return (ViewGroup) recyclerView;
-            }
-        }
-        return null;
-    }
-
-    public View getRecyclerView(boolean shouldSleep, int recyclerViewIndex) {
-        Set<View> uniqueViews = new HashSet<View>();
-        if (shouldSleep) {
-            mSleeper.sleep();
-        }
-
-        @SuppressWarnings("unchecked")
-        ArrayList<View> views = UIUtil.filterViewsToSet(new Class[]{ViewGroup.class},
-                getAllViews(false));
-        for (View view : views) {
-            if (isViewType(view.getClass(), "widget.RecyclerView")) {
-                uniqueViews.add(view);
-            }
-
-            if (uniqueViews.size() > recyclerViewIndex) {
-                return (ViewGroup) view;
-            }
-        }
-        return null;
     }
 
     /**
@@ -348,20 +315,6 @@ public class ViewGetter {
 
         }
         return viewsToReturn;
-    }
-
-
-    View getRecentDecorView(List<View> views) {
-        if (views == null) {
-            return null;
-        }
-        final ArrayList<View> decorViews = new ArrayList<>();
-        for (View view : views) {
-            if (isDecorView(view)) {
-                decorViews.add(view);
-            }
-        }
-        return getRecentContainer(decorViews);
     }
 
     @SuppressWarnings("unchecked")
@@ -404,15 +357,15 @@ public class ViewGetter {
         view.getLocationInWindow(xyView);
         final float viewHeight = view.getHeight();
         final float viewWidth = view.getWidth();
-        final View parent = getScrollOrListParent(view);
+        final View parent = getScrollParent(view);
 
         // view在窗体（window）上的位置
         float yCenter = xyView[1] + (viewHeight / 2.0f);
         float xCenter = xyView[0] + (viewWidth / 2.0f);
         // 判断一个view是否显示在窗体（window）上分这两种情况
         // 1.如果这个view的父view没有可滚动的view(例如 listview scrollview)，那么
-        //   这个View是否显示窗体（window）上就已它是否在窗体（window）所显示的范围内决定，如果它在窗体（window）的范围内
-        //   那么这个view就是可见的，如果超出的窗体（window）的范围(以view的中心为界限)，那么它就是不可见的
+        //   这个View是否显示窗体（window）上由它在窗体（window）的位置决定，如果它在窗体（window）的可见范围内，
+        //   那么这个view就是可见的，如果超出的窗体（window）的可见范围(以view的中心为界限)，那么它就是不可见的
         // 2.如果这个view的父view有可滚动的view(例如 listview，scrollview)，那么如果这个view
         //   在可滚动的view可见范围里，那么它就是可见的，如果超出了，那么它就是不可见的(以view的中心为界限)
 
@@ -439,7 +392,7 @@ public class ViewGetter {
 
             return isSufficientlyShownInX && isSufficientlyShownInY;
 
-            // 找打了一个父view是可滚动的
+            // 找到了一个父view是可滚动的
         } else {
             // 获得这个父View在窗体（window）上的位置
             parent.getLocationInWindow(xyParent);
@@ -450,6 +403,7 @@ public class ViewGetter {
 
             boolean isSufficientlyShownInX = (xCenter > leftInWindow && xCenter < rightInWindow);
             boolean isSufficientlyShownInY = (yCenter > topInWindow && yCenter < bottomInWindow);
+
             return isSufficientlyShownInX && isSufficientlyShownInY;
         }
     }
@@ -468,12 +422,29 @@ public class ViewGetter {
                 break;
             }
         }
-
         return viewToReturn;
     }
 
+    public View getRecentDecorView(List<View> views) {
+        if (views == null) {
+            return null;
+        }
+        final ArrayList<View> decorViews = new ArrayList<>();
+        for (View view : views) {
+            if (isDecorView(view)) {
+                decorViews.add(view);
+            }
+        }
+        return getRecentContainer(decorViews);
+    }
 
     // ---- private methods -------
+
+
+
+    private boolean isRecyclerView(View view) {
+        return isViewType(view.getClass(),"widget.RecyclerView");
+    }
 
     /**
      * 获得所有的view

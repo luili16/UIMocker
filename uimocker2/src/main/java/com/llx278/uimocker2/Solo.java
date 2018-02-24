@@ -32,12 +32,13 @@ public class Solo {
     private final Sleeper mSleeper;
     private final ViewGetter mViewGetter;
     private final Waiter mWaiter;
+    private final Parser mParser;
+    private final Gesture mGesture;
+
     private final ActivityUtils mActivityUtils;
     private final MyInstrumentation mInstrumentation;
     private final DialogUtils mDialogUtils;
     private final Config mConfig;
-    private final Parser mParser;
-    private final Gesture mGesture;
 
     private Solo(Activity activity, Context context, Config config) {
         mConfig = (config == null ? new Config() : config);
@@ -423,23 +424,6 @@ public class Solo {
         return mClicker.clickOnMenuItem(regex,timeout);
     }
 
-    /*public void clickBackToActivity(String activityName) {
-
-        while (true) {
-            mSleeper.sleep(1500);
-            Activity activity = mActivityUtils.getCurrentActivity();
-            if (activity != null && !activity.getClass().getName().equals(activityName)) {
-                Logger.d("send keycode back");
-                mInstrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
-            } else {
-                Logger.d("current activity : " + activityName);
-                break;
-            }
-        }
-
-
-    }*/
-
     /**
      * 生成一个侧滑手势
      */
@@ -455,10 +439,6 @@ public class Solo {
         mGesture.swipeFromRightToLeft();
     }
 
-    public boolean waitForText(String regex) {
-        return mWaiter.waitForTextAppear(regex);
-    }
-
     public TextView waitForTextAndGet(String regex) {
         return mWaiter.waitForTextAndGet(regex,mConfig.defaultWaitTimeout);
     }
@@ -468,17 +448,33 @@ public class Solo {
     }
 
     /**
-     * 等待text出现(至少有一个匹配text的textView出现)
+     * 等待某个文本出现在屏幕上，默认不自动滚动寻找
+     * @param regex 待匹配文本的正则表达式
+     * @return 如果在默认的超时时间里出现，则返回true，否则返回false
+     */
+    public boolean waitForTextAppear(String regex) {
+        return mWaiter.waitForTextAppear(regex);
+    }
+
+    /**
+     * 等待text出现(至少有一个匹配text的textView出现),默认不自动滚动寻找
      *
      * @param regex   待匹配的文本
      * @param timeout 超时时间
      * @return true 匹配的文本出现，false 在指定的超时时间里面没有出现
      */
-    public boolean waitForText(String regex, long timeout) {
+    public boolean waitForTextAppear(String regex, long timeout) {
         return mWaiter.waitForTextAppear(regex, timeout);
     }
 
-    public boolean waitForText(String regex,long timeout,boolean scroll){
+    /**
+     * 等待某个文本出现在屏幕上
+     * @param regex 带匹配文本的正则表达式
+     * @param timeout 超时时间
+     * @param scroll true 如果存在可滚动的view，则滚动查找，false忽略可滚动的view
+     * @return true 匹配的文本出现，false 在指定的超时时间里面没有出现
+     */
+    public boolean waitForTextAppear(String regex, long timeout, boolean scroll){
         return mWaiter.waitForTextAppear(regex,timeout,scroll);
     }
 
