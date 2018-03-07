@@ -304,9 +304,9 @@ public class ViewGetter {
 
         @SuppressWarnings("unchecked")
         ArrayList<View> views = UIUtil.filterViewsToSet(new Class[]{ViewGroup.class}, getAllViews(true));
-        List<View> viewsReture = UIUtil.removeInvisibleViews(views);
+        List<View> allVisibleViews = UIUtil.removeInvisibleViews(views);
 
-        for (View view : viewsReture) {
+        for (View view : allVisibleViews) {
 
             if (isViewType(view.getClass(), "widget.RecyclerView") ||
                     isViewType(view.getClass(), "widget.NestedScrollView")) {

@@ -30,14 +30,12 @@ public class Gesture {
      * 生成一个默认的缩放手势
      */
     public void zoomIn() {
-
     }
 
     /**
      * 生成一个默认的放大手势
      */
     public void zoomOut() {
-
     }
 
     /**

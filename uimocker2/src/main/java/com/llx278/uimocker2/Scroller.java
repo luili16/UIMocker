@@ -3,6 +3,7 @@ package com.llx278.uimocker2;
 import android.content.Context;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -24,12 +25,10 @@ import java.util.Set;
 
 public class Scroller {
     private static final String TAG = "uimocker";
-    static final int DOWN = 0;
-    static final int UP = 1;
+    public static final int DOWN = 0;
+    public static final int UP = 1;
 
     enum Side {LEFT, RIGHT}
-
-    ;
     private boolean mCanScroll = false;
     private final InstrumentationDecorator mInst;
     private final ViewGetter mViewGetter;
@@ -94,6 +93,7 @@ public class Scroller {
         }
 
         int height = view.getHeight();
+
         height--;
         int scrollTo = -1;
 
@@ -110,10 +110,14 @@ public class Scroller {
                 view.scrollBy(0, scrollAmount);
             }
         });
-
         return originalY != view.getScrollY();
     }
 
+    /**
+     * 滚动到最上端或者最下端
+     * @param view 待滚动的view
+     * @param direction 方向
+     */
     public void scrollViewAllTheWay(final View view, final int direction) {
         while (true) {
             if (!(scrollView(view, direction))) {
@@ -185,6 +189,7 @@ public class Scroller {
     }
 
     /**
+     * 滚动listView
      * @param absListView 被滚动的abslistView
      * @param direction   方向
      * @param allTheWay   一直滚动到最下或者滚动到最上
@@ -246,7 +251,7 @@ public class Scroller {
     }
 
     /**
-     * 滚动到指定行
+     * 滚动到指定行（索引从0开始）
      *
      * @param view 被滚动的absListView
      * @param line 行

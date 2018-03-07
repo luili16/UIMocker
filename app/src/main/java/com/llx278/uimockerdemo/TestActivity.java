@@ -20,7 +20,7 @@ import android.widget.Toast;
  * Created by llx on 2018/2/22.
  */
 
-public class ViewGetterTestActivity extends Activity {
+public class TestActivity extends Activity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

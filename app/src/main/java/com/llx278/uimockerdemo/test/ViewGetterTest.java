@@ -30,14 +30,6 @@ import static junit.framework.Assert.*;
 public class ViewGetterTest {
 
     public void run(Solo solo) throws Exception {
-        Activity currentActivity = solo.getCurrentActivity();
-        assertEquals("com.llx278.uimockerdemo.MainActivity",currentActivity.getClass().getName());
-
-        boolean ret = solo.waitForTextAndClick("^ViewGetterTest$");
-        assertEquals(true,ret);
-
-        boolean resumeRet = solo.waitForOnResume("com.llx278.uimockerdemo.ViewGetterTestActivity");
-        assertEquals(true,resumeRet);
 
         Class<? extends Solo> aClass = solo.getClass();
         Field mViewGetter = aClass.getDeclaredField("mViewGetter");
@@ -66,13 +58,13 @@ public class ViewGetterTest {
         assertEquals(21,scrollViewList1.size());
 
         ArrayList<View> viewListById = viewGetter.getViewListById(R.id.list_item_test_1);
-        assertEquals(8,viewListById.size());
+        assertEquals(7,viewListById.size());
 
         ArrayList<View> listViewList = viewGetter.getViewListById(R.id.container_4_list_view1);
         assertEquals(1,listViewList.size());
         ListView listView = (ListView) listViewList.get(0);
         ArrayList<View> viewListById1 = viewGetter.getViewListById(R.id.list_item_test_1, listView);
-        assertEquals(8,viewListById1.size());
+        assertEquals(7,viewListById1.size());
 
         ArrayList<View> scrollViewList3 =viewGetter.getViewListById(R.id.container_4_scroll_view2);
         assertEquals(1,scrollViewList3.size());
@@ -122,17 +114,16 @@ public class ViewGetterTest {
                 button1.setText("I");
                 button1.setFocusableInTouchMode(true);
                 boolean b = button1.requestFocus();
+                Log.d("main","b : " + b);
             }
         });
         View freshestView = viewGetter.getFreshestView(viewList);
         assertEquals(button1,freshestView);
 
 
-
         UniqueButton uniqueButton = (UniqueButton) solo.findViewById(R.id.container_1_unique_button_2);
         boolean isShown = viewGetter.isViewSufficientlyShown(uniqueButton);
         assertFalse(isShown);
-
         Log.d("main","view getter test, done!");
     }
 }

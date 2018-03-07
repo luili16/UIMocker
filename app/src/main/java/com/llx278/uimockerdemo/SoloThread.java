@@ -1,11 +1,15 @@
 package com.llx278.uimockerdemo;
 
+import android.app.Activity;
 import android.content.Context;
 
 import com.llx278.uimocker2.Solo;
+import com.llx278.uimockerdemo.test.ScrollerTest;
 import com.llx278.uimockerdemo.test.ViewGetterTest;
 
 import junit.framework.Assert;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  *
@@ -22,13 +26,26 @@ public class SoloThread extends Thread {
 
     @Override
     public void run() {
-        boolean ret = mSolo.waitForActivity("com.llx278.uimockerdemo.MainActivity");
-        Assert.assertEquals(true,ret);
-        ViewGetterTest viewGetterTest = new ViewGetterTest();
+        boolean ret1 = mSolo.waitForActivity("com.llx278.uimockerdemo.MainActivity");
+        Assert.assertEquals(true,ret1);
+
+        boolean ret = mSolo.waitForTextAndClick("^ViewGetterTest$");
+        assertEquals(true,ret);
+
+        boolean resumeRet = mSolo.waitForOnResume("com.llx278.uimockerdemo.TestActivity");
+        assertEquals(true,resumeRet);
+
         try {
-            viewGetterTest.run(mSolo);
+            ViewGetterTest viewGetterTest = new ViewGetterTest();
+            //viewGetterTest.run(mSolo);
+            ScrollerTest scrollerTest = new ScrollerTest();
+            scrollerTest.run(mSolo);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
+
+
     }
 }

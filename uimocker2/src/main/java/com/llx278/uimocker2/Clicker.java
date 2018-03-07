@@ -19,7 +19,7 @@ import java.lang.reflect.Constructor;
  *
  */
 
-class Clicker {
+public class Clicker {
 
     private final String LOG_TAG = "uimocker";
     private final ViewGetter mViewGetter;
@@ -370,7 +370,7 @@ class Clicker {
         }
         if (!success) {
             Logger.e(LOG_TAG,String.format("Clicker.clickOnScreen(float,float,view) : " +
-                    "Long click at (" + x + ", " + y + ") can not be completed!\n" +
+                    "click at (" + x + ", " + y + ") can not be completed!\n" +
                     "runtime:[x=%f,y=%f,view=%s]",x,y,view.toString()),ex);
             return false;
         }
