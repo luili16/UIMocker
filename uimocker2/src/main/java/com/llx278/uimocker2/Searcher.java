@@ -162,7 +162,7 @@ public class Searcher {
                 }
             }
             if (scroll && !mScroller.scrollDown()) {
-                Logger.d(TAG, "Searcher.searchForTextView scroll finished!");
+                Logger.d(TAG, "Searcher.searchForTextView scrollVertically finished!");
                 break;
             }
         }
@@ -308,7 +308,7 @@ public class Searcher {
                 }
             }
             if (scroll && !mScroller.scrollDown()) {
-                Log.w(TAG, "Searcher.searchForTextView scroll failed!");
+                Log.w(TAG, "Searcher.searchForTextView scrollVertically failed!");
                 break;
             }
         }
