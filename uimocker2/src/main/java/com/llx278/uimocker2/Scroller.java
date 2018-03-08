@@ -1,21 +1,20 @@
 package com.llx278.uimocker2;
 
-import android.content.Context;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.AbsListView;
 import android.widget.GridView;
+import android.widget.HorizontalScrollView;
 import android.widget.ListView;
 import android.widget.ScrollView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+
+import static com.llx278.uimocker2.Scroller.VerticalDirection.DOWN;
+import static com.llx278.uimocker2.Scroller.VerticalDirection.UP;
 
 /**
  * 实现了滚动相关的方法
@@ -25,69 +24,40 @@ import java.util.Set;
 
 public class Scroller {
     private static final String TAG = "uimocker";
-    public static final int DOWN = 0;
-    public static final int UP = 1;
 
-    enum Side {LEFT, RIGHT}
     private boolean mCanScroll = false;
     private final InstrumentationDecorator mInst;
     private final ViewGetter mViewGetter;
     private final Sleeper mSleeper;
+    private final Gesture mGesture;
 
-    public Scroller(InstrumentationDecorator inst, ViewGetter viewGetter, Sleeper sleeper) {
+    public Scroller(InstrumentationDecorator inst, ViewGetter viewGetter, Sleeper sleeper,Gesture gesture) {
         mInst = inst;
         mViewGetter = viewGetter;
         mSleeper = sleeper;
+        mGesture = gesture;
     }
 
     /**
-     * 拖动 从x坐标开始到y坐标结束
-     *
-     * @param fromX     在屏幕上的x开始坐标
-     * @param toX       在屏幕上的x结束坐标
-     * @param fromY     在屏幕上的y的开始坐标
-     * @param toY       在屏幕上的y的结束坐标
-     * @param stepCount 移动的次数
+     * 直接模拟滑动屏幕的动作，将view里面最后（或者第一个）可见的view滑动到最上面(或者最下面)
+     * @param view 待滑动的view
+     * @param direction 方向
      */
-    public void drag(float fromX, float toX, float fromY, float toY, int stepCount) {
-        long downTime = SystemClock.uptimeMillis();
-        long eventTime = SystemClock.uptimeMillis();
-        float y = fromY;
-        float x = fromX;
-        float yStep = (toY - fromY) / stepCount;
-        float xStep = (toX - fromX) / stepCount;
-        MotionEvent event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN,
-                fromX, fromY, 0);
-        try {
-            mInst.sendPointerSync(event);
-        } catch (SecurityException ignored) {
-        }
-        for (int i = 0; i < stepCount; ++i) {
-            y += yStep;
-            x += xStep;
-            eventTime = SystemClock.uptimeMillis();
-            event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_MOVE, x, y, 0);
-            try {
-                mInst.sendPointerSync(event);
-            } catch (SecurityException ignored) {
-            }
-        }
-        eventTime = SystemClock.uptimeMillis();
-        event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP, toX, toY, 0);
-        try {
-            mInst.sendPointerSync(event);
-        } catch (SecurityException ignored) {
-        }
+    public void forceScrollViewVertically(View view,VerticalDirection direction) {
+        List<View> viewList = mViewGetter.getViewList(view, true);
+        // 计算所有view所有子view的位置
+
     }
 
+
     /**
-     * 滚动一个scrollView
+     * 垂直滚动一个View，注意，这种滚动的方式只适合像ScrollView这样的View不是被复用的View
      *
      * @param view      被用来滚动的view
      * @param direction 滚动方向
-     * @return
+     * @return true 此次滚动完成，并且下次可以再滚动，false 此次滚动完成，并且下次不能再滚动
      */
-    public boolean scrollView(final View view, int direction) {
+    public boolean scrollViewVertically(final View view, VerticalDirection direction) {
         if (view == null) {
             return false;
         }
@@ -114,13 +84,13 @@ public class Scroller {
     }
 
     /**
-     * 滚动到最上端或者最下端
+     * 垂直滚动到终止的位置,注意，这种滚动的方式只适合像ScrollView这样的View不是被复用的View
      * @param view 待滚动的view
      * @param direction 方向
      */
-    public void scrollViewAllTheWay(final View view, final int direction) {
+    public void scrollViewVerticallyAllTheWay(final View view, final VerticalDirection direction) {
         while (true) {
-            if (!(scrollView(view, direction))) {
+            if (!(scrollViewVertically(view, direction))) {
                 break;
             }
         }
@@ -131,9 +101,9 @@ public class Scroller {
      *
      * @param direction 方向
      * @param allTheWay 一直滚动，直到顶部或者底部才结束
-     * @return
+     * @return true 下次可以滚动 false 不能滚动或者已经滚动到底部了
      */
-    public boolean scroll(int direction, boolean allTheWay) {
+    public boolean scrollVertically(VerticalDirection direction, boolean allTheWay) {
         ArrayList<View> viewList = UIUtil.removeInvisibleViews(mViewGetter.getViewList(true));
         //noinspection unchecked
         ArrayList<View> filteredViews = UIUtil.filterViewsToSet(new Class[]{ListView.class, ScrollView.class, GridView.class, WebView.class},
@@ -146,7 +116,7 @@ public class Scroller {
         }
 
         if(view instanceof AbsListView){
-            return scrollList((AbsListView) view,direction,allTheWay);
+            return scrollListVertically((AbsListView) view,direction,allTheWay);
         }
 
         if(view instanceof WebView){
@@ -154,22 +124,22 @@ public class Scroller {
         }
 
         if (allTheWay){
-            scrollViewAllTheWay(view,direction);
+            scrollViewVerticallyAllTheWay(view,direction);
             return false;
         } else {
-            return scrollView(view,direction);
+            return scrollViewVertically(view,direction);
         }
     }
 
-    public boolean scroll(int direction) {
-        return scroll(direction, false);
+    public boolean scrollVertically(VerticalDirection direction) {
+        return scrollVertically(direction, false);
     }
 
     public boolean scrollDown() {
-        return scroll(Scroller.DOWN);
+        return scrollVertically(DOWN);
     }
 
-    public boolean scrollWebView(final WebView webView, int direction, final boolean allTheWay) {
+    public boolean scrollWebView(final WebView webView, VerticalDirection direction, final boolean allTheWay) {
 
         if (direction == DOWN) {
             mInst.runOnMainSync(new Runnable() {
@@ -196,7 +166,7 @@ public class Scroller {
      * @param <T>         extends AbsListVIew
      * @return true 如果已经不能够滚动了
      */
-    public <T extends AbsListView> boolean scrollList(T absListView, int direction, boolean allTheWay) {
+    public <T extends AbsListView> boolean scrollListVertically(T absListView, VerticalDirection direction, boolean allTheWay) {
         if (absListView == null) {
             return false;
         }
@@ -205,13 +175,13 @@ public class Scroller {
             int listCount = absListView.getCount();
             int lastVisiblePosition = absListView.getLastVisiblePosition();
             if (allTheWay) {
-                scrollListToLine(absListView, listCount - 1);
+                scrollListVerticallyToLine(absListView, listCount - 1);
                 return false;
             }
 
             if (lastVisiblePosition >= listCount - 1) {
                 if (lastVisiblePosition > 0) {
-                    scrollListToLine(absListView, lastVisiblePosition);
+                    scrollListVerticallyToLine(absListView, lastVisiblePosition);
                 }
                 return false;
             }
@@ -220,16 +190,16 @@ public class Scroller {
 
 
             if (firstVisiblePosition != lastVisiblePosition) {
-                scrollListToLine(absListView, lastVisiblePosition);
+                scrollListVerticallyToLine(absListView, lastVisiblePosition);
             } else {
-                scrollListToLine(absListView, firstVisiblePosition + 1);
+                scrollListVerticallyToLine(absListView, firstVisiblePosition + 1);
             }
 
         } else if (direction == UP) {
             int firstVisiblePosition = absListView.getFirstVisiblePosition();
 
             if (allTheWay || firstVisiblePosition < 2) {
-                scrollListToLine(absListView, 0);
+                scrollListVerticallyToLine(absListView, 0);
                 return false;
             }
             int lastVisiblePosition = absListView.getLastVisiblePosition();
@@ -244,7 +214,7 @@ public class Scroller {
             if (lineToScrollTo < 0) {
                 lineToScrollTo = 0;
             }
-            scrollListToLine(absListView, lineToScrollTo);
+            scrollListVerticallyToLine(absListView, lineToScrollTo);
         }
         mSleeper.sleep();
         return true;
@@ -257,7 +227,7 @@ public class Scroller {
      * @param line 行
      * @param <T>  extends absListView
      */
-    public <T extends AbsListView> void scrollListToLine(@NonNull final T view, final int line) {
+    public <T extends AbsListView> void scrollListVerticallyToLine(@NonNull final T view, final int line) {
 
         final int lineToMoveTo;
         if (view instanceof GridView) {
@@ -274,54 +244,66 @@ public class Scroller {
     }
 
     /**
-     * Scrolls horizontally.
-     *
-     * @param side           the side to which to scroll; {@link com.llx278.uimocker.Scroller.Side#RIGHT} or {@link com.llx278.uimocker.Scroller.Side#LEFT}
-     * @param scrollPosition the position to scroll to, from 0 to 1 where 1 is all the way. Example is: 0.55.
-     * @param stepCount      match many move steps to include in the scroll. Less steps results in a faster scroll
+     * 水平滚动,注意，这种滚动的方式只适合像HorizontalScrollView这样的View不是被复用的View
+     * @param view 待水平滚动的view
+     * @param direction 方向
      */
+    public boolean scrollViewHorizontally(final View view, HorizontalDirection direction) {
+        if (view == null) {
+            return false;
+        }
+        int width = view.getWidth();
+        width--;
+        int scrollTo = -1;
 
-    @SuppressWarnings("deprecation")
-    public void scrollToSide(Side side, float scrollPosition, int stepCount) {
-        WindowManager windowManager = (WindowManager)
-                mInst.getContext().getSystemService(Context.WINDOW_SERVICE);
-        if (windowManager == null) {
-            return;
+        if (HorizontalDirection.LEFT == direction) {
+            scrollTo = -width;
+        } else if (HorizontalDirection.RIGHT == direction) {
+            scrollTo = width;
         }
 
-        int screenHeight = windowManager.getDefaultDisplay()
-                .getHeight();
-        int screenWidth = windowManager.getDefaultDisplay()
-                .getWidth();
-        float x = screenWidth * scrollPosition;
-        float y = screenHeight / 2.0f;
-        if (side == Side.LEFT) {
-            drag(70, x, y, y, stepCount);
-        } else if (side == Side.RIGHT) {
-            drag(x, 0, y, y, stepCount);
-        }
+        int originalX = view.getScrollX();
+        final int scrollAmount = scrollTo;
+        mInst.runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                view.scrollBy(scrollAmount,0);
+            }
+        });
+        return originalX != view.getScrollX();
     }
 
     /**
-     * Scrolls view horizontally.
-     *
-     * @param view           the view to scroll
-     * @param side           the side to which to scroll; {@link com.llx278.uimocker.Scroller.Side#RIGHT} or {@link com.llx278.uimocker.Scroller.Side#LEFT}
-     * @param scrollPosition the position to scroll to, from 0 to 1 where 1 is all the way. Example is: 0.55.
-     * @param stepCount      match many move steps to include in the scroll. Less steps results in a faster scroll
+     * 水平滚动的终止的位置，注意，这种滚动的方式只适合像HorizontalScrollView这样的View不是被复用的View
      */
+    public void scrollViewHorizontallyAllTheWay(View view,HorizontalDirection direction) {
+        while (true) {
+            if (!(scrollViewHorizontally(view, direction))) {
+                break;
+            }
+        }
+    }
 
-    public void scrollViewToSide(View view, Side side, float scrollPosition, int stepCount) {
-        int[] corners = new int[2];
-        view.getLocationOnScreen(corners);
-        int viewHeight = view.getHeight();
-        int viewWidth = view.getWidth();
-        float x = corners[0] + viewWidth * scrollPosition;
-        float y = corners[1] + viewHeight / 2.0f;
-        if (side == Side.LEFT)
-            drag(corners[0], x, y, y, stepCount);
-        else if (side == Side.RIGHT)
-            drag(x, corners[0], y, y, stepCount);
+    public enum HorizontalDirection {
+        /**
+         * LEFT指手指滑动方向为从左向右
+         */
+        LEFT,
+        /**
+         * RIGHT指手指滑动方向为从右向左
+         */
+        RIGHT
+    }
+
+    public enum VerticalDirection {
+        /**
+         * UP指手指滑动的方向从上向下
+         */
+        UP,
+        /**
+         * DOWN指手指滑动的方向从下向上
+         */
+        DOWN
     }
 
 }

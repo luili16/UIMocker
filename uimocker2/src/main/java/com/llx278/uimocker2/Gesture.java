@@ -12,6 +12,9 @@ import android.view.MotionEvent.PointerProperties;
 import static com.llx278.uimocker2.Gesture.Config.EVENT_TIME_INTERVAL_MS;
 import static com.llx278.uimocker2.Gesture.Config.GESTURE_DURATION_MS;
 
+/**
+ * 封装了与手势相关的api
+ */
 public class Gesture {
 
     private static final String TAG = "Gesture";

@@ -46,7 +46,8 @@ public class Solo {
         mSleeper = new Sleeper(mConfig.sleepDuration, mConfig.defaultSleepMiniDuration);
         mActivityUtils = new ActivityUtils(mInstrumentation,activity);
         mViewGetter = new ViewGetter(mInstrumentation, mSleeper);
-        mScroller = new Scroller(mInstrumentation, mViewGetter, mSleeper);
+        mGesture = new Gesture(mInstrumentation,mActivityUtils,mSleeper);
+        mScroller = new Scroller(mInstrumentation, mViewGetter, mSleeper,mGesture);
         mSearcher = new Searcher(mViewGetter, mScroller, mSleeper, mConfig);
         mWaiter = new Waiter(mInstrumentation, mActivityUtils, mViewGetter, mSearcher, mConfig,mSleeper);
         mSender = new Sender(mInstrumentation, mSleeper);
@@ -54,7 +55,7 @@ public class Solo {
         mClicker = new Clicker(mActivityUtils, mViewGetter, mSender, mInstrumentation, mSleeper,
                 mSearcher, mDialogUtils);
         mParser = new Parser(mScroller,mInstrumentation,mSleeper);
-        mGesture = new Gesture(mInstrumentation,mActivityUtils,mSleeper);
+
     }
 
     public static Solo getInstance(Activity activity,Context context,Config config) {
@@ -569,8 +570,8 @@ public class Solo {
         onEditorActionMethod.invoke(onEditorActionListener, editText, EditorInfo.IME_ACTION_SEARCH, null);
     }
 
-    public void scrollView(View view,int direction){
-        mScroller.scrollView(view,direction);
+    public void scrollView(View view,Scroller.VerticalDirection direction){
+        mScroller.scrollViewVertically(view,direction);
     }
 
 

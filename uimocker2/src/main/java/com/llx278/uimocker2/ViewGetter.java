@@ -239,7 +239,7 @@ public class ViewGetter {
      * 如果存在的话，返回当前view的父view中的可以滚动的view
      *
      * @param view 待查询的view
-     * @return 可以滚动的父view(listView scrollView) 或者返回空
+     * @return 可以滚动的父view(listView scrollViewVertically) 或者返回空
      */
     public View getScrollParent(View view) {
 
