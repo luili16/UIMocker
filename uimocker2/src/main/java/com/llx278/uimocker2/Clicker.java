@@ -331,7 +331,7 @@ public class Clicker {
     }
 
     private boolean clickOnText(String regex, long timeout, boolean longClick, boolean scroll, long time) {
-        TextView tv = mSearcher.searchByText(regex, timeout, scroll, true);
+        TextView tv = mSearcher.searchTByText(regex, timeout, scroll, true);
         if (tv != null) {
             return clickOnScreen(tv, longClick, time);
         }

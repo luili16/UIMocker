@@ -64,6 +64,12 @@ public class TestActivity extends Activity {
         recyclerView.setLayoutManager(linearLayoutManager);
         RecyclerAdapter recyclerAdapter = new RecyclerAdapter();
         recyclerView.setAdapter(recyclerAdapter);
+
+        RecyclerView hRecyclerView = findViewById(R.id.container_5_1_recycler_view);
+        LinearLayoutManager linearLayoutManager1 = new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false);
+        hRecyclerView.setLayoutManager(linearLayoutManager1);
+        HRecyclerAdapter hRecyclerAdapter = new HRecyclerAdapter();
+        hRecyclerView.setAdapter(hRecyclerAdapter);
     }
 
     private class MyAdapter extends BaseAdapter {
@@ -111,6 +117,14 @@ public class TestActivity extends Activity {
         }
     }
 
+    private class MyHolder1 extends RecyclerView.ViewHolder {
+        final  Button button;
+        public MyHolder1(View itemView) {
+            super(itemView);
+            button = itemView.findViewById(R.id.list_item_4_container1);
+        }
+    }
+
     private class RecyclerAdapter extends RecyclerView.Adapter<MyHolder> {
 
         @Override
@@ -128,6 +142,26 @@ public class TestActivity extends Activity {
         @Override
         public int getItemCount() {
             return 100;
+        }
+    }
+
+    private class HRecyclerAdapter extends RecyclerView.Adapter<MyHolder1> {
+
+        @Override
+        public MyHolder1 onCreateViewHolder(ViewGroup parent, int viewType) {
+            View item = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_4,null);
+            return new MyHolder1(item);
+        }
+
+        @Override
+        public void onBindViewHolder(MyHolder1 holder, int position) {
+            String text = "hRecycler" + position;
+            holder.button.setText(text);
+        }
+
+        @Override
+        public int getItemCount() {
+            return 30;
         }
     }
 }

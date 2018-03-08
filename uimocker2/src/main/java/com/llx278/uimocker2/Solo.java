@@ -272,7 +272,7 @@ public class Solo {
      * @return 返回符合条件的view
      */
     public ArrayList<View> getCustomViewsByFilter(String className, View parent, Filter filter) {
-        return mSearcher.searchForNamesByFilter(className, parent, filter, mConfig.defaultSearchTimeout, true, true);
+        return mSearcher.searchViewListByFilter(className, parent, filter, mConfig.defaultSearchTimeout, true, true);
     }
 
     /**
@@ -285,7 +285,7 @@ public class Solo {
      * @return 返回符合条件的view
      */
     public View getCustomViewByFilter(String className, View parent, Filter filter) {
-        return mSearcher.searchForNameByFilter(className, parent, filter, mConfig.defaultSearchTimeout, true, true);
+        return mSearcher.searchViewByFilter(className, parent, filter, mConfig.defaultSearchTimeout, true, true);
     }
 
     public ArrayList<TextView> getTextList(String regex) {
@@ -293,7 +293,7 @@ public class Solo {
     }
 
     public ArrayList<TextView> getTextList(String regex, long timeout) {
-        return mSearcher.searchListByText(regex, timeout, true, true);
+        return mSearcher.searchTextViewListByText(regex, timeout, true);
     }
 
     public TextView getText(String regex) {
@@ -317,7 +317,7 @@ public class Solo {
      * @return 符合条件的editText列表
      */
     public ArrayList<EditText> getEditTextList(String regex, long timeout) {
-        return mSearcher.searchForEditTextList(regex, timeout, true, true);
+        return mSearcher.searchEditTextListByText(regex, timeout, true);
     }
 
     public EditText getEditText(String regex) {
@@ -325,7 +325,7 @@ public class Solo {
     }
 
     public EditText getEditText(String regex, long timeout) {
-        return mSearcher.searchForEditText(regex, timeout, true, true);
+        return mSearcher.searchEditTextByText(regex, timeout, true);
     }
 
 
@@ -538,7 +538,7 @@ public class Solo {
     }
 
     public View getView(int id) {
-        return mSearcher.searchById(id, mConfig.defaultSearchTimeout, false, true);
+        return mSearcher.searchViewById(id, mConfig.defaultSearchTimeout, false);
     }
 
     public Activity getCurrentActivity() {

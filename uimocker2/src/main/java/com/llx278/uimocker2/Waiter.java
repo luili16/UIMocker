@@ -181,8 +181,8 @@ public class Waiter {
     public boolean waitForTextFromCustomView(String className, String regex, long timeout) {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
-            ArrayList<View> viewsByName = mSearcher.searchListByClassName(className, null, regex, timeout,
-                    true, true);
+            ArrayList<View> viewsByName = mSearcher.forceSearchViewListByText(className, null, regex, timeout,
+                    true);
             if (viewsByName != null && !viewsByName.isEmpty()) {
                 return true;
             }
@@ -204,8 +204,8 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            ArrayList<View> viewsByName = mSearcher.searchListByClassName(className, null, regex, timeout,
-                    true, true);
+            ArrayList<View> viewsByName = mSearcher.forceSearchViewListByText(className, null, regex, timeout,
+                    true);
             if (viewsByName != null && !viewsByName.isEmpty()) {
                 return viewsByName;
             }
@@ -225,8 +225,8 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            View viewsByName = mSearcher.searchForName(className, null, regex, timeout,
-                    true, true);
+            View viewsByName = mSearcher.forceSearchViewByText(className, null, regex, timeout,
+                    true);
             if (viewsByName != null) {
                 return viewsByName;
             }
@@ -266,7 +266,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            ArrayList<TextView> textViews = mSearcher.searchListByText(regex, mConfig.defaultSearchTimeout, scroll, true);
+            ArrayList<TextView> textViews = mSearcher.searchTextViewListByText(regex, mConfig.defaultSearchTimeout, true);
             if (textViews != null && !textViews.isEmpty()) {
                 return true;
             }
@@ -284,7 +284,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            TextView textView = mSearcher.searchByText(regex, timeout, true, true);
+            TextView textView = mSearcher.searchTextViewByText(regex, timeout, true);
             if (textView != null) {
                 return textView;
             }
@@ -303,7 +303,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            ArrayList<TextView> textViews = mSearcher.searchListByText(regex, timeout, true, true);
+            ArrayList<TextView> textViews = mSearcher.searchTextViewListByText(regex, timeout, true);
             if (textViews != null && !textViews.isEmpty()) {
                 return textViews;
             }
@@ -331,8 +331,8 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            ArrayList<EditText> editTexts = mSearcher.searchForEditTextList(regex, mConfig.defaultSearchTimeout,
-                    true, true);
+            ArrayList<EditText> editTexts = mSearcher.searchEditTextListByText(regex, mConfig.defaultSearchTimeout,
+                    true);
             if (editTexts != null && !editTexts.isEmpty()) {
                 return true;
             }
@@ -350,8 +350,8 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            EditText editText = mSearcher.searchForEditText(regex, mConfig.defaultSearchTimeout,
-                    true, true);
+            EditText editText = mSearcher.searchEditTextByText(regex, mConfig.defaultSearchTimeout,
+                    true);
             if (editText != null) {
                 return editText;
             }
@@ -369,7 +369,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            ArrayList<EditText> editTexts = mSearcher.searchForEditTextList(regex, mConfig.defaultSearchTimeout, true, true);
+            ArrayList<EditText> editTexts = mSearcher.searchEditTextListByText(regex, mConfig.defaultSearchTimeout,  true);
             if (editTexts != null && !editTexts.isEmpty()) {
                 return editTexts;
             }
@@ -381,8 +381,8 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            ArrayList<Button> buttons = mSearcher.searchForButtonList(regex, mConfig.defaultSearchTimeout,
-                    true, true);
+            ArrayList<Button> buttons = mSearcher.searchButtonListByText(regex, mConfig.defaultSearchTimeout,
+                    true);
             if (buttons != null && !buttons.isEmpty()) {
                 return true;
             }
@@ -394,7 +394,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            Button button = mSearcher.searchForButton(regex, mConfig.defaultSearchTimeout, true, true);
+            Button button = mSearcher.searchButtonByText(regex, mConfig.defaultSearchTimeout, true);
             if (button != null) {
                 return button;
             }
@@ -406,7 +406,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            ArrayList<Button> buttons = mSearcher.searchForButtonList(regex, mConfig.defaultSearchTimeout, true, true);
+            ArrayList<Button> buttons = mSearcher.searchButtonListByText(regex, mConfig.defaultSearchTimeout,  true);
             if (buttons != null && !buttons.isEmpty()) {
                 return buttons;
             }

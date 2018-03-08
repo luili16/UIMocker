@@ -52,7 +52,7 @@ public class ScrollerTest {
 
         ListView listView = currentActivity.findViewById(R.id.container_4_list_view1);
         boolean b = scroller.scrollListVertically(listView, Scroller.VerticalDirection.DOWN_TO_UP, false);
-        Assert.assertFalse(b);
+        Assert.assertTrue(b);
         boolean isText11Appear = solo.waitForTextAppear("^text11$");
         Assert.assertTrue(isText11Appear);
         boolean b1 = scroller.scrollListVertically(listView, Scroller.VerticalDirection.UP_TO_DOWN, false);
@@ -89,6 +89,9 @@ public class ScrollerTest {
         Assert.assertTrue(isHbt1AppearAgain);
 
 
+        //ScrollView scrollView = currentActivity.findViewById(R.id.container_3_scrollview_1);
+        //ListView listView = currentActivity.findViewById(R.id.container_4_list_view1);
+        //HorizontalScrollView horizontalScrollView = currentActivity.findViewById(R.id.container_3_scrollview_2);
         scroller.forceScrollViewVertically(scrollView, Scroller.VerticalDirection.DOWN_TO_UP);
         boolean isScrollText8Appear = solo.waitForTextAppear("^scrollText8$");
         Assert.assertTrue(isScrollText8Appear);
@@ -108,6 +111,7 @@ public class ScrollerTest {
         scroller.forceScrollViewHorizontally(horizontalScrollView,Scroller.HorizontalDirection.LEFT_TO_RIGHT);
         boolean isHBt1Appear = solo.waitForTextAppear("^hBt1$");
         Assert.assertTrue(isHBt1Appear);
+
         ViewGroup recyclerView = currentActivity.findViewById(R.id.container_4_recycler_view4);
         scroller.forceScrollViewVertically(recyclerView, Scroller.VerticalDirection.DOWN_TO_UP);
         boolean isRecycler14Appear = solo.waitForTextAppear("^recycler14$");
@@ -115,6 +119,14 @@ public class ScrollerTest {
         scroller.forceScrollViewVertically(recyclerView, Scroller.VerticalDirection.UP_TO_DOWN);
         boolean isRecycler0Appear = solo.waitForTextAppear("^recycler0$");
         Assert.assertTrue(isRecycler0Appear);
+
+        RecyclerView hRecyclerView = currentActivity.findViewById(R.id.container_5_1_recycler_view);
+        scroller.scrollViewHorizontally(hRecyclerView, Scroller.HorizontalDirection.RIGHT_TO_LEFT);
+        boolean isHRecycler = solo.waitForTextAppear("^hRecycler6");
+        Assert.assertTrue(isHRecycler);
+        scroller.scrollViewHorizontally(hRecyclerView, Scroller.HorizontalDirection.LEFT_TO_RIGHT);
+        boolean isHRecycler0 = solo.waitForTextAppear("^hRecycler0");
+        Assert.assertTrue(isHRecycler0);
 
         Log.d("main","done!");
     }

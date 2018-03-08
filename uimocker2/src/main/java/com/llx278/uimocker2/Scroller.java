@@ -30,7 +30,9 @@ import static com.llx278.uimocker2.Scroller.VerticalDirection.UP_TO_DOWN;
 
 public class Scroller {
     private static final String TAG = "uimocker";
-    private static final long SWAP_DURATION = 1000;
+    private static final long SWAP_DURATION = 500;
+    private static final long PRESS_DURATION = 0;
+    private static final long UP_DURATION = 1000;
 
     private boolean mCanScroll = false;
     private final InstrumentationDecorator mInst;
@@ -103,9 +105,9 @@ public class Scroller {
         PointF downPointF = new PointF(downXPosition,downYPosition);
 
         if (direction == VerticalDirection.UP_TO_DOWN) {
-            mGesture.dragOnScreen(upPointF,downPointF,duration);
+            mGesture.dragOnScreen(upPointF,downPointF,duration,PRESS_DURATION,UP_DURATION);
         } else if (direction == VerticalDirection.DOWN_TO_UP) {
-            mGesture.dragOnScreen(downPointF,upPointF,duration);
+            mGesture.dragOnScreen(downPointF,upPointF,duration,PRESS_DURATION,UP_DURATION);
         }
     }
 
@@ -125,7 +127,7 @@ public class Scroller {
     /**
      * 直接模拟滑动屏幕的动作，讲View里面最后（或者第一个）滑动到最左边(或者最右边)
      * <p>
-     * forceScroll屏蔽了不同滚动控件的差异，但缺点是无法知道是否已经滚动到了最下面或者是最上面，需要结合其他的判断
+     * forceScroll屏蔽了不同滚动控件滚动实现差异，但缺点是无法知道是否已经滚动到了最下面或者是最上面，需要结合其他的判断
      * 逻辑来使用
      *
      * @param view      待滑动的view
@@ -157,14 +159,16 @@ public class Scroller {
         PointF rightPointF = new PointF(rightXPosition,rightYPosition);
 
         if (direction == HorizontalDirection.LEFT_TO_RIGHT) {
-            mGesture.dragOnScreen(leftPointF,rightPointF, duration);
+            mGesture.dragOnScreen(leftPointF,rightPointF, duration,PRESS_DURATION,UP_DURATION);
         } else if (direction == HorizontalDirection.RIGHT_TO_LEFT) {
-            mGesture.dragOnScreen(rightPointF,leftPointF, duration);
+            mGesture.dragOnScreen(rightPointF,leftPointF, duration,PRESS_DURATION,UP_DURATION);
         }
     }
 
     /**
      * 垂直滚动一个View，注意，这种滚动的方式只适合像ScrollView这样的View不是被复用的View(区别于ListView)
+     * 注意：此方法对RecyclerView有效，但是无法判断是否滚动到了最下还是最上面，即对于RecyclerView来说此方法
+     * 永远返回false
      *
      * @param view      被用来滚动的view
      * @param direction 滚动方向
@@ -200,7 +204,8 @@ public class Scroller {
     }
 
     /**
-     * 垂直滚动到终止的位置,注意，这种滚动的方式只适合像ScrollView这样的View不是被复用的View(区别于ListView)
+     * 垂直滚动到终止的位置,这种滚动的方式只适合像ScrollView这样的View不是被复用的View(区别于ListView)
+     * 注意：此方法对RecyclerView无效，只能滚动一次
      *
      * @param view      待滚动的view
      * @param direction 方向
@@ -221,13 +226,19 @@ public class Scroller {
      *          注意，对于listView来说，数据集是自动填充的，因此滚动了最下面有很大的可能会刷新数据集
      *          从而重新填充adapter，这种情况下返回值就会变的不可信了
      */
-    public boolean scrollVertically(VerticalDirection direction) {
-        ArrayList<View> viewList = UIUtil.removeInvisibleViews(mViewGetter.getViewList(true));
-        ArrayList<View> filteredViews = UIUtil.filterViewsToSet(Arrays.asList(ListView.class, ScrollView.class,
-                GridView.class, WebView.class), viewList);
-        List<View> scrollableSupportPackageViews = mViewGetter.getScrollableSupportPackageViews(true);
-        filteredViews.addAll(scrollableSupportPackageViews);
-        View view = mViewGetter.getFreshestView(filteredViews);
+    public boolean scrollVertically(VerticalDirection direction,View scrollableView) {
+        View view;
+        if (scrollableView == null) {
+            ArrayList<View> viewList = UIUtil.removeInvisibleViews(mViewGetter.getViewList(true));
+            ArrayList<View> filteredViews = UIUtil.filterViewsToSet(Arrays.asList(ListView.class, ScrollView.class,
+                    GridView.class, WebView.class), viewList);
+            List<View> scrollableSupportPackageViews = mViewGetter.getScrollableSupportPackageViews(true);
+            filteredViews.addAll(scrollableSupportPackageViews);
+            view = mViewGetter.getFreshestView(filteredViews);
+        } else {
+            view = scrollableView;
+        }
+
         if (view == null) {
             return false;
         }
@@ -366,7 +377,8 @@ public class Scroller {
 
     /**
      * 水平滚动,注意，这种滚动的方式只适合像HorizontalScrollView这样的View不是被复用的View
-     *
+     * 注意：此方法对RecyclerView有效，但是无法判断是否滚动到了最左面还是最右面，即对于RecyclerView来说此方法
+     * 永远返回false
      * @param view      待水平滚动的view
      * @param direction 方向
      * @return 返回true 证明还没有滚动到最左面或者最右面，下次还可以滚动，false 已经不能在滚动了
@@ -397,7 +409,8 @@ public class Scroller {
     }
 
     /**
-     * 水平滚动的终止的位置，注意，这种滚动的方式只适合像HorizontalScrollView这样的View不是被复用的View
+     * 水平滚动的终止的位置，这种滚动的方式只适合像HorizontalScrollView这样的View不是被复用的View
+     * 注意：此方法对RecyclerView无效，只能滚动一次
      */
     public void scrollViewHorizontallyAllTheWay(View view, HorizontalDirection direction) {
         while (true) {
