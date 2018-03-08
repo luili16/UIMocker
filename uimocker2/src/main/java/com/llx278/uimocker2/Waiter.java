@@ -181,7 +181,7 @@ public class Waiter {
     public boolean waitForTextFromCustomView(String className, String regex, long timeout) {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
-            ArrayList<View> viewsByName = mSearcher.searchForNameList(className, null, regex, timeout,
+            ArrayList<View> viewsByName = mSearcher.searchListByClassName(className, null, regex, timeout,
                     true, true);
             if (viewsByName != null && !viewsByName.isEmpty()) {
                 return true;
@@ -204,7 +204,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            ArrayList<View> viewsByName = mSearcher.searchForNameList(className, null, regex, timeout,
+            ArrayList<View> viewsByName = mSearcher.searchListByClassName(className, null, regex, timeout,
                     true, true);
             if (viewsByName != null && !viewsByName.isEmpty()) {
                 return viewsByName;
@@ -266,7 +266,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            ArrayList<TextView> textViews = mSearcher.searchForTextList(regex, mConfig.defaultSearchTimeout, scroll, true);
+            ArrayList<TextView> textViews = mSearcher.searchListByText(regex, mConfig.defaultSearchTimeout, scroll, true);
             if (textViews != null && !textViews.isEmpty()) {
                 return true;
             }
@@ -284,7 +284,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            TextView textView = mSearcher.searchForText(regex, timeout, true, true);
+            TextView textView = mSearcher.searchByText(regex, timeout, true, true);
             if (textView != null) {
                 return textView;
             }
@@ -303,7 +303,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            ArrayList<TextView> textViews = mSearcher.searchForTextList(regex, timeout, true, true);
+            ArrayList<TextView> textViews = mSearcher.searchListByText(regex, timeout, true, true);
             if (textViews != null && !textViews.isEmpty()) {
                 return textViews;
             }

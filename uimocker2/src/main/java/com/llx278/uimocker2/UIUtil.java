@@ -1,6 +1,7 @@
 package com.llx278.uimocker2;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -64,12 +65,12 @@ public class UIUtil {
      * @return an ArrayList with filtered views
      */
 
-    public static ArrayList<View> filterViewsToSet(Class<View> classSet[], Iterable<View> viewList) {
+    public  static ArrayList<View> filterViewsToSet(List<Class<? extends ViewGroup>> classSet, Iterable<View> viewList) {
         ArrayList<View> filteredViews = new ArrayList<>();
         for (View view : viewList) {
             if (view == null)
                 continue;
-            for (Class<View> filter : classSet) {
+            for (Class<?> filter : classSet) {
                 if (filter.isAssignableFrom(view.getClass())) {
                     filteredViews.add(view);
                     break;

@@ -46,7 +46,6 @@ public class ReflectUtil {
             pattern = Pattern.compile(regex, Pattern.LITERAL);
         }
 
-
         Class<? extends View> customViewClass = customView.getClass();
         Class<?> currentClass = customViewClass;
         ArrayList<String> fieldStrList = new ArrayList<>();

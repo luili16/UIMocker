@@ -127,7 +127,7 @@ public class TestActivity extends Activity {
 
         @Override
         public int getItemCount() {
-            return 20;
+            return 100;
         }
     }
 }

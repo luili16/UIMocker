@@ -1,20 +1,26 @@
 package com.llx278.uimocker2;
 
+import android.content.Context;
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.webkit.WebView;
 import android.widget.AbsListView;
 import android.widget.GridView;
-import android.widget.HorizontalScrollView;
 import android.widget.ListView;
 import android.widget.ScrollView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-import static com.llx278.uimocker2.Scroller.VerticalDirection.DOWN;
-import static com.llx278.uimocker2.Scroller.VerticalDirection.UP;
+import static com.llx278.uimocker2.Scroller.VerticalDirection.DOWN_TO_UP;
+import static com.llx278.uimocker2.Scroller.VerticalDirection.UP_TO_DOWN;
 
 /**
  * 实现了滚动相关的方法
@@ -24,38 +30,145 @@ import static com.llx278.uimocker2.Scroller.VerticalDirection.UP;
 
 public class Scroller {
     private static final String TAG = "uimocker";
+    private static final long SWAP_DURATION = 1000;
 
     private boolean mCanScroll = false;
     private final InstrumentationDecorator mInst;
     private final ViewGetter mViewGetter;
     private final Sleeper mSleeper;
     private final Gesture mGesture;
+    private int mScreenWidth = -1;
+    private int mScreenHeight = -1;
 
-    public Scroller(InstrumentationDecorator inst, ViewGetter viewGetter, Sleeper sleeper,Gesture gesture) {
+
+    public Scroller(InstrumentationDecorator inst, ViewGetter viewGetter, Sleeper sleeper, Gesture gesture) {
         mInst = inst;
         mViewGetter = viewGetter;
         mSleeper = sleeper;
         mGesture = gesture;
+        WindowManager wm = (WindowManager) mInst.getContext().getSystemService(Context.WINDOW_SERVICE);
+        Point point = new Point();
+        if (wm != null) {
+            wm.getDefaultDisplay().getSize(point);
+            mScreenWidth = point.x;
+            mScreenHeight = point.y;
+        }
+
+    }
+
+    /**
+     * 直接模拟滑动屏幕的动作，将view里面最后（或者第一个）可见的view滑动到最上面(或者最下面)，默认滑动时间是1s
+     * <p>
+     * forceScroll屏蔽了不同滚动控件的差异，但缺点是无法知道是否已经滚动到了最下面或者是最上面，需要结合其他的判断
+     * 逻辑来使用
+     *
+     * @param view      待滑动的view
+     * @param direction 方向
+     */
+    public void forceScrollViewVertically(View view, VerticalDirection direction){
+        forceScrollViewVertically(view, direction, SWAP_DURATION);
     }
 
     /**
      * 直接模拟滑动屏幕的动作，将view里面最后（或者第一个）可见的view滑动到最上面(或者最下面)
-     * @param view 待滑动的view
+     * <p>
+     * forceScroll屏蔽了不同滚动控件的差异，但缺点是无法知道是否已经滚动到了最下面或者是最上面，需要结合其他的判断
+     * 逻辑来使用
+     *
+     * @param view      待滑动的view
      * @param direction 方向
+     * @param duration 滚动时间，这个参数对于不同height的view，应该取不同的时间，因为如果一个view的height很大（或很小）
+     *                 duration很小（或很大）的情况，会导致滚动的距离误差过大。
      */
-    public void forceScrollViewVertically(View view,VerticalDirection direction) {
-        List<View> viewList = mViewGetter.getViewList(view, true);
-        // 计算所有view所有子view的位置
+    public void forceScrollViewVertically(View view, VerticalDirection direction,long duration) {
+        if (view == null || !(view instanceof ViewGroup)) {
+            return;
+        }
 
+        if (!mViewGetter.isViewSufficientlyShown(view)) {
+            // 如果view没有完全显示在窗体内，那么无法判断点击事件的落点
+            return;
+        }
+
+        int[] viewLocation = new int[2];
+        view.getLocationOnScreen(viewLocation);
+        int upXPosition = roundEdgeX(viewLocation[0] + view.getWidth()/2);
+        // 加2的目的是让点精确的落在view的内部，保证点击事件能准确的被传递给view
+        int upYPosition = roundEdgeY(viewLocation[1]) + 2;
+        PointF upPointF = new PointF(upXPosition,upYPosition);
+
+        int downXPosition = roundEdgeX(viewLocation[0] + view.getWidth() / 2);
+        // 减2的目的是让点精确的落在view的内部，保证点击事件能准确的被传递给view
+        int downYPosition = roundEdgeY(viewLocation[1] + view.getHeight()) - 2;
+        PointF downPointF = new PointF(downXPosition,downYPosition);
+
+        if (direction == VerticalDirection.UP_TO_DOWN) {
+            mGesture.dragOnScreen(upPointF,downPointF,duration);
+        } else if (direction == VerticalDirection.DOWN_TO_UP) {
+            mGesture.dragOnScreen(downPointF,upPointF,duration);
+        }
     }
 
+    /**
+     * 直接模拟滑动屏幕的动作，讲View里面最后（或者第一个）滑动到最左边(或者最右边),默认滑动时间为1s
+     * <p>
+     * forceScroll屏蔽了不同滚动控件的差异，但缺点是无法知道是否已经滚动到了最下面或者是最上面，需要结合其他的判断
+     * 逻辑来使用
+     *
+     * @param view      待滑动的view
+     * @param direction 方向
+     */
+    public void forceScrollViewHorizontally(View view, HorizontalDirection direction) {
+        forceScrollViewHorizontally(view,direction,SWAP_DURATION);
+    }
 
     /**
-     * 垂直滚动一个View，注意，这种滚动的方式只适合像ScrollView这样的View不是被复用的View
+     * 直接模拟滑动屏幕的动作，讲View里面最后（或者第一个）滑动到最左边(或者最右边)
+     * <p>
+     * forceScroll屏蔽了不同滚动控件的差异，但缺点是无法知道是否已经滚动到了最下面或者是最上面，需要结合其他的判断
+     * 逻辑来使用
+     *
+     * @param view      待滑动的view
+     * @param direction 方向
+     * @param duration 滚动时间，这个参数对于不同weight的view，应该取不同的时间，因为如果一个view的weight很大（很小）
+     *                 duration很小（很大）的情况，会导致滚动的距离误差过大。
+     */
+    public void forceScrollViewHorizontally(View view, HorizontalDirection direction,long duration) {
+        if (view == null || !(view instanceof ViewGroup)) {
+            return;
+        }
+
+        if (!mViewGetter.isViewSufficientlyShown(view)) {
+            // 如果view没有完全显示在窗体内，那么无法判断点击事件的落点
+            return;
+        }
+
+        int[] viewLocation = new int[2];
+        view.getLocationOnScreen(viewLocation);
+        // 加2的目的是让点精确的落在view的内部，保证点击事件能准确的被传递给view
+        int leftXPosition = roundEdgeX(viewLocation[0]) + 2;
+        int leftYPosition = roundEdgeY(viewLocation[1] + view.getHeight() / 2);
+        PointF leftPointF = new PointF(leftXPosition,leftYPosition);
+
+        // 减2的目的是让点精确的落在view的内部，保证点击事件能准确的被传递给view
+        int rightXPosition = roundEdgeX(viewLocation[0] + view.getWidth()) - 2;
+        int rightYPosition = roundEdgeY(viewLocation[1] + view.getHeight() / 2);
+
+        PointF rightPointF = new PointF(rightXPosition,rightYPosition);
+
+        if (direction == HorizontalDirection.LEFT_TO_RIGHT) {
+            mGesture.dragOnScreen(leftPointF,rightPointF, duration);
+        } else if (direction == HorizontalDirection.RIGHT_TO_LEFT) {
+            mGesture.dragOnScreen(rightPointF,leftPointF, duration);
+        }
+    }
+
+    /**
+     * 垂直滚动一个View，注意，这种滚动的方式只适合像ScrollView这样的View不是被复用的View(区别于ListView)
      *
      * @param view      被用来滚动的view
      * @param direction 滚动方向
-     * @return true 此次滚动完成，并且下次可以再滚动，false 此次滚动完成，并且下次不能再滚动
+     * @return 返回true 证明还没有滚动到最下面或者是最上面，下次还可以滚动，false 已经不能在滚动了
      */
     public boolean scrollViewVertically(final View view, VerticalDirection direction) {
         if (view == null) {
@@ -67,9 +180,9 @@ public class Scroller {
         height--;
         int scrollTo = -1;
 
-        if (direction == DOWN) {
+        if (direction == DOWN_TO_UP) {
             scrollTo = height;
-        } else if (direction == UP) {
+        } else if (direction == UP_TO_DOWN) {
             scrollTo = -height;
         }
 
@@ -80,12 +193,16 @@ public class Scroller {
                 view.scrollBy(0, scrollAmount);
             }
         });
+        // 下面这行代码可以判断是否已经滚动到了最上面或者最下面
+        // 如果originalY == view.getScrollY()
+        // 则证明已经滚动到了最底部或者最顶部
         return originalY != view.getScrollY();
     }
 
     /**
-     * 垂直滚动到终止的位置,注意，这种滚动的方式只适合像ScrollView这样的View不是被复用的View
-     * @param view 待滚动的view
+     * 垂直滚动到终止的位置,注意，这种滚动的方式只适合像ScrollView这样的View不是被复用的View(区别于ListView)
+     *
+     * @param view      待滚动的view
      * @param direction 方向
      */
     public void scrollViewVerticallyAllTheWay(final View view, final VerticalDirection direction) {
@@ -97,58 +214,49 @@ public class Scroller {
     }
 
     /**
-     * 滚动
-     *
+     * 这个方法自动的查找当前view里面所有可能有滚动能力的view，
+     * 并在所有的view里面找到最近被刷新的view，对这个view触发滚动事件
      * @param direction 方向
-     * @param allTheWay 一直滚动，直到顶部或者底部才结束
-     * @return true 下次可以滚动 false 不能滚动或者已经滚动到底部了
+     * @return false 证明还没有滚动到最下面的view或者最上面的view， true 已经不能在滚动了
+     *          注意，对于listView来说，数据集是自动填充的，因此滚动了最下面有很大的可能会刷新数据集
+     *          从而重新填充adapter，这种情况下返回值就会变的不可信了
      */
-    public boolean scrollVertically(VerticalDirection direction, boolean allTheWay) {
+    public boolean scrollVertically(VerticalDirection direction) {
         ArrayList<View> viewList = UIUtil.removeInvisibleViews(mViewGetter.getViewList(true));
-        //noinspection unchecked
-        ArrayList<View> filteredViews = UIUtil.filterViewsToSet(new Class[]{ListView.class, ScrollView.class, GridView.class, WebView.class},
-                viewList);
+        ArrayList<View> filteredViews = UIUtil.filterViewsToSet(Arrays.asList(ListView.class, ScrollView.class,
+                GridView.class, WebView.class), viewList);
         List<View> scrollableSupportPackageViews = mViewGetter.getScrollableSupportPackageViews(true);
         filteredViews.addAll(scrollableSupportPackageViews);
         View view = mViewGetter.getFreshestView(filteredViews);
-        if (view == null){
+        if (view == null) {
             return false;
         }
 
-        if(view instanceof AbsListView){
-            return scrollListVertically((AbsListView) view,direction,allTheWay);
+        if (view instanceof AbsListView) {
+            return scrollListVertically((AbsListView) view, direction);
         }
 
-        if(view instanceof WebView){
-            return scrollWebView((WebView) view,direction,allTheWay);
+        if (view instanceof WebView) {
+            return scrollWebView((WebView) view, direction);
         }
 
-        if (allTheWay){
-            scrollViewVerticallyAllTheWay(view,direction);
-            return false;
-        } else {
-            return scrollViewVertically(view,direction);
-        }
+        return scrollViewVertically(view, direction);
     }
 
-    public boolean scrollVertically(VerticalDirection direction) {
-        return scrollVertically(direction, false);
-    }
-
-    public boolean scrollDown() {
-        return scrollVertically(DOWN);
+    public boolean scrollWebView(final WebView webView, VerticalDirection direction) {
+        return scrollWebView(webView,direction,false);
     }
 
     public boolean scrollWebView(final WebView webView, VerticalDirection direction, final boolean allTheWay) {
 
-        if (direction == DOWN) {
+        if (direction == DOWN_TO_UP) {
             mInst.runOnMainSync(new Runnable() {
                 public void run() {
                     mCanScroll = webView.pageDown(allTheWay);
                 }
             });
         }
-        if (direction == UP) {
+        if (direction == UP_TO_DOWN) {
             mInst.runOnMainSync(new Runnable() {
                 public void run() {
                     mCanScroll = webView.pageUp(allTheWay);
@@ -160,18 +268,31 @@ public class Scroller {
 
     /**
      * 滚动listView
+     *
      * @param absListView 被滚动的abslistView
      * @param direction   方向
-     * @param allTheWay   一直滚动到最下或者滚动到最上
      * @param <T>         extends AbsListVIew
-     * @return true 如果已经不能够滚动了
+     * @return false 证明还没有滚动到此Adapter数据集里的最后一条 true 已经滚动到最后了
+     */
+    public <T extends AbsListView> boolean scrollListVertically(T absListView, VerticalDirection direction){
+        return scrollListVertically(absListView,direction,false);
+    }
+
+    /**
+     * 滚动listView
+     *
+     * @param absListView 被滚动的abslistView
+     * @param direction   方向
+     * @param allTheWay   一直滚动到adapter数据集的最后一条或者adapter数据集的第一条
+     * @param <T>         extends AbsListVIew
+     * @return false 证明已经滚动到此Adapter数据集里的最后一条 true 下次还可以滚动
      */
     public <T extends AbsListView> boolean scrollListVertically(T absListView, VerticalDirection direction, boolean allTheWay) {
         if (absListView == null) {
             return false;
         }
 
-        if (direction == DOWN) {
+        if (direction == DOWN_TO_UP) {
             int listCount = absListView.getCount();
             int lastVisiblePosition = absListView.getLastVisiblePosition();
             if (allTheWay) {
@@ -195,7 +316,7 @@ public class Scroller {
                 scrollListVerticallyToLine(absListView, firstVisiblePosition + 1);
             }
 
-        } else if (direction == UP) {
+        } else if (direction == UP_TO_DOWN) {
             int firstVisiblePosition = absListView.getFirstVisiblePosition();
 
             if (allTheWay || firstVisiblePosition < 2) {
@@ -245,8 +366,10 @@ public class Scroller {
 
     /**
      * 水平滚动,注意，这种滚动的方式只适合像HorizontalScrollView这样的View不是被复用的View
-     * @param view 待水平滚动的view
+     *
+     * @param view      待水平滚动的view
      * @param direction 方向
+     * @return 返回true 证明还没有滚动到最左面或者最右面，下次还可以滚动，false 已经不能在滚动了
      */
     public boolean scrollViewHorizontally(final View view, HorizontalDirection direction) {
         if (view == null) {
@@ -256,9 +379,9 @@ public class Scroller {
         width--;
         int scrollTo = -1;
 
-        if (HorizontalDirection.LEFT == direction) {
+        if (HorizontalDirection.LEFT_TO_RIGHT == direction) {
             scrollTo = -width;
-        } else if (HorizontalDirection.RIGHT == direction) {
+        } else if (HorizontalDirection.RIGHT_TO_LEFT == direction) {
             scrollTo = width;
         }
 
@@ -267,7 +390,7 @@ public class Scroller {
         mInst.runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                view.scrollBy(scrollAmount,0);
+                view.scrollBy(scrollAmount, 0);
             }
         });
         return originalX != view.getScrollX();
@@ -276,7 +399,7 @@ public class Scroller {
     /**
      * 水平滚动的终止的位置，注意，这种滚动的方式只适合像HorizontalScrollView这样的View不是被复用的View
      */
-    public void scrollViewHorizontallyAllTheWay(View view,HorizontalDirection direction) {
+    public void scrollViewHorizontallyAllTheWay(View view, HorizontalDirection direction) {
         while (true) {
             if (!(scrollViewHorizontally(view, direction))) {
                 break;
@@ -288,22 +411,69 @@ public class Scroller {
         /**
          * LEFT指手指滑动方向为从左向右
          */
-        LEFT,
+        LEFT_TO_RIGHT,
         /**
          * RIGHT指手指滑动方向为从右向左
          */
-        RIGHT
+        RIGHT_TO_LEFT
     }
 
     public enum VerticalDirection {
         /**
          * UP指手指滑动的方向从上向下
          */
-        UP,
+        UP_TO_DOWN,
         /**
          * DOWN指手指滑动的方向从下向上
          */
-        DOWN
+        DOWN_TO_UP
+    }
+
+    /**
+     * 对滑动的x点落在屏幕外面做处理
+     *
+     * @param xPosition x位置
+     * @return 处理后的点
+     */
+    private int roundEdgeX(int xPosition) {
+        if (mScreenWidth != -1 && mScreenHeight != -1) {
+
+            if (xPosition <= 0) {
+                return 0;
+            } else if (xPosition >= mScreenWidth) {
+                return mScreenWidth;
+            } else {
+                return xPosition;
+            }
+
+        } else {
+            throw new RuntimeException("found illegal screen width and height : " +
+                    "(width,height)=(" + mScreenWidth + "," + mScreenHeight + ")");
+        }
+    }
+
+    /**
+     * 对滑动的点y落在屏幕外面做处理
+     *
+     * @param yPosition y位置
+     * @return 处理后的点
+     */
+    private int roundEdgeY(int yPosition) {
+
+        if (mScreenWidth != -1 && mScreenHeight != -1) {
+
+            if (yPosition <= 0) {
+                return 0;
+            } else if (yPosition >= mScreenHeight) {
+                return mScreenHeight;
+            } else {
+                return yPosition;
+            }
+
+        } else {
+            throw new RuntimeException("found illegal screen width and height : " +
+                    "(width,height)=(" + mScreenWidth + "," + mScreenHeight + ")");
+        }
     }
 
 }

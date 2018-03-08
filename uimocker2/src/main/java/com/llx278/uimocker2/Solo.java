@@ -293,7 +293,7 @@ public class Solo {
     }
 
     public ArrayList<TextView> getTextList(String regex, long timeout) {
-        return mSearcher.searchForTextList(regex, timeout, true, true);
+        return mSearcher.searchListByText(regex, timeout, true, true);
     }
 
     public TextView getText(String regex) {
@@ -538,7 +538,7 @@ public class Solo {
     }
 
     public View getView(int id) {
-        return mSearcher.searchForId(id, mConfig.defaultSearchTimeout, false, true);
+        return mSearcher.searchById(id, mConfig.defaultSearchTimeout, false, true);
     }
 
     public Activity getCurrentActivity() {

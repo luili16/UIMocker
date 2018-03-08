@@ -128,13 +128,49 @@ public class Gesture {
     }
 
     /**
+     * 生成一个拖动的手势
+     * @param startPoint 起始点
+     * @param endPoint 结束点
+     * @param duration 滑动时间
+     */
+    public void dragOnScreen(PointF startPoint, PointF endPoint, long duration) {
+        float startX = startPoint.x;
+        float startY = startPoint.y;
+        float endX = endPoint.x;
+        float endY = endPoint.y;
+
+        long now = SystemClock.uptimeMillis();
+        MotionEvent downEvent = getMotionEvent(now, MotionEvent.ACTION_DOWN,
+                startX, startY, 1, Config.DEFAULT_INPUT_SOURCE);
+        mInstrumentation.sendPointerSync(downEvent);
+        downEvent.recycle();
+        long startTime = now;
+        long endTime = startTime + duration;
+        while (now < endTime) {
+            long elapsedTime = now - startTime;
+            float alpha = (float) elapsedTime / duration;
+            float moveX = lerp(startX, endX, alpha);
+            float moveY = lerp(startY, endY, alpha);
+            MotionEvent moveEvent = getMotionEvent(now, MotionEvent.ACTION_MOVE, moveX, moveY, 1,
+                    Config.DEFAULT_INPUT_SOURCE);
+            mInstrumentation.sendPointerSync(moveEvent);
+            moveEvent.recycle();
+            now = SystemClock.uptimeMillis();
+        }
+        MotionEvent cancelEvent = getMotionEvent(now,MotionEvent.ACTION_CANCEL,endX,endY,1,
+                Config.DEFAULT_INPUT_SOURCE);
+        mInstrumentation.sendPointerSync(cancelEvent);
+        cancelEvent.recycle();
+    }
+
+    /**
      * 生成一个滑动的手势
      *
      * @param startPoint 起始点
      * @param endPoint   结束点
      * @param duration 持续时间
      */
-    public void swipeOnScreen(PointF startPoint, PointF endPoint,long duration) {
+    private void swipeOnScreen(PointF startPoint, PointF endPoint,long duration) {
 
         float startX = startPoint.x;
         float startY = startPoint.y;
@@ -159,6 +195,7 @@ public class Gesture {
             moveEvent.recycle();
             now = SystemClock.uptimeMillis();
         }
+        // 拖动结束以后，根据holdTime的时间来确定是否立即松开
         MotionEvent upEvent = getMotionEvent(now, MotionEvent.ACTION_UP, endX, endY, 1,
                 Config.DEFAULT_INPUT_SOURCE);
         mInstrumentation.sendPointerSync(upEvent);

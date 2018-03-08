@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -301,9 +302,9 @@ public class ViewGetter {
         if (shouldSleep) {
             mSleeper.sleep();
         }
-
-        @SuppressWarnings("unchecked")
-        ArrayList<View> views = UIUtil.filterViewsToSet(new Class[]{ViewGroup.class}, getAllViews(true));
+        List<Class<? extends ViewGroup>> myList = new ArrayList<>();
+        myList.add(ViewGroup.class);
+        ArrayList<View> views = UIUtil.filterViewsToSet(myList, getAllViews(true));
         List<View> allVisibleViews = UIUtil.removeInvisibleViews(views);
 
         for (View view : allVisibleViews) {

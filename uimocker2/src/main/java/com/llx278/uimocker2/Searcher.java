@@ -1,7 +1,6 @@
 package com.llx278.uimocker2;
 
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -29,13 +28,29 @@ public class Searcher {
         mConfig = config;
     }
 
-    public TextView searchForText(String regex, long timeout,
-                                  boolean scroll, boolean onlyVisible) {
-        return searchForText(TextView.class, regex, timeout, scroll, onlyVisible);
+    public TextView searchByText(String regex, long timeout,
+                                 boolean scroll, boolean onlyVisible) {
+        return searchByText(TextView.class, regex, timeout, onlyVisible);
     }
 
-    public <T extends TextView> T searchForText(Class<T> viewClass, String regex) {
-        return searchForText(viewClass, regex, mConfig.defaultSearchTimeout, true, true);
+    public ArrayList<TextView> searchListByText(String regex, long timeout, boolean onlyVisible) {
+        return searchListByText(TextView.class, regex, timeout, onlyVisible);
+    }
+
+    public EditText searchForEditText(String regex, long timeout, boolean onVisible) {
+        return searchByText(EditText.class, regex, timeout,  onVisible);
+    }
+
+    public ArrayList<EditText> searchForEditTextList(String regex, long timeout, boolean onlyVisible) {
+        return searchListByText(EditText.class, regex, timeout, onlyVisible);
+    }
+
+    public Button searchForButton(String regex, long timeout,  boolean onlyVisible) {
+        return searchByText(Button.class, regex, timeout,  onlyVisible);
+    }
+
+    public ArrayList<Button> searchForButtonList(String regex, long timeout, boolean onlyVisible) {
+        return searchListByText(Button.class, regex, timeout,  onlyVisible);
     }
 
     /**
@@ -44,22 +59,16 @@ public class Searcher {
      * @param viewClass   哪一种view可以被搜索到(例如 Button.class)
      * @param regex       待搜索的文本
      * @param timeout     超时时间
-     * @param scroll      是否scroll
      * @param onlyVisible 是否仅仅查找可见的view
      * @return 查找到的view
      */
-    public <T extends TextView> T searchForText(Class<T> viewClass, String regex, long timeout,
-                                                boolean scroll, boolean onlyVisible) {
+    public <T extends TextView> T searchByText(Class<T> viewClass, String regex, long timeout,
+                                               boolean onlyVisible) {
         final long endTime = SystemClock.uptimeMillis() + timeout;
-        while (true) {
+        while (SystemClock.uptimeMillis() < endTime) {
             mSleeper.sleep();
-            final boolean timedOut = timeout > 0 && SystemClock.uptimeMillis() > endTime;
-            if (timedOut) {
-                break;
-            }
             ArrayList<T> currentViews = mViewGetter.getViewListByClass(viewClass, true,
                     null);
-            //Logger.d("Searcher.SearchForText(Class,String,long,long,boolean,boolean) : currentViews : " + currentViews.toString());
             if (onlyVisible) {
                 currentViews = UIUtil.removeInvisibleViews(currentViews);
             }
@@ -69,33 +78,11 @@ public class Searcher {
                     return view;
                 }
             }
-            if (scroll && !mScroller.scrollDown()) {
-                break;
-            }
         }
         return null;
     }
 
 
-    public EditText searchForEditText(String regex, long timeout, boolean scroll, boolean onVisible) {
-        return searchForText(EditText.class, regex, timeout, scroll, onVisible);
-    }
-
-    public ArrayList<EditText> searchForEditTextList(String regex, long timeout, boolean scroll, boolean onlyVisible) {
-        return searchForTextList(EditText.class, regex, timeout, scroll, onlyVisible);
-    }
-
-    public Button searchForButton(String regex, long timeout, boolean scroll, boolean onlyVisible) {
-        return searchForText(Button.class, regex, timeout, scroll, onlyVisible);
-    }
-
-    public ArrayList<Button> searchForButtonList(String regex, long timeout, boolean scroll, boolean onlyVisible) {
-        return searchForTextList(Button.class, regex, timeout, scroll, onlyVisible);
-    }
-
-    public ArrayList<TextView> searchForTextList(String regex, long timeout, boolean scroll, boolean onlyVisible) {
-        return searchForTextList(TextView.class, regex, timeout, scroll, onlyVisible);
-    }
 
     /**
      * 找到符合正则匹配的标准textView
@@ -103,20 +90,15 @@ public class Searcher {
      * @param viewClass   哪一种view可以被搜索到(例如 Button.class)
      * @param regex       待搜索的文本
      * @param timeout     超时时间
-     * @param scroll      是否scroll
      * @param onlyVisible 是否仅仅查找可见的view
      * @return 查找到的view
      */
-    public <T extends TextView> ArrayList<T> searchForTextList(Class<T> viewClass, String regex, long timeout,
-                                                               boolean scroll, boolean onlyVisible) {
+    public <T extends TextView> ArrayList<T> searchListByText(Class<T> viewClass, String regex, long timeout,
+                                                              boolean onlyVisible) {
         final long endTime = SystemClock.uptimeMillis() + timeout;
         ArrayList<T> uniqueTextViews = new ArrayList<>();
-        while (true) {
+        while (SystemClock.uptimeMillis() < endTime) {
             mSleeper.sleep();
-            final boolean timedOut = timeout > 0 && SystemClock.uptimeMillis() > endTime;
-            if (timedOut) {
-                break;
-            }
             ArrayList<T> currentViews = mViewGetter.getViewListByClass(viewClass, true,
                     null);
             if (onlyVisible) {
@@ -128,9 +110,6 @@ public class Searcher {
                     uniqueTextViews.add(view);
                 }
             }
-            if (scroll && !mScroller.scrollDown()) {
-                break;
-            }
         }
         return uniqueTextViews;
     }
@@ -140,19 +119,19 @@ public class Searcher {
      *
      * @param id          指定的id
      * @param timeout     超时
-     * @param scroll      是否滚动
      * @param onlyVisible 是否只寻找可见的view
      * @return 查找到的view
      */
-    public View searchForId(int id, long timeout, boolean scroll, boolean onlyVisible) {
+    public View searchById(int id, long timeout, boolean onlyVisible) {
+
         final long endTime = SystemClock.uptimeMillis() + timeout;
-        while (true) {
+        while (SystemClock.uptimeMillis() < endTime) {
             mSleeper.sleep();
-            final boolean timedOut = timeout > 0 && SystemClock.uptimeMillis() > endTime;
-            if (timedOut) {
-                break;
-            }
             ArrayList<View> viewsById = mViewGetter.getViewListById(id);
+            if (onlyVisible) {
+                viewsById = UIUtil.removeInvisibleViews(viewsById);
+            }
+
             for (View view : viewsById) {
                 if (view == null) {
                     continue;
@@ -160,10 +139,6 @@ public class Searcher {
                 if (view.getId() == id) {
                     return view;
                 }
-            }
-            if (scroll && !mScroller.scrollDown()) {
-                Logger.d(TAG, "Searcher.searchForTextView scrollVertically finished!");
-                break;
             }
         }
         return null;
@@ -178,20 +153,15 @@ public class Searcher {
      * @param parent      待查找的父view，如果为null，则为当前的activity
      * @param regex       待匹配的文本
      * @param timeout     超时时间
-     * @param scroll      是否滚动
      * @param onlyVisible 是否只寻找可见的
      * @return 查找到的view的列表
      */
-    public ArrayList<View> searchForNameList(String className, View parent, String regex, long timeout,
-                                             boolean scroll, boolean onlyVisible) {
+    public ArrayList<View> searchListByClassName(String className, View parent, String regex, long timeout,
+                                                 boolean onlyVisible) {
         final long endTime = SystemClock.uptimeMillis() + timeout;
         ArrayList<View> uniqueCustomViews = new ArrayList<>();
-        while (true) {
+        while (SystemClock.uptimeMillis() < endTime) {
             mSleeper.sleep();
-            final boolean timedOut = timeout > 0 && SystemClock.uptimeMillis() > endTime;
-            if (timedOut) {
-                break;
-            }
 
             ArrayList<View> currentViews = mViewGetter.getViewListByName(className, parent, true);
             if (onlyVisible) {
@@ -202,9 +172,6 @@ public class Searcher {
                 if (findStrList != null && !findStrList.isEmpty()) {
                     uniqueCustomViews.add(view);
                 }
-            }
-            if (scroll && !mScroller.scrollDown()) {
-                break;
             }
         }
         return uniqueCustomViews;
@@ -243,9 +210,6 @@ public class Searcher {
                     return view;
                 }
             }
-            if (scroll && !mScroller.scrollDown()) {
-                break;
-            }
         }
         return null;
     }
@@ -279,9 +243,6 @@ public class Searcher {
                     uniqueCustomViews.add(view);
                 }
             }
-            if (scroll && !mScroller.scrollDown()) {
-                break;
-            }
         }
         return uniqueCustomViews;
     }
@@ -306,10 +267,6 @@ public class Searcher {
                 if (filter.match(view)) {
                     return view;
                 }
-            }
-            if (scroll && !mScroller.scrollDown()) {
-                Log.w(TAG, "Searcher.searchForTextView scrollVertically failed!");
-                break;
             }
         }
         return null;
