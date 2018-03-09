@@ -331,7 +331,7 @@ public class Clicker {
     }
 
     private boolean clickOnText(String regex, long timeout, boolean longClick, boolean scroll, long time) {
-        TextView tv = mSearcher.searchTByText(regex, timeout, scroll, true);
+        TextView tv = mSearcher.searchTextViewByText(regex, true);
         if (tv != null) {
             return clickOnScreen(tv, longClick, time);
         }
@@ -432,7 +432,6 @@ public class Clicker {
         event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP, x, y, 0);
         mInst.sendPointerSync(event);
         mSleeper.sleep();
-        //Logger.d(LOG_TAG,String.format(Locale.CHINA,"Clicker.longClickOnScreen(float,float,long,view) : click at (%f,%f)",x,y));
         return true;
     }
 }

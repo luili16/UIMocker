@@ -16,7 +16,6 @@ import android.widget.ScrollView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static com.llx278.uimocker2.Scroller.VerticalDirection.DOWN_TO_UP;
@@ -30,23 +29,28 @@ import static com.llx278.uimocker2.Scroller.VerticalDirection.UP_TO_DOWN;
 
 public class Scroller {
     private static final String TAG = "uimocker";
-    private static final long SWAP_DURATION = 500;
-    private static final long PRESS_DURATION = 0;
-    private static final long UP_DURATION = 1000;
+
+    private static final long DEFAULT_DRAG_DURATION = 500;
+    private static final long DEFAULT_PRESS_DURATION = 0;
+    private static final long DEFAULT_UP_DURATION = 1000;
+
+
+    private static final long DEFAULT_PAUSE_DURATION = 100;
+
+
+
 
     private boolean mCanScroll = false;
     private final InstrumentationDecorator mInst;
     private final ViewGetter mViewGetter;
-    private final Sleeper mSleeper;
     private final Gesture mGesture;
     private int mScreenWidth = -1;
     private int mScreenHeight = -1;
 
 
-    public Scroller(InstrumentationDecorator inst, ViewGetter viewGetter, Sleeper sleeper, Gesture gesture) {
+    public Scroller(InstrumentationDecorator inst, ViewGetter viewGetter, Gesture gesture) {
         mInst = inst;
         mViewGetter = viewGetter;
-        mSleeper = sleeper;
         mGesture = gesture;
         WindowManager wm = (WindowManager) mInst.getContext().getSystemService(Context.WINDOW_SERVICE);
         Point point = new Point();
@@ -55,7 +59,13 @@ public class Scroller {
             mScreenWidth = point.x;
             mScreenHeight = point.y;
         }
+    }
 
+    private void pause() {
+        try {
+            Thread.sleep(DEFAULT_PAUSE_DURATION);
+        } catch (InterruptedException ignore) {
+        }
     }
 
     /**
@@ -68,7 +78,7 @@ public class Scroller {
      * @param direction 方向
      */
     public void forceScrollViewVertically(View view, VerticalDirection direction){
-        forceScrollViewVertically(view, direction, SWAP_DURATION);
+        forceScrollViewVertically(view, direction, DEFAULT_DRAG_DURATION);
     }
 
     /**
@@ -105,9 +115,9 @@ public class Scroller {
         PointF downPointF = new PointF(downXPosition,downYPosition);
 
         if (direction == VerticalDirection.UP_TO_DOWN) {
-            mGesture.dragOnScreen(upPointF,downPointF,duration,PRESS_DURATION,UP_DURATION);
+            mGesture.dragOnScreen(upPointF,downPointF,duration, DEFAULT_PRESS_DURATION, DEFAULT_UP_DURATION);
         } else if (direction == VerticalDirection.DOWN_TO_UP) {
-            mGesture.dragOnScreen(downPointF,upPointF,duration,PRESS_DURATION,UP_DURATION);
+            mGesture.dragOnScreen(downPointF,upPointF,duration, DEFAULT_PRESS_DURATION, DEFAULT_UP_DURATION);
         }
     }
 
@@ -121,7 +131,7 @@ public class Scroller {
      * @param direction 方向
      */
     public void forceScrollViewHorizontally(View view, HorizontalDirection direction) {
-        forceScrollViewHorizontally(view,direction,SWAP_DURATION);
+        forceScrollViewHorizontally(view,direction, DEFAULT_DRAG_DURATION);
     }
 
     /**
@@ -159,16 +169,16 @@ public class Scroller {
         PointF rightPointF = new PointF(rightXPosition,rightYPosition);
 
         if (direction == HorizontalDirection.LEFT_TO_RIGHT) {
-            mGesture.dragOnScreen(leftPointF,rightPointF, duration,PRESS_DURATION,UP_DURATION);
+            mGesture.dragOnScreen(leftPointF,rightPointF, duration, DEFAULT_PRESS_DURATION, DEFAULT_UP_DURATION);
         } else if (direction == HorizontalDirection.RIGHT_TO_LEFT) {
-            mGesture.dragOnScreen(rightPointF,leftPointF, duration,PRESS_DURATION,UP_DURATION);
+            mGesture.dragOnScreen(rightPointF,leftPointF, duration, DEFAULT_PRESS_DURATION, DEFAULT_UP_DURATION);
         }
     }
 
     /**
      * 垂直滚动一个View，注意，这种滚动的方式只适合像ScrollView这样的View不是被复用的View(区别于ListView)
      * 注意：此方法对RecyclerView有效，但是无法判断是否滚动到了最下还是最上面，即对于RecyclerView来说此方法
-     * 永远返回false
+     * 永远返回true
      *
      * @param view      被用来滚动的view
      * @param direction 滚动方向
@@ -198,9 +208,11 @@ public class Scroller {
             }
         });
         // 下面这行代码可以判断是否已经滚动到了最上面或者最下面
-        // 如果originalY == view.getScrollY()
+        // boolean nextCanScroll = (originalY != view.getScrollY())
+        // 如果nextCanScroll为false，则这次滚动已经到了最下边或者最上边
+        // 如果nextCanScroll为true，则下次还可以滚动
         // 则证明已经滚动到了最底部或者最顶部
-        return originalY != view.getScrollY();
+        return (originalY != view.getScrollY());
     }
 
     /**
@@ -213,6 +225,7 @@ public class Scroller {
     public void scrollViewVerticallyAllTheWay(final View view, final VerticalDirection direction) {
         while (true) {
             if (!(scrollViewVertically(view, direction))) {
+                pause();
                 break;
             }
         }
@@ -232,7 +245,7 @@ public class Scroller {
             ArrayList<View> viewList = UIUtil.removeInvisibleViews(mViewGetter.getViewList(true));
             ArrayList<View> filteredViews = UIUtil.filterViewsToSet(Arrays.asList(ListView.class, ScrollView.class,
                     GridView.class, WebView.class), viewList);
-            List<View> scrollableSupportPackageViews = mViewGetter.getScrollableSupportPackageViews(true);
+            List<View> scrollableSupportPackageViews = mViewGetter.getScrollableSupportPackageViews();
             filteredViews.addAll(scrollableSupportPackageViews);
             view = mViewGetter.getFreshestView(filteredViews);
         } else {
@@ -240,6 +253,7 @@ public class Scroller {
         }
 
         if (view == null) {
+            Log.d("main","null !!!");
             return false;
         }
 
@@ -348,7 +362,7 @@ public class Scroller {
             }
             scrollListVerticallyToLine(absListView, lineToScrollTo);
         }
-        mSleeper.sleep();
+        pause();
         return true;
     }
 
@@ -378,7 +392,7 @@ public class Scroller {
     /**
      * 水平滚动,注意，这种滚动的方式只适合像HorizontalScrollView这样的View不是被复用的View
      * 注意：此方法对RecyclerView有效，但是无法判断是否滚动到了最左面还是最右面，即对于RecyclerView来说此方法
-     * 永远返回false
+     * 永远返回true
      * @param view      待水平滚动的view
      * @param direction 方向
      * @return 返回true 证明还没有滚动到最左面或者最右面，下次还可以滚动，false 已经不能在滚动了
@@ -415,6 +429,7 @@ public class Scroller {
     public void scrollViewHorizontallyAllTheWay(View view, HorizontalDirection direction) {
         while (true) {
             if (!(scrollViewHorizontally(view, direction))) {
+                pause();
                 break;
             }
         }

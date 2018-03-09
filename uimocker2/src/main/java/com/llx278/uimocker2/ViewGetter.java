@@ -44,11 +44,9 @@ public class ViewGetter {
     }
 
     private InstrumentationDecorator mInstrumentation;
-    private Sleeper mSleeper;
 
-    public ViewGetter(InstrumentationDecorator instrumentation, Sleeper sleeper) {
+    public ViewGetter(InstrumentationDecorator instrumentation) {
         mInstrumentation = instrumentation;
-        mSleeper = sleeper;
     }
 
     /**
@@ -297,11 +295,8 @@ public class ViewGetter {
      * @return a Set of RecyclerViews
      */
 
-    public List<View> getScrollableSupportPackageViews(boolean shouldSleep) {
+    public List<View> getScrollableSupportPackageViews() {
         List<View> viewsToReturn = new ArrayList<View>();
-        if (shouldSleep) {
-            mSleeper.sleep();
-        }
         List<Class<? extends ViewGroup>> myList = new ArrayList<>();
         myList.add(ViewGroup.class);
         ArrayList<View> views = UIUtil.filterViewsToSet(myList, getAllViews(true));

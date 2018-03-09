@@ -45,11 +45,11 @@ public class Solo {
         mInstrumentation = MyInstrumentation.getInstance(context);
         mSleeper = new Sleeper(mConfig.sleepDuration, mConfig.defaultSleepMiniDuration);
         mActivityUtils = new ActivityUtils(mInstrumentation,activity);
-        mViewGetter = new ViewGetter(mInstrumentation, mSleeper);
-        mGesture = new Gesture(mInstrumentation,mActivityUtils,mSleeper);
-        mScroller = new Scroller(mInstrumentation, mViewGetter, mSleeper,mGesture);
-        mSearcher = new Searcher(mViewGetter, mScroller, mSleeper, mConfig);
-        mWaiter = new Waiter(mInstrumentation, mActivityUtils, mViewGetter, mSearcher, mConfig,mSleeper);
+        mViewGetter = new ViewGetter(mInstrumentation);
+        mGesture = new Gesture(mInstrumentation,mActivityUtils);
+        mScroller = new Scroller(mInstrumentation, mViewGetter, mGesture);
+        mSearcher = new Searcher(mViewGetter, mScroller);
+        mWaiter = new Waiter( mActivityUtils, mViewGetter, mSearcher, mConfig,mSleeper,mScroller);
         mSender = new Sender(mInstrumentation, mSleeper);
         mDialogUtils = new DialogUtils(mInstrumentation, mActivityUtils, mViewGetter, mSleeper);
         mClicker = new Clicker(mActivityUtils, mViewGetter, mSender, mInstrumentation, mSleeper,
@@ -272,7 +272,7 @@ public class Solo {
      * @return 返回符合条件的view
      */
     public ArrayList<View> getCustomViewsByFilter(String className, View parent, Filter filter) {
-        return mSearcher.searchViewListByFilter(className, parent, filter, mConfig.defaultSearchTimeout, true, true);
+        return mSearcher.searchViewListByFilter(className, parent, filter, true);
     }
 
     /**
@@ -285,7 +285,7 @@ public class Solo {
      * @return 返回符合条件的view
      */
     public View getCustomViewByFilter(String className, View parent, Filter filter) {
-        return mSearcher.searchViewByFilter(className, parent, filter, mConfig.defaultSearchTimeout, true, true);
+        return mSearcher.searchViewByFilter(className, parent, filter, true);
     }
 
     public ArrayList<TextView> getTextList(String regex) {
@@ -293,7 +293,7 @@ public class Solo {
     }
 
     public ArrayList<TextView> getTextList(String regex, long timeout) {
-        return mSearcher.searchTextViewListByText(regex, timeout, true);
+        return mSearcher.searchTextViewListByText(regex, true);
     }
 
     public TextView getText(String regex) {
@@ -301,7 +301,7 @@ public class Solo {
     }
 
     public TextView getText(String regex, long timeout) {
-        return mWaiter.waitForTextAndGet(regex, timeout);
+        return mWaiter.waitForTextAppearAndGet(regex, timeout);
     }
 
     public ArrayList<EditText> getEditTextList(String regex) {
@@ -317,7 +317,7 @@ public class Solo {
      * @return 符合条件的editText列表
      */
     public ArrayList<EditText> getEditTextList(String regex, long timeout) {
-        return mSearcher.searchEditTextListByText(regex, timeout, true);
+        return mSearcher.searchEditTextListByText(regex, true);
     }
 
     public EditText getEditText(String regex) {
@@ -325,7 +325,7 @@ public class Solo {
     }
 
     public EditText getEditText(String regex, long timeout) {
-        return mSearcher.searchEditTextByText(regex, timeout, true);
+        return mSearcher.searchEditTextByText(regex, true);
     }
 
 
@@ -357,7 +357,7 @@ public class Solo {
     }
 
     public boolean clickOnTextWithTimeout(String regex,long timeout) {
-        TextView textView = mWaiter.waitForTextAndGet(regex, timeout);
+        TextView textView = mWaiter.waitForTextAppearAndGet(regex, timeout);
         return textView != null && mClicker.clickOnView(textView);
     }
 
@@ -371,7 +371,7 @@ public class Solo {
     }
 
     public boolean longClickOnTextWithTimeout(String regex,long time,long timeout) {
-        TextView textView = mWaiter.waitForTextAndGet(regex,timeout);
+        TextView textView = mWaiter.waitForTextAppearAndGet(regex,timeout);
         return textView != null && mClicker.longClickOnView(textView,time);
     }
 
@@ -441,7 +441,7 @@ public class Solo {
     }
 
     public TextView waitForTextAndGet(String regex) {
-        return mWaiter.waitForTextAndGet(regex,mConfig.defaultWaitTimeout);
+        return mWaiter.waitForTextAppearAndGet(regex,mConfig.defaultWaitTimeout);
     }
 
     public boolean waitForTextAndClick(String regex) {
@@ -476,7 +476,7 @@ public class Solo {
      * @return true 匹配的文本出现，false 在指定的超时时间里面没有出现
      */
     public boolean waitForTextAppear(String regex, long timeout, boolean scroll){
-        return mWaiter.waitForTextAppear(regex,timeout,scroll);
+        return mWaiter.waitForTextAppear(regex,1000);
     }
 
     public boolean waitForButton(String regex, long timeout) {
@@ -538,7 +538,7 @@ public class Solo {
     }
 
     public View getView(int id) {
-        return mSearcher.searchViewById(id, mConfig.defaultSearchTimeout, false);
+        return mSearcher.searchViewById(id, false);
     }
 
     public Activity getCurrentActivity() {
@@ -615,11 +615,11 @@ public class Solo {
         /**
          * 默认睡眠的最小时间.
          */
-        public int defaultSleepMiniDuration = 300;
+        public int defaultSleepMiniDuration = 30;
         /**
          * 默认睡眠时间
          */
-        public int sleepDuration = 500;
+        public int sleepDuration = 200;
     }
 
 }

@@ -22,10 +22,10 @@ import java.util.regex.PatternSyntaxException;
 public class UIUtil {
 
     /**
-     * Removes invisible Views.
+     * 删除所有不可见的view
      *
-     * @param viewList an Iterable with Views that is being checked for invisible Views
-     * @return a filtered Iterable with no invisible Views
+     * @param viewList 可遍历的集合
+     * @return 返回一个过滤后的包含所有可见的view的列表
      */
 
     public static <T extends View> ArrayList<T> removeInvisibleViews(Iterable<T> viewList) {
@@ -39,11 +39,11 @@ public class UIUtil {
     }
 
     /**
-     * Filters Views based on the given class type.
+     * 用指定的class<T>去过滤所有的view
      *
-     * @param classToFilterBy the class to filter
-     * @param viewList the Iterable to filter from
-     * @return an ArrayList with filtered views
+     * @param classToFilterBy 指定的Class
+     * @param viewList 用来过滤的集合
+     * @return 过滤以后的view的列表
      */
 
     public static <T> ArrayList<T> filterViews(Class<T> classToFilterBy, Iterable<?> viewList) {
@@ -53,16 +53,15 @@ public class UIUtil {
                 filteredViews.add(classToFilterBy.cast(view));
             }
         }
-        viewList = null;
         return filteredViews;
     }
 
     /**
-     * Filters all Views not within the given set.
+     * 过滤掉所有不在classSet中的view
      *
-     * @param classSet contains all classes that are ok to pass the filter
-     * @param viewList the Iterable to filter form
-     * @return an ArrayList with filtered views
+     * @param classSet 待过滤的class集合
+     * @param viewList 带过滤的view的集合
+     * @return 过滤包含class集合里的所有的view
      */
 
     public  static ArrayList<View> filterViewsToSet(List<Class<? extends ViewGroup>> classSet, Iterable<View> viewList) {
@@ -81,9 +80,9 @@ public class UIUtil {
     }
 
     /**
-     * Orders Views by their location on-screen.
+     * 根据view在屏幕上的位置来重新对viewList进行排序
      *
-     * @param views The views to sort
+     * @param views 待排序的view
      * @see ViewLocationComparator
      */
 
@@ -92,10 +91,10 @@ public class UIUtil {
     }
 
     /**
-     * Orders Views by their location on-screen.
+     * 根据view在屏幕上的位置来重新对viewList进行排序
      *
-     * @param views The views to sort
-     * @param yAxisFirst Whether the y-axis should be compared before the x-axis
+     * @param views 待排序的view
+     * @param yAxisFirst 是否先从y坐标轴开始比较
      * @see ViewLocationComparator
      */
 
@@ -104,11 +103,11 @@ public class UIUtil {
     }
 
     /**
-     * Checks if a View matches a certain string
+     * 检查是否一个TextView的文本包含指定的regex
      *
-     * @param regex the regex to match
-     * @param view the view to check
-     * @return true if matches
+     * @param regex 待匹配的正则表达式
+     * @param view 待匹配的TextView
+     * @return true 匹配成功 false 匹配失败
      */
 
     public static boolean textViewOfMatches(String regex, TextView view){
@@ -145,6 +144,12 @@ public class UIUtil {
         return false;
     }
 
+    /**
+     * 检查指定的text是否符合指定的regex
+     * @param regex 待匹配的正则表达式
+     * @param text 待匹配的文本
+     * @return true 匹配成功 false 匹配失败
+     */
     public static boolean textOfMatches(String regex,String text) {
         Pattern pattern = null;
         try{
@@ -157,28 +162,32 @@ public class UIUtil {
     }
 
     /**
-     * Filters a collection of Views and returns a list that contains only Views
-     * with text that matches a specified regular expression.
+     * 过滤掉一个集和中相同的view
+     * @param views 待过滤的view
+     * @param <T> View
+     * @return 不重复的view的集合
+     */
+    public static <T extends View> Set<T> filterSameViews(Iterable<T> views){
+        Set<T> uniqueViewSet = new HashSet<>();
+        for (T v : views) {
+            uniqueViewSet.add(v);
+        }
+        return uniqueViewSet;
+    }
+
+    /**
+     * 根据regex匹配views里面所有符合条件的vie
      *
-     * @param views The collection of views to scan
-     * @param regex The text pattern to search for
-     * @return A list of views whose text matches the given regex
+     * @param views 待匹配额view的集合
+     * @param regex 待匹配的正则表达式
+     * @return 返回一个符合正则表达式匹配的view的集合
      */
 
     public static <T extends TextView> List<T> filterViewsByText(Iterable<T> views, String regex) {
         return filterViewsByText(views, Pattern.compile(regex));
     }
 
-    /**
-     * Filters a collection of Views and returns a list that contains only Views
-     * with text that matches a specified regular expression.
-     *
-     * @param views The collection of views to scan
-     * @param regex The text pattern to search for
-     * @return A list of views whose text matches the given regex
-     */
-
-    public static <T extends TextView> List<T> filterViewsByText(Iterable<T> views, Pattern regex) {
+    private static <T extends TextView> List<T> filterViewsByText(Iterable<T> views, Pattern regex) {
         final ArrayList<T> filteredViews = new ArrayList<T>();
         for (T view : views) {
             if (view != null && regex.matcher(view.getText()).matches()) {

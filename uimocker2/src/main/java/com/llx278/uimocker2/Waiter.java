@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 等待一些东西出现在屏幕上（例如：文本，View，或者其他自定义的）
+ * 等待某些特定事件的发生（例如：文本产生和消失，Activity的创建和销毁）
  * Created by llx on 03/01/2018.
  */
 
@@ -21,20 +21,21 @@ public class Waiter {
 
     private static final String TAG = "Waiter";
     private final ActivityUtils mActivityUtils;
-    private final InstrumentationDecorator mInstrumentation;
     private final ViewGetter mViewGetter;
     private final Searcher mSearcher;
     private final Solo.Config mConfig;
     private final Sleeper mSleeper;
+    private final Scroller mScroller;
 
-    public Waiter(InstrumentationDecorator instrumentationWrapper, ActivityUtils activityUtils,
-                  ViewGetter viewGetter, Searcher searcher, Solo.Config config, Sleeper sleeper) {
-        mInstrumentation = instrumentationWrapper;
+    public Waiter(ActivityUtils activityUtils,
+                  ViewGetter viewGetter, Searcher searcher, Solo.Config config, Sleeper sleeper,Scroller scroller) {
+
         mActivityUtils = activityUtils;
         mViewGetter = viewGetter;
         mSearcher = searcher;
         mConfig = config;
         mSleeper = sleeper;
+        mScroller = scroller;
     }
 
     /**
@@ -168,6 +169,7 @@ public class Waiter {
         return false;
     }
 
+
     /**
      * 等待有指定文本的自定义view出现
      * 注意：这个方法在执行的过程中默认是滚动的，也就是说这个方法执行结束会导致当前的有滚动的控件滚动到最后或者
@@ -181,8 +183,7 @@ public class Waiter {
     public boolean waitForTextFromCustomView(String className, String regex, long timeout) {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
-            ArrayList<View> viewsByName = mSearcher.forceSearchViewListByText(className, null, regex, timeout,
-                    true);
+            ArrayList<View> viewsByName = mSearcher.forceSearchViewListByTextAndClassName(className, null, regex, true);
             if (viewsByName != null && !viewsByName.isEmpty()) {
                 return true;
             }
@@ -204,7 +205,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            ArrayList<View> viewsByName = mSearcher.forceSearchViewListByText(className, null, regex, timeout,
+            ArrayList<View> viewsByName = mSearcher.forceSearchViewListByTextAndClassName(className, null, regex,
                     true);
             if (viewsByName != null && !viewsByName.isEmpty()) {
                 return viewsByName;
@@ -225,7 +226,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            View viewsByName = mSearcher.forceSearchViewByText(className, null, regex, timeout,
+            View viewsByName = mSearcher.forceSearchViewByTextAndClassName(className, null, regex,
                     true);
             if (viewsByName != null) {
                 return viewsByName;
@@ -253,25 +254,7 @@ public class Waiter {
      * @return true 符合条件的文本已经出现 false 超时
      */
     public boolean waitForTextAppear(String regex, long timeout) {
-        return waitForTextAppear(regex,timeout,false);
-    }
-
-    /**
-     * 等待指定的文本出现至 (少有一个符合regex的文本出现）
-     * @param regex 符合正则表达式的文本
-     * @param scroll 是否滚动
-     * @return true 符合条件的文本已经出现 false 超时
-     */
-    public boolean waitForTextAppear(String regex, long timeout, boolean scroll){
-        long endTime = SystemClock.uptimeMillis() + timeout;
-        while (SystemClock.uptimeMillis() <= endTime) {
-            mSleeper.sleep();
-            ArrayList<TextView> textViews = mSearcher.searchTextViewListByText(regex, mConfig.defaultSearchTimeout, true);
-            if (textViews != null && !textViews.isEmpty()) {
-                return true;
-            }
-        }
-        return false;
+        return waitForTextAppearAndGet(regex,timeout) != null;
     }
 
     /**
@@ -280,11 +263,11 @@ public class Waiter {
      * @param timeout 超时时间
      * @return true 找到了符合正则表达式的文本 false 超时
      */
-    public TextView waitForTextAndGet(String regex, long timeout) {
+    public TextView waitForTextAppearAndGet(String regex, long timeout) {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            TextView textView = mSearcher.searchTextViewByText(regex, timeout, true);
+            TextView textView = mSearcher.searchTextViewByText(regex, true);
             if (textView != null) {
                 return textView;
             }
@@ -292,20 +275,31 @@ public class Waiter {
         return null;
     }
 
-    /**
-     * 等待指定的文本出现至 (少有一个符合regex的文本出现）并找到所有符合的文本
-     *  注意，这会导致当前的页面发生滚动，并且如果滚动的控件是listview或者recyclerview这种可回收view的控件的话,
-     * 你获得到的这个view的list实际上是没有意义的，只有当滚动的控件是scrollView这种不回收View的控件才好用。
-     * @param regex 符合正则表达式的文本
-     * @return true 符合条件的文本已经出现 false 超时
-     */
-    public ArrayList<TextView> waitForTextListAndGet(String regex, long timeout) {
+    public TextView waitForTextAppearWithVerticallyScrollAndGet(String regex,
+                                                                long timeout,
+                                                                View scrollableView) {
+        // 这里的timeout是搜索的超时和滚动的超时的和
+        // 这里面需要对mSearcher做更加精细的控制
         long endTime = SystemClock.uptimeMillis() + timeout;
-        while (SystemClock.uptimeMillis() <= endTime) {
-            mSleeper.sleep();
-            ArrayList<TextView> textViews = mSearcher.searchTextViewListByText(regex, timeout, true);
-            if (textViews != null && !textViews.isEmpty()) {
-                return textViews;
+        Scroller.VerticalDirection currentDirection = Scroller.VerticalDirection.DOWN_TO_UP;
+        while (SystemClock.uptimeMillis() < endTime) {
+            TextView textView = mSearcher.searchTextViewByText(regex, true);
+            if (textView != null) {
+                return textView;
+            }
+
+            // 先向下滚动，一直滚动到最下面，如果还没有到超时时间的话那就再向上滚动，如果滚动到
+            // 最上面还没有到超时时间那就再向下滚动，如此反复
+            if (currentDirection == Scroller.VerticalDirection.DOWN_TO_UP) {
+                if (mScroller.scrollVertically(currentDirection,scrollableView)){
+                    //证明滚动到了最下变，改变currentDirection为上
+                    currentDirection = Scroller.VerticalDirection.UP_TO_DOWN;
+                }
+            } else if (currentDirection == Scroller.VerticalDirection.UP_TO_DOWN) {
+                if (mScroller.scrollVertically(currentDirection,scrollableView)) {
+                    // 证明滚动到了最上边，改变currentDirection为下
+                    currentDirection = Scroller.VerticalDirection.DOWN_TO_UP;
+                }
             }
         }
         return null;
@@ -331,7 +325,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            ArrayList<EditText> editTexts = mSearcher.searchEditTextListByText(regex, mConfig.defaultSearchTimeout,
+            ArrayList<EditText> editTexts = mSearcher.searchEditTextListByText(regex,
                     true);
             if (editTexts != null && !editTexts.isEmpty()) {
                 return true;
@@ -350,7 +344,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            EditText editText = mSearcher.searchEditTextByText(regex, mConfig.defaultSearchTimeout,
+            EditText editText = mSearcher.searchEditTextByText(regex,
                     true);
             if (editText != null) {
                 return editText;
@@ -369,7 +363,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            ArrayList<EditText> editTexts = mSearcher.searchEditTextListByText(regex, mConfig.defaultSearchTimeout,  true);
+            ArrayList<EditText> editTexts = mSearcher.searchEditTextListByText(regex, true);
             if (editTexts != null && !editTexts.isEmpty()) {
                 return editTexts;
             }
@@ -381,7 +375,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            ArrayList<Button> buttons = mSearcher.searchButtonListByText(regex, mConfig.defaultSearchTimeout,
+            ArrayList<Button> buttons = mSearcher.searchButtonListByText(regex,
                     true);
             if (buttons != null && !buttons.isEmpty()) {
                 return true;
@@ -394,7 +388,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            Button button = mSearcher.searchButtonByText(regex, mConfig.defaultSearchTimeout, true);
+            Button button = mSearcher.searchButtonByText(regex,  true);
             if (button != null) {
                 return button;
             }
@@ -406,7 +400,7 @@ public class Waiter {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
             mSleeper.sleep();
-            ArrayList<Button> buttons = mSearcher.searchButtonListByText(regex, mConfig.defaultSearchTimeout,  true);
+            ArrayList<Button> buttons = mSearcher.searchButtonListByText(regex,true);
             if (buttons != null && !buttons.isEmpty()) {
                 return buttons;
             }

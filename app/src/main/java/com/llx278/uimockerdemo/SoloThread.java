@@ -5,6 +5,7 @@ import android.content.Context;
 
 import com.llx278.uimocker2.Solo;
 import com.llx278.uimockerdemo.test.ScrollerTest;
+import com.llx278.uimockerdemo.test.SearcherTest;
 import com.llx278.uimockerdemo.test.ViewGetterTest;
 
 import junit.framework.Assert;
@@ -39,7 +40,9 @@ public class SoloThread extends Thread {
             ViewGetterTest viewGetterTest = new ViewGetterTest();
             //viewGetterTest.run(mSolo);
             ScrollerTest scrollerTest = new ScrollerTest();
-            scrollerTest.run(mSolo);
+            //scrollerTest.run(mSolo);
+            SearcherTest searcherTest = new SearcherTest();
+            searcherTest.run(mSolo);
         } catch (Exception e) {
             e.printStackTrace();
         }

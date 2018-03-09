@@ -1,6 +1,7 @@
 package com.llx278.uimocker2;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 
 import java.lang.reflect.Field;
@@ -38,16 +39,14 @@ public class ReflectUtil {
      * @return 可能的字符串列表
      */
     public static ArrayList<String> getCustomViewText(View customView,String regex) {
-
-        Pattern pattern = null;
+        Pattern pattern;
         try{
             pattern = Pattern.compile(regex);
         }catch(PatternSyntaxException e){
             pattern = Pattern.compile(regex, Pattern.LITERAL);
         }
 
-        Class<? extends View> customViewClass = customView.getClass();
-        Class<?> currentClass = customViewClass;
+        Class<?> currentClass = customView.getClass();
         ArrayList<String> fieldStrList = new ArrayList<>();
         while (!currentClass.getName().equals(View.class.getName())) {
             Field[] declaredFields = currentClass.getDeclaredFields();
@@ -69,7 +68,7 @@ public class ReflectUtil {
                 } catch (IllegalAccessException ignored) {
                 }
             }
-            currentClass = customViewClass.getSuperclass();
+            currentClass = currentClass.getSuperclass();
         }
         return fieldStrList;
     }

@@ -131,7 +131,8 @@ public class Gesture {
      * @param upDuration 滑动结束后持续按住的时长
      *
      */
-    private void swipeOnScreen(PointF startPoint, PointF endPoint,long dragDuration,long pressDuration,long upDuration) {
+    private void swipeOnScreen(PointF startPoint, PointF endPoint,long dragDuration,
+                               long pressDuration,long upDuration) {
 
         if (dragDuration <= 0) {
             throw new IllegalArgumentException("dragDuration must greater than 0!");
