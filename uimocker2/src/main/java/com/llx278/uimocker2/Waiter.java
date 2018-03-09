@@ -19,23 +19,31 @@ import java.util.List;
 
 public class Waiter {
 
+    public static final long DEFAULT_WAIT_TIMEOUT = 1000 * 20;
+    public static long WAIT_TIMEOUT = DEFAULT_WAIT_TIMEOUT;
+    public static final long DEFAULT_PAUSE_TIMEOUT = 200;
+    public static long PAUSE_TIME_OUT = DEFAULT_PAUSE_TIMEOUT;
+
     private static final String TAG = "Waiter";
     private final ActivityUtils mActivityUtils;
     private final ViewGetter mViewGetter;
     private final Searcher mSearcher;
-    private final Solo.Config mConfig;
-    private final Sleeper mSleeper;
     private final Scroller mScroller;
 
     public Waiter(ActivityUtils activityUtils,
-                  ViewGetter viewGetter, Searcher searcher, Solo.Config config, Sleeper sleeper,Scroller scroller) {
+                  ViewGetter viewGetter, Searcher searcher,Scroller scroller) {
 
         mActivityUtils = activityUtils;
         mViewGetter = viewGetter;
         mSearcher = searcher;
-        mConfig = config;
-        mSleeper = sleeper;
         mScroller = scroller;
+    }
+
+    private void pause() {
+        try {
+            Thread.sleep(DEFAULT_PAUSE_TIMEOUT);
+        } catch (InterruptedException ignore) {
+        }
     }
 
     /**
@@ -45,7 +53,7 @@ public class Waiter {
      * @return true 指定的activity已经出现，false 超时返回
      */
     public boolean waitForActivity(String activityName) {
-        return waitForActivity(activityName, mConfig.defaultWaitTimeout);
+        return waitForActivity(activityName, WAIT_TIMEOUT);
     }
 
     /**
@@ -55,13 +63,13 @@ public class Waiter {
      * @param timeout      等待的时间
      * @return true 指定的activity已经出现，false 超时返回
      */
-    public boolean waitForActivity(String activityName, int timeout) {
+    public boolean waitForActivity(String activityName, long timeout) {
         if (isActivityMatching(mActivityUtils.getCurrentActivity(), activityName)) {
             return true;
         }
         final long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() < endTime) {
-            mSleeper.sleep();
+            pause();
             Activity currentActivity = mActivityUtils.getCurrentActivity();
             if (isActivityMatching(currentActivity,activityName)) {
                 return true;
@@ -77,7 +85,7 @@ public class Waiter {
      * @return true 指定的activity出现 false 超时返回
      */
     public boolean waitForActivity(Class<? extends Activity> activityClass) {
-        return waitForActivity(activityClass, mConfig.defaultWaitTimeout);
+        return waitForActivity(activityClass, WAIT_TIMEOUT);
     }
 
     /**
@@ -87,7 +95,7 @@ public class Waiter {
      * @param timeout       等待的时间
      * @return true 指定的activity出现 false 超时返回
      */
-    public boolean waitForActivity(Class<? extends Activity> activityClass, int timeout) {
+    public boolean waitForActivity(Class<? extends Activity> activityClass, long timeout) {
         if (isActivityMatching(activityClass, mActivityUtils.getCurrentActivity())) {
             return true;
         }
@@ -95,7 +103,7 @@ public class Waiter {
         long currentTime = SystemClock.uptimeMillis();
         final long endTime = currentTime + timeout;
         while (SystemClock.uptimeMillis() < endTime) {
-            mSleeper.sleep();
+            pause();
             Activity currentActivity = mActivityUtils.getCurrentActivity();
             if(isActivityMatching(activityClass,currentActivity)) {
                 return true;
@@ -115,7 +123,7 @@ public class Waiter {
      * @return true 等待的activity已经出现，false 没有
      */
     public boolean waitForFragment(String tag, int id) {
-        return waitForFragment(tag, id, mConfig.defaultWaitTimeout);
+        return waitForFragment(tag, id, WAIT_TIMEOUT);
     }
 
     /**
@@ -129,10 +137,10 @@ public class Waiter {
      * @param timeout 超时时间
      * @return true 等待的activity已经出现，false 没有
      */
-    public boolean waitForFragment(String tag, int id, int timeout) {
+    public boolean waitForFragment(String tag, int id, long timeout) {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
-            mSleeper.sleep();
+            pause();
             if (getSupportFragment(tag, id) != null)
                 return true;
 
@@ -148,7 +156,7 @@ public class Waiter {
      * @return
      */
     public boolean waitForWindowDecorViews() {
-        return waitForWindowDecorViews(mConfig.defaultWaitTimeout);
+        return waitForWindowDecorViews(WAIT_TIMEOUT);
     }
 
     /**
@@ -160,7 +168,7 @@ public class Waiter {
     public boolean waitForWindowDecorViews(long timeout) {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
-            mSleeper.sleep();
+            pause();
             List<View> views = mViewGetter.getWindowViews();
             if (views != null && !views.isEmpty()) {
                 return true;
@@ -169,67 +177,66 @@ public class Waiter {
         return false;
     }
 
-
     /**
-     * 等待有指定文本的自定义view出现
-     * 注意：这个方法在执行的过程中默认是滚动的，也就是说这个方法执行结束会导致当前的有滚动的控件滚动到最后或者
-     * 直到超时。
-     *
-     * @param className 自定义view的类名
-     * @param regex     待匹配的文本
-     * @param timeout   超时时间
-     * @return true 找到 false 在超时时间内没有找到
+     * 等待某个文本出现，此方法会强制遍历所有的view(不限于TextView)
+     * @param regex 待匹配的文本
+     * @param timeout 超时时间
+     * @return true 等待的文本出现
      */
-    public boolean waitForTextFromCustomView(String className, String regex, long timeout) {
-        long endTime = SystemClock.uptimeMillis() + timeout;
-        while (SystemClock.uptimeMillis() <= endTime) {
-            ArrayList<View> viewsByName = mSearcher.forceSearchViewListByTextAndClassName(className, null, regex, true);
-            if (viewsByName != null && !viewsByName.isEmpty()) {
-                return true;
-            }
-        }
-        return false;
+    public boolean waitForTextAppear(String regex,long timeout) {
+        return waitForTextAppearAndGet(regex,timeout) != null;
     }
 
     /**
-     * 等待指定的文本出现并获得指定的View的list
-     * 注意，这会导致当前的页面发生滚动，并且如果滚动的控件是listview或者recyclerview这种可回收view的控件的话,
-     * 你获得到的这个view的list实际上是没有意义的，只有当滚动的控件是scrollView这种不回收View的控件才好用。
-     * @param className 自定义view的类名
+     * 等待某个文本出现，此方法会强制遍历所有的view(不限于TextView)
      * @param regex 待匹配的文本
      * @param timeout 超时时间
-     * @return true 找到  false在超时时间内没有找到
+     * @return  包含等待的文本的view
      */
-    public ArrayList<View> waitForTextFromCustomViewListAndGet(String className,
-                                                               String regex, long timeout) {
+    public View waitForTextAppearAndGet(String regex,long timeout) {
         long endTime = SystemClock.uptimeMillis() + timeout;
-        while (SystemClock.uptimeMillis() <= endTime) {
-            mSleeper.sleep();
-            ArrayList<View> viewsByName = mSearcher.forceSearchViewListByTextAndClassName(className, null, regex,
-                    true);
-            if (viewsByName != null && !viewsByName.isEmpty()) {
-                return viewsByName;
+        while (SystemClock.uptimeMillis() < endTime) {
+            pause();
+            View view = mSearcher.forceSearchViewByText(regex,null,true);
+            if (view != null) {
+                return view;
             }
         }
         return null;
     }
 
+    public boolean waitForTextAppearWithVerticallyScroll(String regex,long timeout,View scrollableView) {
+        return waitForTextAppearWithVerticallyScrollAndGet(regex,timeout,scrollableView) != null;
+    }
+
     /**
-     * 等待指定的文本出现并获得包含该文本的view，注意这个默认只会返回第一次匹配的view
-     * @param className 自定义view的类名
+     * 等待某个文本出现，此方法会强制遍历所有的view(不限于TextView)，并在合适的时候自动滚动
      * @param regex 待匹配的文本
      * @param timeout 超时时间
-     * @return true 找到  false在超时时间内没有找到
+     * @return true 等待的文本出现
      */
-    public View waitForTextFromCustomViewAndGet(String className,
-                                                String regex, long timeout) {
+    public View waitForTextAppearWithVerticallyScrollAndGet(String regex,long timeout,View scrollableView) {
         long endTime = SystemClock.uptimeMillis() + timeout;
-        while (SystemClock.uptimeMillis() <= endTime) {
-            mSleeper.sleep();
-            View viewsByName = mSearcher.forceSearchViewByTextAndClassName(className, null, regex,
-                    true);
-            if (viewsByName != null) {
-                return viewsByName;
+        Scroller.VerticalDirection currentDirection = Scroller.VerticalDirection.DOWN_TO_UP;
+        while (SystemClock.uptimeMillis() < endTime) {
+            pause();
+            View view = mSearcher.forceSearchViewByText(regex,null,true);
+            if (view != null) {
+                return view;
+            }
+
+            // 先向下滚动，一直滚动到最下面，如果还没有到超时时间的话那就再向上滚动，如果滚动到
+            // 最上面还没有到超时时间那就再向下滚动，如此反复
+            if (currentDirection == Scroller.VerticalDirection.DOWN_TO_UP) {
+                if (!mScroller.scrollVertically(currentDirection,scrollableView)){
+                    //证明滚动到了最下变，改变currentDirection为上
+                    currentDirection = Scroller.VerticalDirection.UP_TO_DOWN;
+                }
+            } else if (currentDirection == Scroller.VerticalDirection.UP_TO_DOWN) {
+                if (!mScroller.scrollVertically(currentDirection,scrollableView)) {
+                    // 证明滚动到了最上边，改变currentDirection为下
+                    currentDirection = Scroller.VerticalDirection.DOWN_TO_UP;
+                }
             }
         }
         return null;
@@ -242,8 +249,8 @@ public class Waiter {
      * @param regex 符合正则表达式的文本
      * @return true 符合条件的文本已经出现 false 超时
      */
-    public boolean waitForTextAppear(String regex) {
-        return waitForTextAppear(regex, mConfig.defaultWaitTimeout);
+    public boolean waitForTextViewAppear(String regex) {
+        return waitForTextViewAppear(regex, WAIT_TIMEOUT);
     }
 
     /**
@@ -253,8 +260,8 @@ public class Waiter {
      * @param regex 符合正则表达式的文本
      * @return true 符合条件的文本已经出现 false 超时
      */
-    public boolean waitForTextAppear(String regex, long timeout) {
-        return waitForTextAppearAndGet(regex,timeout) != null;
+    public boolean waitForTextViewAppear(String regex, long timeout) {
+        return waitForTextViewAppearAndGet(regex,timeout) != null;
     }
 
     /**
@@ -263,10 +270,10 @@ public class Waiter {
      * @param timeout 超时时间
      * @return true 找到了符合正则表达式的文本 false 超时
      */
-    public TextView waitForTextAppearAndGet(String regex, long timeout) {
+    public TextView waitForTextViewAppearAndGet(String regex, long timeout) {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
-            mSleeper.sleep();
+            pause();
             TextView textView = mSearcher.searchTextViewByText(regex, true);
             if (textView != null) {
                 return textView;
@@ -275,14 +282,25 @@ public class Waiter {
         return null;
     }
 
-    public TextView waitForTextAppearWithVerticallyScrollAndGet(String regex,
+    public boolean waitForTextViewAppearWithVerticallyScroll(String regex,long timeout,View scrollableView) {
+        return waitForTextViewAppearWithVerticallyScrollAndGet(regex,timeout,scrollableView) != null;
+    }
+
+    /**
+     * 等待指定的文本出现，并获得包含该文本的TextView并且在需要的时候进行自动滚动
+     * @param regex 待匹配的文本
+     * @param timeout 超时时间
+     * @param scrollableView 可以滚动的内容view，如果为null，则自动匹配当前最近被绘制的view
+     * @return 包含有等待文本的TextView
+     */
+    public TextView waitForTextViewAppearWithVerticallyScrollAndGet(String regex,
                                                                 long timeout,
                                                                 View scrollableView) {
-        // 这里的timeout是搜索的超时和滚动的超时的和
         // 这里面需要对mSearcher做更加精细的控制
         long endTime = SystemClock.uptimeMillis() + timeout;
         Scroller.VerticalDirection currentDirection = Scroller.VerticalDirection.DOWN_TO_UP;
         while (SystemClock.uptimeMillis() < endTime) {
+            pause();
             TextView textView = mSearcher.searchTextViewByText(regex, true);
             if (textView != null) {
                 return textView;
@@ -291,12 +309,12 @@ public class Waiter {
             // 先向下滚动，一直滚动到最下面，如果还没有到超时时间的话那就再向上滚动，如果滚动到
             // 最上面还没有到超时时间那就再向下滚动，如此反复
             if (currentDirection == Scroller.VerticalDirection.DOWN_TO_UP) {
-                if (mScroller.scrollVertically(currentDirection,scrollableView)){
+                if (!mScroller.scrollVertically(currentDirection,scrollableView)){
                     //证明滚动到了最下变，改变currentDirection为上
                     currentDirection = Scroller.VerticalDirection.UP_TO_DOWN;
                 }
             } else if (currentDirection == Scroller.VerticalDirection.UP_TO_DOWN) {
-                if (mScroller.scrollVertically(currentDirection,scrollableView)) {
+                if (!mScroller.scrollVertically(currentDirection,scrollableView)) {
                     // 证明滚动到了最上边，改变currentDirection为下
                     currentDirection = Scroller.VerticalDirection.DOWN_TO_UP;
                 }
@@ -305,29 +323,20 @@ public class Waiter {
         return null;
     }
 
-    /**
-     * 等待指定hint的EditText出现（至少有一个符合regex的Edit出现）
-     * @param regex 带匹配的hint
-     * @return true 找到了匹配的edittext false 没找到
-     */
-    public boolean waitForEditText(String regex) {
-        return waitForEditText(regex, mConfig.defaultWaitTimeout);
-    }
 
     /**
-     * 等待指定hint的EditText出现（至少有一个符合regex的Edit出现）
-     *
-     * @param regex 带匹配的hint
-     * @param timeout 指定超时的时间
-     * @return true 找到了匹配的edittext false 没找到
+     * 等待某个文本消失在屏幕上面
+     * @param regex 待匹配的正则表达式
+     * @param timeout 超时时间
+     * @return true 等待的文本消失了，false 等待的文本在超时时间以后还存在
      */
-    public boolean waitForEditText(String regex, long timeout) {
+    public boolean waitForTextDisappear(String regex,long timeout) {
+
         long endTime = SystemClock.uptimeMillis() + timeout;
-        while (SystemClock.uptimeMillis() <= endTime) {
-            mSleeper.sleep();
-            ArrayList<EditText> editTexts = mSearcher.searchEditTextListByText(regex,
-                    true);
-            if (editTexts != null && !editTexts.isEmpty()) {
+        while (SystemClock.uptimeMillis() < endTime) {
+            pause();
+            View view = mSearcher.forceSearchViewByText(regex,null,true);
+            if (view == null) {
                 return true;
             }
         }
@@ -335,15 +344,35 @@ public class Waiter {
     }
 
     /**
-     * 等待指定hint的EditText出现（至少有一个符合regex的Edit出现），并获得第一次匹配的editText
+     * 等待指定hint的EditText出现（至少有一个符合regex的Edit出现）
+     * @param regex 带匹配的hint
+     * @return true 找到了匹配的edittext false 没找到
+     */
+    public boolean waitForEditTextAppear(String regex) {
+        return waitForEditTextAppear(regex, WAIT_TIMEOUT);
+    }
+
+    /**
+     * 等待拥有指定文本的EditText出现
+     *
+     * @param regex 带匹配的hint
+     * @param timeout 指定超时的时间
+     * @return true 找到了匹配的EditText false 没找到
+     */
+    public boolean waitForEditTextAppear(String regex, long timeout) {
+        return waitForEditTextAppearAndGet(regex,timeout) != null;
+    }
+
+    /**
+     * 等待指定hint的EditText出现
      * @param regex 待匹配的hint
      * @param timeout 指定超时的时间
-     * @return
+     * @return 匹配到的EditText
      */
-    public EditText waitForEditTextAndGet(String regex, long timeout) {
+    public EditText waitForEditTextAppearAndGet(String regex, long timeout) {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
-            mSleeper.sleep();
+            pause();
             EditText editText = mSearcher.searchEditTextByText(regex,
                     true);
             if (editText != null) {
@@ -353,28 +382,55 @@ public class Waiter {
         return null;
     }
 
+    public boolean waitForEditTextAppearWithVerticallyScroll(String regex,long timeout,View scrollableView) {
+        return waitForEditTextAppearVerticallyWithScrollAndGet(regex,timeout,scrollableView) != null;
+    }
+
     /**
-     * 等待指定hint的EditText出现（至少有一个符合regex的Edit出现），并获得匹配的editText列表
-     * @param regex 待匹配的hint
-     * @param timeout 指定超时的时间
-     * @return
+     * 等待某个指定的文本editText出现，并返回。在需要的时候会自动进行滚动
+     * @param regex 待匹配的正则表达式
+     * @param timeout 超时时间
+     * @param scrollableView 内容view，在必要的时候可以滚动
+     * @return 匹配的到的EditText
      */
-    public ArrayList<EditText> waitForEditTextListAndGet(String regex, long timeout) {
+    public EditText waitForEditTextAppearVerticallyWithScrollAndGet(String regex, long timeout, View scrollableView) {
         long endTime = SystemClock.uptimeMillis() + timeout;
-        while (SystemClock.uptimeMillis() <= endTime) {
-            mSleeper.sleep();
-            ArrayList<EditText> editTexts = mSearcher.searchEditTextListByText(regex, true);
-            if (editTexts != null && !editTexts.isEmpty()) {
-                return editTexts;
+        Scroller.VerticalDirection currentDirection = Scroller.VerticalDirection.DOWN_TO_UP;
+        while (SystemClock.uptimeMillis() < endTime) {
+            pause();
+            EditText editText = mSearcher.searchEditTextByText(regex,true);
+            if (editText != null) {
+                return editText;
             }
+
+            // 先向下滚动，一直滚动到最下面，如果还没有到超时时间的话那就再向上滚动，如果滚动到
+            // 最上面还没有到超时时间那就再向下滚动，如此反复
+            if (currentDirection == Scroller.VerticalDirection.DOWN_TO_UP) {
+                if (!mScroller.scrollVertically(currentDirection,scrollableView)){
+                    //证明滚动到了最下变，改变currentDirection为上
+                    currentDirection = Scroller.VerticalDirection.UP_TO_DOWN;
+                }
+            } else if (currentDirection == Scroller.VerticalDirection.UP_TO_DOWN) {
+                if (!mScroller.scrollVertically(currentDirection,scrollableView)) {
+                    // 证明滚动到了最上边，改变currentDirection为下
+                    currentDirection = Scroller.VerticalDirection.DOWN_TO_UP;
+                }
+            }
+
         }
         return null;
     }
 
-    public boolean waitForButton(String regex, long timeout) {
+    /**
+     * 等待匹配指定文本的button出现
+     * @param regex 等待匹配的正则表达式
+     * @param timeout 超时时间
+     * @return
+     */
+    public boolean waitForButtonAppear(String regex, long timeout) {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
-            mSleeper.sleep();
+            pause();
             ArrayList<Button> buttons = mSearcher.searchButtonListByText(regex,
                     true);
             if (buttons != null && !buttons.isEmpty()) {
@@ -384,10 +440,10 @@ public class Waiter {
         return false;
     }
 
-    public Button waitForButtonAndGet(String regex, long timeout) {
+    public Button waitForButtonAppearAndGet(String regex, long timeout) {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() <= endTime) {
-            mSleeper.sleep();
+            pause();
             Button button = mSearcher.searchButtonByText(regex,  true);
             if (button != null) {
                 return button;
@@ -396,17 +452,39 @@ public class Waiter {
         return null;
     }
 
-    public ArrayList<Button> waitForButtonListAndGet(String regex, long timeout) {
+    public boolean waitForButtonAppearWithVerticallyScroll(String regex, long timeout, View scrollableView) {
+        return waitForButtonAppearWithVerticallyScrollAndGet(regex,timeout,scrollableView) != null;
+    }
+
+    public Button waitForButtonAppearWithVerticallyScrollAndGet(String regex, long timeout,
+                                                                View scrollableView) {
         long endTime = SystemClock.uptimeMillis() + timeout;
-        while (SystemClock.uptimeMillis() <= endTime) {
-            mSleeper.sleep();
-            ArrayList<Button> buttons = mSearcher.searchButtonListByText(regex,true);
-            if (buttons != null && !buttons.isEmpty()) {
-                return buttons;
+        Scroller.VerticalDirection currentDirection = Scroller.VerticalDirection.DOWN_TO_UP;
+        while (SystemClock.uptimeMillis() < endTime) {
+            pause();
+            Button button = mSearcher.searchButtonByText(regex,true);
+            if (button != null) {
+                return button;
+            }
+
+            // 先向下滚动，一直滚动到最下面，如果还没有到超时时间的话那就再向上滚动，如果滚动到
+            // 最上面还没有到超时时间那就再向下滚动，如此反复
+            if (currentDirection == Scroller.VerticalDirection.DOWN_TO_UP) {
+                if (!mScroller.scrollVertically(currentDirection,scrollableView)){
+                    //证明滚动到了最下变，改变currentDirection为上
+                    currentDirection = Scroller.VerticalDirection.UP_TO_DOWN;
+                }
+            } else if (currentDirection == Scroller.VerticalDirection.UP_TO_DOWN) {
+                if (!mScroller.scrollVertically(currentDirection,scrollableView)) {
+                    // 证明滚动到了最上边，改变currentDirection为下
+                    currentDirection = Scroller.VerticalDirection.DOWN_TO_UP;
+                }
             }
         }
         return null;
     }
+
+
 
     //     ------- private methods --------------
     private Fragment getSupportFragment(String tag, int id) {

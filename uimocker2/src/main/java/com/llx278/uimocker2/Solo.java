@@ -49,7 +49,7 @@ public class Solo {
         mGesture = new Gesture(mInstrumentation,mActivityUtils);
         mScroller = new Scroller(mInstrumentation, mViewGetter, mGesture);
         mSearcher = new Searcher(mViewGetter, mScroller);
-        mWaiter = new Waiter( mActivityUtils, mViewGetter, mSearcher, mConfig,mSleeper,mScroller);
+        mWaiter = new Waiter( mActivityUtils, mViewGetter, mSearcher,mScroller);
         mSender = new Sender(mInstrumentation, mSleeper);
         mDialogUtils = new DialogUtils(mInstrumentation, mActivityUtils, mViewGetter, mSleeper);
         mClicker = new Clicker(mActivityUtils, mViewGetter, mSender, mInstrumentation, mSleeper,
@@ -301,7 +301,8 @@ public class Solo {
     }
 
     public TextView getText(String regex, long timeout) {
-        return mWaiter.waitForTextAppearAndGet(regex, timeout);
+        //return mWaiter.waitForTextAppearAndGet(regex, timeout);
+        return null;
     }
 
     public ArrayList<EditText> getEditTextList(String regex) {
@@ -357,8 +358,9 @@ public class Solo {
     }
 
     public boolean clickOnTextWithTimeout(String regex,long timeout) {
-        TextView textView = mWaiter.waitForTextAppearAndGet(regex, timeout);
-        return textView != null && mClicker.clickOnView(textView);
+        //TextView textView = mWaiter.waitForTextAppearAndGet(regex, timeout);
+        //return textView != null && mClicker.clickOnView(textView);
+        return false;
     }
 
     public boolean longClickOnText(String text) {
@@ -371,8 +373,9 @@ public class Solo {
     }
 
     public boolean longClickOnTextWithTimeout(String regex,long time,long timeout) {
-        TextView textView = mWaiter.waitForTextAppearAndGet(regex,timeout);
-        return textView != null && mClicker.longClickOnView(textView,time);
+        //TextView textView = mWaiter.waitForTextAppearAndGet(regex,timeout);
+        //return textView != null && mClicker.longClickOnView(textView,time);
+        return false;
     }
 
     public boolean clickOnView(View target) {
@@ -441,7 +444,8 @@ public class Solo {
     }
 
     public TextView waitForTextAndGet(String regex) {
-        return mWaiter.waitForTextAppearAndGet(regex,mConfig.defaultWaitTimeout);
+        return mWaiter.waitForTextViewAppearAndGet(regex,Waiter.DEFAULT_WAIT_TIMEOUT);
+        //return null;
     }
 
     public boolean waitForTextAndClick(String regex) {
@@ -454,7 +458,7 @@ public class Solo {
      * @return 如果在默认的超时时间里出现，则返回true，否则返回false
      */
     public boolean waitForTextAppear(String regex) {
-        return mWaiter.waitForTextAppear(regex);
+        return mWaiter.waitForTextViewAppear(regex);
     }
 
     /**
@@ -465,7 +469,7 @@ public class Solo {
      * @return true 匹配的文本出现，false 在指定的超时时间里面没有出现
      */
     public boolean waitForTextAppear(String regex, long timeout) {
-        return mWaiter.waitForTextAppear(regex, timeout);
+        return mWaiter.waitForTextViewAppear(regex, timeout);
     }
 
     /**
@@ -476,11 +480,11 @@ public class Solo {
      * @return true 匹配的文本出现，false 在指定的超时时间里面没有出现
      */
     public boolean waitForTextAppear(String regex, long timeout, boolean scroll){
-        return mWaiter.waitForTextAppear(regex,1000);
+        return mWaiter.waitForTextViewAppear(regex,1000);
     }
 
     public boolean waitForButton(String regex, long timeout) {
-        return mWaiter.waitForButton(regex, timeout);
+        return mWaiter.waitForButtonAppear(regex, timeout);
     }
 
     public boolean waitForActivity(String activityName) {
