@@ -1,6 +1,8 @@
 package com.llx278.uimocker2;
 
 import android.app.Activity;
+import android.os.SystemClock;
+import android.util.Log;
 
 /**
  * 封装了一些activity相关的操作类
@@ -8,17 +10,17 @@ import android.app.Activity;
 public class ActivityUtils {
     private static final String TAG = "ActivityUtils";
     private final MyInstrumentation mMyInst;
+    public static final long DEFAULT_PAUSE_TIME = 500;
+    private static long PAUSE_TIME = DEFAULT_PAUSE_TIME;
 
     ActivityUtils(MyInstrumentation myInst) {
         mMyInst = myInst;
     }
 
-    ActivityUtils(MyInstrumentation mInst, Activity topActivity) {
-        mMyInst = mInst;
-        if (topActivity != null) {
-            mInst.pushActivityToStack(topActivity);
-        } else {
-            Logger.i(TAG, "warning : pass an empty activity reference when construct ActivityUtils!");
+    private void pause() {
+        try {
+            Thread.sleep(PAUSE_TIME);
+        } catch (InterruptedException ignore) {
         }
     }
 
@@ -26,61 +28,58 @@ public class ActivityUtils {
      * 等待一个activity调用onCreate方法
      * @param activityName activity名字
      * @param timeout 超时时间
+     * @param deep 查询的深度
      * @return true 对应的activity已经创建 false超时
      */
-    public boolean waitForOnCreate(String activityName,long timeout) {
+    public boolean waitForOnCreate(String activityName,long timeout,int deep) {
+        long endTime = SystemClock.uptimeMillis() + timeout;
+        while (SystemClock.uptimeMillis() < endTime) {
+            if (mMyInst.isExpectedActivityLifeCycle(activityName,
+                    MyInstrumentation.ActivityStateRecord.ON_CREATE,deep)) {
+                return true;
+            }
+            pause();
+        }
 
-        MyInstrumentation.ActivityMonitor monitor = new MyInstrumentation.ActivityMonitor(activityName,
-                MyInstrumentation.ActivityMonitor.ACTIVITY_CREATE);
-        mMyInst.registerMonitor(monitor);
-        boolean result = monitor.waitFor(timeout);
-        mMyInst.removeMonitor(monitor);
-        return result;
+        return false;
     }
 
     /**
      * 等待一个activity调用onResume方法
      * @param activityName activity名字
      * @param timeout 超时时间
+     * @param deep 查询的深度
      * @return true 对应的activity已经创建，false超时
      */
-    public boolean waitForOnResume(String activityName,long timeout) {
-        MyInstrumentation.ActivityMonitor monitor = new MyInstrumentation.ActivityMonitor(activityName,
-                MyInstrumentation.ActivityMonitor.ACTIVITY_RESUME);
-        mMyInst.registerMonitor(monitor);
-        boolean result = monitor.waitFor(timeout);
-        mMyInst.removeMonitor(monitor);
-        return result;
+    public boolean waitForOnResume(String activityName,long timeout,int deep) {
+        long endTime = SystemClock.uptimeMillis() + timeout;
+        while (SystemClock.uptimeMillis() < endTime) {
+            if (mMyInst.isExpectedActivityLifeCycle(activityName,
+                    MyInstrumentation.ActivityStateRecord.ON_RESUME,deep)) {
+                return true;
+            }
+            pause();
+        }
+        return false;
     }
 
     /**
      * 等待一个activity调用onPause方法
      * @param activityName activity名字
      * @param timeout 超时时间
+     * @param deep 查询的深度
      * @return true 对应的activity已经创建，false超时
      */
-    public boolean waitForOnPause(String activityName,long timeout) {
-        MyInstrumentation.ActivityMonitor monitor = new MyInstrumentation.ActivityMonitor(activityName,
-                MyInstrumentation.ActivityMonitor.ACTIVITY_PAUSE);
-        mMyInst.registerMonitor(monitor);
-        boolean result = monitor.waitFor(timeout);
-        mMyInst.removeMonitor(monitor);
-        return result;
-    }
-
-    /**
-     * 等待一个activity调用onDestroy方法
-     * @param activityName activity的名字
-     * @param timeout 超时时间
-     * @return true 对应的activity已经创建，false超时
-     */
-    public boolean waitForOnDestroy(String activityName,long timeout) {
-        MyInstrumentation.ActivityMonitor monitor = new MyInstrumentation.ActivityMonitor(activityName,
-                MyInstrumentation.ActivityMonitor.ACTIVITY_DESTROY);
-        mMyInst.registerMonitor(monitor);
-        boolean result = monitor.waitFor(timeout);
-        mMyInst.removeMonitor(monitor);
-        return result;
+    public boolean waitForOnPause(String activityName,long timeout,int deep) {
+        long endTime = SystemClock.uptimeMillis() + timeout;
+        while (SystemClock.uptimeMillis() < endTime) {
+            if (mMyInst.isExpectedActivityLifeCycle(activityName,
+                    MyInstrumentation.ActivityStateRecord.ON_PAUSE,deep)) {
+                return true;
+            }
+            pause();
+        }
+        return false;
     }
 
     /**

@@ -87,7 +87,7 @@
             <com.llx278.uimockerdemo.widget.MyTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="mytext1"
+                android:text="mytext2"
                 android:id="@+id/container_2_mytext_1"
                 />
             <com.llx278.uimockerdemo.widget.MyButton

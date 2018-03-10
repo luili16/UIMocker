@@ -1,10 +1,12 @@
 package com.llx278.uimockerdemo;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +40,9 @@ public class TestActivity extends Activity {
             @Override
             public void onClick(View v) {
                 Toast.makeText(v.getContext(),"button1 is clicked!",Toast.LENGTH_SHORT).show();
+                Intent intent= new Intent(TestActivity.this,TestActivity1.class);
+                startActivity(intent);
+
             }
         });
         ListView listView = findViewById(R.id.container_4_list_view1);

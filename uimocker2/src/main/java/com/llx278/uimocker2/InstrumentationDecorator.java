@@ -49,7 +49,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     private Instrumentation mInstrumentation;
     private Context mContext;
 
-    public InstrumentationDecorator(Context context) {
+    InstrumentationDecorator(Context context) {
         mContext = context;
         init();
     }

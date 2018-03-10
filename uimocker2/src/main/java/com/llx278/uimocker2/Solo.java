@@ -40,11 +40,11 @@ public class Solo {
     private final DialogUtils mDialogUtils;
     private final Config mConfig;
 
-    private Solo(Activity activity, Context context, Config config) {
+    private Solo(Context context, Config config) {
         mConfig = (config == null ? new Config() : config);
-        mInstrumentation = MyInstrumentation.getInstance(context);
+        mInstrumentation = new MyInstrumentation(context);
         mSleeper = new Sleeper(mConfig.sleepDuration, mConfig.defaultSleepMiniDuration);
-        mActivityUtils = new ActivityUtils(mInstrumentation,activity);
+        mActivityUtils = new ActivityUtils(mInstrumentation);
         mViewGetter = new ViewGetter(mInstrumentation);
         mGesture = new Gesture(mInstrumentation,mActivityUtils);
         mScroller = new Scroller(mInstrumentation, mViewGetter, mGesture);
@@ -52,15 +52,15 @@ public class Solo {
         mWaiter = new Waiter( mActivityUtils, mViewGetter, mSearcher,mScroller);
         mSender = new Sender(mInstrumentation, mSleeper);
         mDialogUtils = new DialogUtils(mInstrumentation, mActivityUtils, mViewGetter, mSleeper);
-        mClicker = new Clicker(mActivityUtils, mViewGetter, mSender, mInstrumentation, mSleeper,
+        mClicker = new Clicker(mActivityUtils, mViewGetter, mSender, mInstrumentation,
                 mSearcher, mDialogUtils);
         mParser = new Parser(mScroller,mInstrumentation,mSleeper);
 
     }
 
-    public static Solo getInstance(Activity activity,Context context,Config config) {
+    public static Solo getInstance(Context context,Config config) {
         if (INSTANCE == null) {
-            INSTANCE = new Solo(activity,context,config);
+            INSTANCE = new Solo(context,config);
         }
         return INSTANCE;
     }
@@ -400,13 +400,6 @@ public class Solo {
         return mClicker.longClickOnView(target, mConfig.defaultLongClickTime);
     }
 
-    public boolean clickOnView(View target, View container) {
-        return mClicker.clickOnView(target, container);
-    }
-
-    public boolean longClickOnView(View target, View container, int time) {
-        return mClicker.longClickOnView(target, container, time);
-    }
 
     public boolean clickOnScreen(float x, float y) {
         return mClicker.clickOnScreen(x, y);
@@ -510,36 +503,25 @@ public class Solo {
     }
 
     public boolean waitForOnCreate(String activityName) {
-        return mActivityUtils.waitForOnCreate(activityName,mConfig.defaultWaitTimeout);
+        return mActivityUtils.waitForOnCreate(activityName,mConfig.defaultWaitTimeout,0);
     }
 
     public boolean waitForOnCreate(String activityName,long timeout) {
-        return mActivityUtils.waitForOnCreate(activityName,timeout);
+        return mActivityUtils.waitForOnCreate(activityName,timeout,0);
     }
 
     public boolean waitForOnResume(String activityName) {
-        return mActivityUtils.waitForOnResume(activityName,mConfig.defaultWaitTimeout);
+        return mActivityUtils.waitForOnResume(activityName,mConfig.defaultWaitTimeout,0);
     }
 
     public boolean waitForOnResume(String activityName,long timeout) {
-        return mActivityUtils.waitForOnResume(activityName,timeout);
+        return mActivityUtils.waitForOnResume(activityName,timeout,0);
     }
 
     public boolean waitForOnPause(String activityName) {
-        return mActivityUtils.waitForOnPause(activityName,mConfig.defaultWaitTimeout);
+        return mActivityUtils.waitForOnPause(activityName,mConfig.defaultWaitTimeout,0);
     }
 
-    public boolean waitForOnPause(String activityName,long timeout) {
-        return mActivityUtils.waitForOnDestroy(activityName,timeout);
-    }
-
-    public void addActivityFilter(MyInstrumentation.ActivityFilter filter) {
-        mInstrumentation.registerActivityFilter(filter);
-    }
-
-    public void removeActivityFilter(MyInstrumentation.ActivityFilter filter) {
-        mInstrumentation.removeActivityFilter(filter);
-    }
 
     public View getView(int id) {
         return mSearcher.searchViewById(id, false);

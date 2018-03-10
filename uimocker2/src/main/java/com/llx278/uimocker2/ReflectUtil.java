@@ -1,7 +1,6 @@
 package com.llx278.uimocker2;
 
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 
 import java.lang.reflect.Field;

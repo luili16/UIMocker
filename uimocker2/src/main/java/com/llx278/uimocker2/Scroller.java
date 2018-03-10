@@ -29,16 +29,10 @@ import static com.llx278.uimocker2.Scroller.VerticalDirection.UP_TO_DOWN;
 
 public class Scroller {
     private static final String TAG = "uimocker";
-
     private static final long DEFAULT_DRAG_DURATION = 500;
     private static final long DEFAULT_PRESS_DURATION = 0;
     private static final long DEFAULT_UP_DURATION = 1000;
-
-
     private static final long DEFAULT_PAUSE_DURATION = 100;
-
-
-
 
     private boolean mCanScroll = false;
     private final InstrumentationDecorator mInst;
@@ -253,7 +247,6 @@ public class Scroller {
         }
 
         if (view == null) {
-            Log.d("main","null !!!");
             return false;
         }
 

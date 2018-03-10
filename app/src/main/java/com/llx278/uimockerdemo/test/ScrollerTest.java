@@ -129,5 +129,7 @@ public class ScrollerTest {
         Assert.assertTrue(isHRecycler0);
 
         Log.d("main","done!");
+        Thread.sleep(200);
+        currentActivity.finish();
     }
 }

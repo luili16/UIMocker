@@ -35,6 +35,7 @@ public class ViewGetterTest {
         Field mViewGetter = aClass.getDeclaredField("mViewGetter");
         mViewGetter.setAccessible(true);
         ViewGetter viewGetter = (ViewGetter) mViewGetter.get(solo);
+        Activity currentActivity = solo.getCurrentActivity();
         boolean text1Ret = solo.waitForTextAppear("^text1$",1000 * 5,false);
         assertTrue(text1Ret);
 
@@ -53,7 +54,7 @@ public class ViewGetterTest {
 
         View container3 = viewGetterTestActivity.findViewById(R.id.container_3);
         List<View> scrollViewList = viewGetter.getViewList(container3, true);
-        assertEquals(13,scrollViewList.size());
+        assertEquals(12,scrollViewList.size());
         List<View> scrollViewList1 = viewGetter.getViewList(container3, false);
         assertEquals(21,scrollViewList1.size());
 
@@ -113,8 +114,7 @@ public class ViewGetterTest {
             public void run() {
                 button1.setText("I");
                 button1.setFocusableInTouchMode(true);
-                boolean b = button1.requestFocus();
-                Log.d("main","b : " + b);
+                button1.requestFocus();
             }
         });
         View freshestView = viewGetter.getFreshestView(viewList);
@@ -124,6 +124,8 @@ public class ViewGetterTest {
         UniqueButton uniqueButton = (UniqueButton) solo.findViewById(R.id.container_1_unique_button_2);
         boolean isShown = viewGetter.isViewSufficientlyShown(uniqueButton);
         assertFalse(isShown);
-        Log.d("main","view getter test, done!");
+        Log.d("main","done!");
+        Thread.sleep(200);
+        currentActivity.finish();
     }
 }

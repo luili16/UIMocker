@@ -3,185 +3,151 @@ package com.llx278.uimocker2;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.CallSuper;
-import android.text.TextUtils;
-import android.view.KeyEvent;
+import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Stack;
 
-import de.robv.android.xposed.XposedBridge;
-
 
 /**
  * 对Instrumentation自定义一些功能
+ *
  * @author llx
  */
 
-public final class MyInstrumentation extends InstrumentationDecorator {
+final class MyInstrumentation extends InstrumentationDecorator {
 
     private static final boolean DEBUG = false;
-    private static MyInstrumentation INSTANCE;
     private static final String TAG = "MyInstrumentation";
-    private final Object mSync = new Object();
     /**
-     * 监控当前的activity运行状态
+     * 记录activity运行状态
      */
-    private final Stack<WeakReference<Activity>> mActivityStack;
-    private ArrayList<ActivityMonitor> mMonitorList;
-    private ArrayList<ActivityFilter> mActivityFilterList;
+    private final Stack<ActivityStateRecord> mActivityRecordStack;
 
-    public static MyInstrumentation getInstance(Context context) {
-        if(INSTANCE == null){
-            INSTANCE = new MyInstrumentation(context);
-        }
-        return INSTANCE;
-    }
-
-    private MyInstrumentation(Context context) {
+    MyInstrumentation(Context context) {
         super(context);
-        mActivityStack = new Stack<>();
+        mActivityRecordStack = new Stack<>();
     }
 
     @Override
     public void callActivityOnCreate(Activity activity, Bundle icicle) {
-        if(DEBUG) {
-            Logger.d(TAG,"callActivityOnCreate : " + activity.getClass().getName());
-            Logger.d(TAG,"ActivityName :" + activity.getClass().getName());
-            Logger.d(TAG,"savedBundle:" + (icicle == null?"null":icicle.toString()));
-            Logger.d(TAG,"intent : " + (activity.getIntent()==null?"null":activity.getIntent().toString()));
-            if(activity.getIntent() != null) {
+        if (DEBUG) {
+            Logger.d(TAG, "callActivityOnCreate : " + activity.getClass().getName());
+            Logger.d(TAG, "ActivityName :" + activity.getClass().getName());
+            Logger.d(TAG, "savedBundle:" + (icicle == null ? "null" : icicle.toString()));
+            Logger.d(TAG, "intent : " + (activity.getIntent() == null ? "null" : activity.getIntent().toString()));
+            if (activity.getIntent() != null) {
                 Bundle extras = activity.getIntent().getExtras();
-                Logger.d(TAG,"extras:" + (extras == null?"null":extras.toString()));
-            }
-        }
-        doSomeWOrkBeforeCreate(activity,icicle);
-        super.callActivityOnCreate(activity, icicle);
-        boolean canCallSuper = doFilter(activity,icicle);
-        if(!canCallSuper) {
-            doSomeWorkAfterCreate(activity);
-        }
-    }
+                Logger.d(TAG, "extras:" + (extras == null ? "null" : extras.toString()));
+                if (extras != null) {
+                    Logger.d("printBundle");
 
-    private boolean doFilter(final Activity activity, Bundle icicle) {
-        synchronized (mSync) {
-            if(mActivityFilterList != null) {
-                for(ActivityFilter activityFilter : mActivityFilterList) {
-                    if(activityFilter.filterActivityName(activity.getClass().getName())){
-                        if(DEBUG) {
-                            Logger.d(TAG,"filter an Activity : " + activity.getClass().getName());
-                        }
-                        try {
-                            activity.finish();
-                        } catch (Exception e) {
-                            Logger.e("",e);
-                        }
-                        return true;
-                    }
                 }
             }
         }
-        return false;
+        // 不应该阻止activity的执行，仅仅是通知上层调用者某个activity调用了onCreate方法而已
+
+        super.callActivityOnCreate(activity, icicle);
+        addToRecordStack(activity, ActivityStateRecord.ON_CREATE);
+        if (DEBUG) {
+            printStackInfo(mActivityRecordStack);
+        }
     }
 
-    private void doSomeWOrkBeforeCreate(Activity activity, Bundle icicle) {
-
-    }
 
     @Override
     public void callActivityOnResume(Activity activity) {
-        if(DEBUG) {
-            Logger.d(TAG,"callActivityOnResume activityName : " + activity.getClass().getName());
+        if (DEBUG) {
+            Logger.d(TAG, "callActivityOnResume activityName : " + activity.getClass().getName());
         }
         super.callActivityOnResume(activity);
-        doSomeWorAfterResume(activity);
+        addToRecordStack(activity, ActivityStateRecord.ON_RESUME);
+        if (DEBUG) {
+            printStackInfo(mActivityRecordStack);
+        }
     }
 
     @Override
     public void callActivityOnPause(Activity activity) {
-        if(DEBUG) {
-            Logger.d(TAG,"callActivityOnPause activityName : " + activity.getClass().getName());
+        if (DEBUG) {
+            Logger.d(TAG, "callActivityOnPause activityName : " + activity.getClass().getName());
         }
         super.callActivityOnPause(activity);
-        doSomeWorkAfterPause(activity);
+        addToRecordStack(activity, ActivityStateRecord.ON_PAUSE);
+        if (DEBUG) {
+            printStackInfo(mActivityRecordStack);
+        }
     }
 
     @Override
     public void callActivityOnDestroy(Activity activity) {
-        if(DEBUG) {
-            Logger.d(TAG,"callActivityOnDestroy activityName : " + activity.getClass().getName());
+        if (DEBUG) {
+            Logger.d(TAG, "callActivityOnDestroy activityName : " + activity.getClass().getName());
         }
-        doSomeWorkBeforeDestroy(activity);
+
         super.callActivityOnDestroy(activity);
-        doSomeWOrkAfterDestroy(activity);
-    }
-
-    /**
-     * 添加一个activity监视器
-     * 我这里没有使用{@link android.app.Instrumentation.ActivityMonitor},因为可
-     * 扩展性太差了。
-     * @param monitor activity监视器
-     */
-    public void registerMonitor(ActivityMonitor monitor) {
-        synchronized (mSync) {
-            if(mMonitorList == null){
-                mMonitorList = new ArrayList<>();
-            }
-
-            if (monitor != null){
-                mMonitorList.add(monitor);
-            }
-        }
-    }
-
-    public void registerActivityFilter(ActivityFilter filter) {
-        synchronized (mSync) {
-            if(mActivityFilterList == null){
-                mActivityFilterList = new ArrayList<>();
-            }
-            if(filter != null){
-                mActivityFilterList.add(filter);
-            }
-        }
-    }
-
-    public void removeActivityFilter(ActivityFilter filter) {
-        synchronized (mSync) {
-            if(mActivityFilterList!=null&& !mActivityFilterList.isEmpty()) {
-                mActivityFilterList.remove(filter);
-            }
+        removeActivityFromStack(activity);
+        if (DEBUG) {
+            printStackInfo(mActivityRecordStack);
         }
     }
 
     /**
-     * 移除一个activity的监视器
-     * @param monitor activity监视器
+     * 判断给定的activityName经历了指定的lifeCycle
+     * 可以这样理解：我期待一个activity是否在onCreate状态的时候，如果这个Activity已经是onResume状态了，那么
+     * 它一定经历了onCreate过程，这种情况我就认为这个activity已经经历了onCreate这个LifeCycle.
+     *
+     * @param activityName 指定的activityName
+     * @param lifeCycle    指定的lifeCycle
+     * @param deep         最大的查找的activity栈的深度，例如:deep = 0,则只查找处于栈顶的activity,deep=1,则只查找
+     *                     栈顶和栈顶的下一个.
+     * @return true 指定的activity经历了指定的lifeCycle false 指定的lifeCycle还没有发生
      */
-    public void removeMonitor(ActivityMonitor monitor) {
-        synchronized (mSync){
-            if(mMonitorList != null && !mMonitorList.isEmpty()) {
-                mMonitorList.remove(monitor);
+    public boolean isExpectedActivityLifeCycle(String activityName, int lifeCycle, int deep) {
+
+        if (lifeCycle > ActivityStateRecord.ON_PAUSE) {
+            Log.d("main", "lifeCycle : " + lifeCycle);
+            return false;
+        }
+
+        synchronized (mActivityRecordStack) {
+            if (deep < 0 || deep >= mActivityRecordStack.size()) {
+                Logger.e("illegal size of deep,current deep = " + deep + " deep must greater " +
+                        "than 1 and less than " + mActivityRecordStack.size(), null);
+                return false;
             }
+            int size = mActivityRecordStack.size();
+            int start = size - 1;
+            int end = start - deep;
+            for (int i = start; i >= end; i--) {
+                ActivityStateRecord record = mActivityRecordStack.get(i);
+                Activity activity = record.mActivityWeakRef.get();
+                boolean isSameActivity = activity != null && activity.getClass().getName().equals(activityName);
+                if (isSameActivity) {
+                    return record.currentLifeCycle >= lifeCycle;
+                }
+            }
+            return false;
         }
     }
 
     // ------------ package method ------------------
 
     Activity getCurrentActivity() {
-        if(mActivityStack.isEmpty()) {
+        if (mActivityRecordStack.isEmpty()) {
             return null;
         }
-        synchronized (mActivityStack) {
-            return mActivityStack.peek().get();
+        synchronized (mActivityRecordStack) {
+            return mActivityRecordStack.peek().mActivityWeakRef.get();
         }
     }
 
     void goBackToActivity(String activityName) {
 
         ArrayList<Activity> openedActivities = getAllOpenedActivities();
-        for (int i = 0;i<openedActivities.size();i++) {
+        for (int i = 0; i < openedActivities.size(); i++) {
             String className = openedActivities.get(i).getClass().getName();
         }
         boolean found = false;
@@ -218,7 +184,7 @@ public final class MyInstrumentation extends InstrumentationDecorator {
                         }
                     });
                 } catch (Exception e) {
-                    Logger.e("",e);
+                    Logger.e("", e);
                 }
             }
         }
@@ -239,104 +205,51 @@ public final class MyInstrumentation extends InstrumentationDecorator {
         }
     }
 
-    void pushActivityToStack(Activity activity) {
-        // 添加activity到stack
-        WeakReference<Activity> aw = new WeakReference<Activity>(activity);
-        synchronized (mActivityStack) {
-            mActivityStack.push(aw);
-        }
+    void addToRecordStack(Activity activity, int currentLifeCycle) {
 
-        if (DEBUG) {
-            printStackInfo(mActivityStack);
+        synchronized (mActivityRecordStack) {
+            if (mActivityRecordStack.isEmpty() && currentLifeCycle == ActivityStateRecord.ON_CREATE) {
+                ActivityStateRecord record = new ActivityStateRecord();
+                // 添加activity到stack
+                record.mActivityWeakRef = new WeakReference<>(activity);
+                record.currentLifeCycle = currentLifeCycle;
+                mActivityRecordStack.push(record);
+            } else {
+                ActivityStateRecord topRecord = mActivityRecordStack.peek();
+                Activity activityFromWeakRf = topRecord.mActivityWeakRef.get();
+                if (activity.equals(activityFromWeakRf)) {
+                    // 同一个activity，那么仅仅更新状态
+                    topRecord.currentLifeCycle = currentLifeCycle;
+                } else {
+                    // 新加入一个activity
+                    ActivityStateRecord newRecord = new ActivityStateRecord();
+                    newRecord.mActivityWeakRef = new WeakReference<Activity>(activity);
+                    newRecord.currentLifeCycle = currentLifeCycle;
+                    mActivityRecordStack.push(newRecord);
+                }
+            }
         }
     }
 
     // ------------ private method ------------------
 
-    private void doSomeWorkAfterCreate(Activity activity) {
-        pushActivityToStack(activity);
-
-        if(mMonitorList != null){
-            synchronized (mSync) {
-                for(ActivityMonitor monitor : mMonitorList) {
-                    if(monitor.match(ActivityMonitor.ACTIVITY_CREATE,activity.getClass().getName())) {
-                        if (DEBUG) {
-                            Logger.d(TAG,"hit " + activity.getClass().getName() + " as OnCreate");
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void doSomeWorAfterResume(Activity activity) {
-        if(mMonitorList != null){
-            synchronized (mSync){
-                for(ActivityMonitor monitor:mMonitorList){
-                    if(monitor.match(ActivityMonitor.ACTIVITY_RESUME,activity.getClass().getName())){
-                        if (DEBUG) {
-                            Logger.d(TAG,"hit " + activity.getClass().getName() + " as OnResume");
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void doSomeWorkAfterPause(Activity activity) {
-        if(mMonitorList != null){
-            synchronized (mSync){
-                for(ActivityMonitor monitor:mMonitorList){
-                    if(monitor.match(ActivityMonitor.ACTIVITY_PAUSE,activity.getClass().getName())){
-                        if (DEBUG) {
-                            Logger.d(TAG,"hit " + activity.getClass().getName() + " as OnPause");
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void doSomeWorkBeforeDestroy(Activity activity) {
-        removeActivityFromStack(activity);
-    }
-
-    private void doSomeWOrkAfterDestroy(Activity activity) {
-        if(mMonitorList != null){
-            synchronized (mSync){
-                for(ActivityMonitor monitor:mMonitorList){
-                    if(monitor.match(ActivityMonitor.ACTIVITY_DESTROY,activity.getClass().getName())){
-                        if (DEBUG) {
-                            Logger.d(TAG,"hit " + activity.getClass().getName() + " as OnDestroy");
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-    private void printStackInfo(Stack<WeakReference<Activity>> activityStack) {
-        Iterator<WeakReference<Activity>> iterator = activityStack.iterator();
+    private void printStackInfo(Stack<ActivityStateRecord> activityStack) {
+        Iterator<ActivityStateRecord> iterator = activityStack.iterator();
         StringBuilder sb = new StringBuilder();
         while (iterator.hasNext()) {
-            Activity activity = iterator.next().get();
-            if (activity == null) {
-                sb.append("nullActivityReference");
-            } else {
-                sb.append(activity.getClass().getName());
-            }
-            sb.append("   ");
+            ActivityStateRecord activity = iterator.next();
+            sb.append(activity.toString()).append("   ");
         }
         Logger.d(TAG, "stackInfo : [" + sb.toString() + "]");
     }
 
     private void removeActivityFromStack(Activity activity) {
 
-        synchronized (mActivityStack) {
-            Iterator<WeakReference<Activity>> activityStackIterator = mActivityStack.iterator();
+        synchronized (mActivityRecordStack) {
+            Iterator<ActivityStateRecord> activityStackIterator = mActivityRecordStack.iterator();
             while (activityStackIterator.hasNext()) {
-                Activity activityFromWeakReference = activityStackIterator.next().get();
+                ActivityStateRecord record = activityStackIterator.next();
+                Activity activityFromWeakReference = record.mActivityWeakRef.get();
 
                 if (activityFromWeakReference == null) {
                     activityStackIterator.remove();
@@ -353,94 +266,50 @@ public final class MyInstrumentation extends InstrumentationDecorator {
             }
 
             if (DEBUG) {
-                printStackInfo(mActivityStack);
+                // printStackInfo(mActivityRecordStack);
             }
         }
     }
 
     private ArrayList<Activity> getAllOpenedActivities() {
+
         ArrayList<Activity> activities = new ArrayList<Activity>();
-
-        for (WeakReference<Activity> aMActivityStack : mActivityStack) {
-            Activity activity = aMActivityStack.get();
-            if (activity != null)
-                activities.add(activity);
-        }
-        return activities;
-    }
-
-    /**
-     * 对某个activity的状态进行检测
-     * 需要实现的功能 1. 检测activity的生命周期：onCreate onResume onPause onDestroy
-     */
-    public final static class ActivityMonitor {
-
-        public static final String ACTIVITY_CREATE = "onCreate";
-        public static final String ACTIVITY_RESUME = "onResume";
-        public static final String ACTIVITY_PAUSE = "onPause";
-        public static final String ACTIVITY_DESTROY = "onDestroy";
-
-
-        private String mActivityName;
-        private String mActivityStatus;
-        private boolean mHasMatched;
-
-        public ActivityMonitor(String activityName, String activityStatus) {
-            mActivityName = activityName;
-            mActivityStatus = activityStatus;
-        }
-
-        /**
-         * 等待预置的条件出现
-         */
-        public boolean waitFor(long timeout) {
-            synchronized (this) {
-                mHasMatched = false;
-                try {
-                    while (!mHasMatched) {
-                        wait(timeout);
-                        if (!mHasMatched) {
-                            return false;
-                        }
-                    }
-                    return true;
-                } catch (InterruptedException e) {
-                    return mHasMatched;
-                }
+        synchronized (mActivityRecordStack) {
+            for (ActivityStateRecord stateRecord : mActivityRecordStack) {
+                Activity activity = stateRecord.mActivityWeakRef.get();
+                if (activity != null)
+                    activities.add(activity);
             }
-        }
-
-        final boolean match(String activityStatus, String activityName) {
-            synchronized (this) {
-                //noinspection SimplifiableIfStatement
-                if (TextUtils.isEmpty(activityStatus)
-                        || TextUtils.isEmpty(activityName)) {
-                    return false;
-                }
-
-                if (TextUtils.equals(activityStatus, mActivityStatus)
-                        && TextUtils.equals(activityName, mActivityName)) {
-                    mHasMatched = true;
-                    notifyAll();
-                    return true;
-                }
-            }
-            return false;
+            return activities;
         }
     }
 
-    /**
-     * 阻止某个符合规则的activity启动
-     */
-    public static final class ActivityFilter {
-        private String mActivityName;
+    static class ActivityStateRecord {
+        static final int ON_CREATE = 0;
+        static final int ON_RESUME = 1;
+        static final int ON_PAUSE = 2;
 
-        public ActivityFilter(String activityName) {
-            mActivityName = activityName;
+        WeakReference<Activity> mActivityWeakRef;
+        int currentLifeCycle;
+
+        @Override
+        public String toString() {
+            Activity activity = mActivityWeakRef.get();
+            String name = activity == null ? "null" : activity.getClass().getName();
+            return "name : " + name + " lifeCycle : " + toSignificantString(currentLifeCycle);
         }
 
-        public boolean filterActivityName(String name){
-            return TextUtils.equals(name,mActivityName);
+        String toSignificantString(int lifeCycle) {
+            switch (lifeCycle) {
+                case ON_CREATE:
+                    return "onCreate";
+                case ON_PAUSE:
+                    return "onPause";
+                case ON_RESUME:
+                    return "onResume";
+                default:
+                    return "unKnow";
+            }
         }
     }
 }

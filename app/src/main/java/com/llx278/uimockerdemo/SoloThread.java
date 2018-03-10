@@ -2,8 +2,10 @@ package com.llx278.uimockerdemo;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 
 import com.llx278.uimocker2.Solo;
+import com.llx278.uimockerdemo.test.ClickerTest;
 import com.llx278.uimockerdemo.test.ScrollerTest;
 import com.llx278.uimockerdemo.test.SearcherTest;
 import com.llx278.uimockerdemo.test.ViewGetterTest;
@@ -23,7 +25,7 @@ public class SoloThread extends Thread {
     private Solo mSolo;
 
     public SoloThread(Context context) {
-        mSolo = Solo.getInstance(null,context,null);
+        mSolo = Solo.getInstance(context,null);
     }
 
     @Override
@@ -38,14 +40,21 @@ public class SoloThread extends Thread {
         assertEquals(true,resumeRet);
 
         try {
-            ViewGetterTest viewGetterTest = new ViewGetterTest();
+            //ViewGetterTest viewGetterTest = new ViewGetterTest();
             //viewGetterTest.run(mSolo);
             ScrollerTest scrollerTest = new ScrollerTest();
-            //scrollerTest.run(mSolo);
+            scrollerTest.run(mSolo);
+            mSolo.waitForTextAndClick("^ViewGetterTest$");
             SearcherTest searcherTest = new SearcherTest();
-            //searcherTest.run(mSolo);
+            searcherTest.run(mSolo);
+            mSolo.waitForTextAndClick("^ViewGetterTest$");
             WaiterTest waiterTest = new WaiterTest();
             waiterTest.run(mSolo);
+            mSolo.waitForTextAndClick("^ViewGetterTest$");
+            ClickerTest clickerTest = new ClickerTest();
+            clickerTest.run(mSolo);
+            Log.d("main","all done!");
+            mSolo.getCurrentActivity().finish();
         } catch (Exception e) {
             e.printStackTrace();
         }

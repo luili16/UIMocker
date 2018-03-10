@@ -51,7 +51,6 @@ public class Parser {
             xmlSerializer.startDocument("utf-8", true);
             dumpRecursive(target,xmlSerializer);
             xmlSerializer.endDocument();
-            Log.d("main",stringWriter.toString());
         } catch (XmlPullParserException e) {
             throw new RuntimeException(e);
         }

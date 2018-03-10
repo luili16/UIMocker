@@ -2,8 +2,7 @@ package com.llx278.uimocker2;
 
 import android.app.Activity;
 import android.os.SystemClock;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -112,42 +111,16 @@ public class Waiter {
         return false;
     }
 
-    /**
-     * 等待一个指定id或tag的fragment出现
-     * 注意，这里面如果fragment是support包里的，而且support包也被混淆的话，
-     * 那么这个方法是没有意义的，因为混淆后的方法名与标准的support包不兼容，
-     * 比如说微信，就做了这个的混淆
-     *
-     * @param tag fragment的tag
-     * @param id  fragment的id
-     * @return true 等待的activity已经出现，false 没有
-     */
-    public boolean waitForFragment(String tag, int id) {
-        return waitForFragment(tag, id, WAIT_TIMEOUT);
+    public boolean waitForActivityOnCreate(String activityName,long timeout,int deep) {
+        return mActivityUtils.waitForOnCreate(activityName,timeout,deep);
     }
 
-    /**
-     * 等待一个指定id或tag的fragment出现
-     * 注意，这里面如果fragment是support包里的，而且support包也被混淆的话，
-     * 那么这个方法是没有意义的，因为混淆后的方法名与标准的support包不兼容，
-     * 比如说微信，就做了这个的混淆
-     *
-     * @param tag     fragment的tag
-     * @param id      fragment的id
-     * @param timeout 超时时间
-     * @return true 等待的activity已经出现，false 没有
-     */
-    public boolean waitForFragment(String tag, int id, long timeout) {
-        long endTime = SystemClock.uptimeMillis() + timeout;
-        while (SystemClock.uptimeMillis() <= endTime) {
-            pause();
-            if (getSupportFragment(tag, id) != null)
-                return true;
+    public boolean waitForActivityOnResume(String activityName,long timeout,int deep) {
+        return mActivityUtils.waitForOnResume(activityName,timeout,deep);
+    }
 
-            if (getFragment(tag, id) != null)
-                return true;
-        }
-        return false;
+    public boolean waitForActivityOnPause(String activityName,long timeout,int deep) {
+        return mActivityUtils.waitForOnPause(activityName,timeout,deep);
     }
 
     /**
@@ -481,42 +454,6 @@ public class Waiter {
                 }
             }
         }
-        return null;
-    }
-
-
-
-    //     ------- private methods --------------
-    private Fragment getSupportFragment(String tag, int id) {
-        FragmentActivity fragmentActivity = null;
-
-        try {
-            fragmentActivity = (FragmentActivity) mActivityUtils.getCurrentActivity();
-        } catch (Throwable ignored) {
-        }
-
-        if (fragmentActivity != null) {
-            try {
-                if (tag == null)
-                    return fragmentActivity.getSupportFragmentManager().findFragmentById(id);
-                else
-                    return fragmentActivity.getSupportFragmentManager().findFragmentByTag(tag);
-            } catch (NoSuchMethodError ignored) {
-            }
-        }
-        return null;
-    }
-
-    private android.app.Fragment getFragment(String tag, int id) {
-
-        try {
-            if (tag == null)
-                return mActivityUtils.getCurrentActivity().getFragmentManager().findFragmentById(id);
-            else
-                return mActivityUtils.getCurrentActivity().getFragmentManager().findFragmentByTag(tag);
-        } catch (Throwable ignored) {
-        }
-
         return null;
     }
 

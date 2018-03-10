@@ -13,6 +13,7 @@ import android.view.Window;
 import android.widget.TextView;
 
 import java.lang.reflect.Constructor;
+import java.security.PrivilegedAction;
 
 /**
  * 包含一些与click相关的方法
@@ -26,7 +27,6 @@ public class Clicker {
     private final InstrumentationDecorator mInst;
     private final ActivityUtils mActivityUtils;
     private final Sender mSender;
-    private final Sleeper mSleeper;
     private final Searcher mSearcher;
 
     private final DialogUtils mDialogUtils;
@@ -35,36 +35,76 @@ public class Clicker {
 
     public Clicker(ActivityUtils activityUtils, ViewGetter viewGetter,
                    Sender sender, InstrumentationDecorator inst,
-                   Sleeper sleeper, Searcher searcher, DialogUtils dialogUtils) {
+                   Searcher searcher, DialogUtils dialogUtils) {
 
         this.mActivityUtils = activityUtils;
         this.mViewGetter = viewGetter;
         this.mSender = sender;
         this.mInst = inst;
-        this.mSleeper = sleeper;
         this.mSearcher = searcher;
         this.mDialogUtils = dialogUtils;
     }
 
-    /**
-     * 点击
-     * @param x x坐标
-     * @param y y坐标
-     * @return true 成功的发送了点击事件 false 发送点击事件失败
-     */
-    public boolean clickOnScreen(float x,float y){
-       return clickOnScreen(x,y,null);
+    private void pause(long time) {
+        try {
+            Thread.sleep(time);
+        } catch (InterruptedException ignore) {
+        }
+    }
+
+    public boolean clickOnScreen(float x, float y) {
+
+        try {
+            MotionEvent downEvent = getSimpleMotionEvent(MotionEvent.ACTION_DOWN, x, y);
+            mInst.sendPointerSync(downEvent);
+            downEvent.recycle();
+            MotionEvent upEvent = getSimpleMotionEvent(MotionEvent.ACTION_UP, x, y);
+            mInst.sendPointerSync(upEvent);
+            upEvent.recycle();
+        } catch (SecurityException e) {
+            Logger.e(LOG_TAG,String.format("Clicker.clickOnScreen(float,float) : " +
+                    "click at (" + x + ", " + y + ") can not be completed!\n" +
+                    "runtime:[x=%f,y=%f]",x,y),e);
+            return false;
+        }
+        return true;
     }
 
     /**
-     * 长按
-     * @param x x坐标
-     * @param y y坐标
-     * @param time 长按时间
-     * @return true 成功发送了长按事件 false 发送长按事件失败
+     * 在屏幕上长按
+     *
+     * @param x    the x coordinate 在屏幕上的x坐标值
+     * @param y    the y coordinate 在屏幕上的y坐标值
+     * @param time 长按的时间
      */
-    public boolean longClickOnScreen(float x,float y,long time) {
-        return longClickOnScreen(x,y,time,null);
+
+    public boolean longClickOnScreen(float x, float y, long time) {
+
+        try {
+            MotionEvent downEvent = getSimpleMotionEvent(MotionEvent.ACTION_DOWN, x, y);
+            mInst.sendPointerSync(downEvent);
+            downEvent.recycle();
+
+            MotionEvent moveEvent = getSimpleMotionEvent(MotionEvent.ACTION_MOVE, x + 1.0f, y + 1.0f);
+            mInst.sendPointerSync(moveEvent);
+            moveEvent.recycle();
+            if (time > 0) {
+                pause(time);
+            } else {
+                pause((int) (ViewConfiguration.getLongPressTimeout() * 2.5f));
+            }
+
+            MotionEvent upEvent = getSimpleMotionEvent(MotionEvent.ACTION_UP, x, y);
+            mInst.sendPointerSync(upEvent);
+            upEvent.recycle();
+            pause(MINI_WAIT);
+            return true;
+        } catch (SecurityException e) {
+            Logger.e(LOG_TAG,String.format("Clicker.longClickOnScreen(float,float) : " +
+                    "long click at (" + x + ", " + y + ") can not be completed!\n" +
+                    "runtime:[x=%f,y=%f]",x,y),e);
+            return false;
+        }
     }
 
     /**
@@ -73,6 +113,7 @@ public class Clicker {
      * @return true 点击成功 false 点击失败
      */
     public boolean clickOnView(View target) {
+
         return clickOnScreen(target,false,0);
     }
 
@@ -81,24 +122,29 @@ public class Clicker {
     }
 
     /**
-     * 向targetView的这个View的中心位置发送点击事件，containerView为开始分发
-     * 点击事件的开始
+     * 向targetView的这个View的中心位置分发点击事件，containerView为开始分发
+     * 点击事件的开始，这里用view.dispatchTouchEvent实现,这种实现方式的
+     * 好处是如果有其他的view拦截了你想发送点击的事件，那么通过这个方法可以绕过这个view，直接
+     * 将点击的事件发送给你想要的处理点击事件的目标
      * 注意 ： targetView一定要是containerView的子view，否则不会产生点击事件
-     * @param target
-     * @param container
+     * @param target 这个view定义了你想要发送点击事件的位置
+     * @param container 从container开始分发点击事件
      */
-    public boolean clickOnView(View target,View container) {
+    public boolean dispatchClickEventOnTarget(View target,View container) {
         return clickOnView(target,container,false,0);
     }
 
     /**
-     * 向targetView的这个View的中心位置发送点击事件，containerView为开始分发
-     * 点击事件的开始
+     * 向targetView的这个View的中心位置分发点击事件，containerView为开始分发
+     * 点击事件的开始，这里用view.dispatchTouchEvent实现,这种实现方式的
+     * 好处是如果有其他的view拦截了你想发送点击的事件，那么通过这个方法可以绕过这个view，直接
+     * 将点击的事件发送给你想要的处理点击事件的目标
      * 注意 ： targetView一定要是containerView的子view，否则不会产生点击事件
-     * @param target
-     * @param container
+     * 注意 ： targetView一定要是containerView的子view，否则不会产生点击事件
+     * @param target 这个view定义了你想要发送点击事件的位置
+     * @param container 从container开始分发点击事件
      */
-    public boolean longClickOnView(View target,View container,long time) {
+    public boolean dispatchLongClickEventOnTarget(View target,View container,long time) {
         return clickOnView(target,container,true,time);
     }
 
@@ -155,12 +201,9 @@ public class Clicker {
         return clickOnText(regex,timeout,true);
     }
 
-    /**
-     * Opens the menu and waits for it to open.
-     */
 
     public void openMenu(){
-        mSleeper.sleepMini();
+        pause(MINI_WAIT);
 
         if(!mDialogUtils.waitForDialogToOpen(MINI_WAIT, false)) {
             try{
@@ -173,11 +216,11 @@ public class Clicker {
     }
 
     /**
-     * Private method used to click on a given view.
+     * 对一个view发送点击事件
      *
-     * @param view      the view that should be clicked
-     * @param longClick true if the click should be a long click
-     * @param time      the amount of time to long click
+     * @param view      应该被点击的view
+     * @param longClick true 为长按
+     * @param time      长按的时间
      */
 
     private boolean clickOnScreen(View view, boolean longClick, long time) {
@@ -191,7 +234,7 @@ public class Clicker {
         float y = xyToClick[1];
 
         if (x == 0 || y == 0) {
-            mSleeper.sleepMini();
+            pause(MINI_WAIT);
             try {
                 view = mViewGetter.getIdenticalView(view);
             } catch (Exception ignored) {
@@ -204,20 +247,20 @@ public class Clicker {
             }
         }
 
-        mSleeper.sleep(300);
+        pause(MINI_WAIT);
         if (longClick) {
-            return longClickOnScreen(x, y, time, view);
+            return longClickOnScreen(x, y, time);
         } else {
-            return clickOnScreen(x, y, view);
+            return clickOnScreen(x, y);
         }
     }
 
     /**
-     * 向targetView的这个View的中心位置发送点击事件，containerView为开始分发
+     * 向targetView的中心位置发送点击事件，containerView为开始分发
      * 点击事件的开始
      * 注意 ： targetView一定要是containerView的子view，否则不会产生点击事件
-     * @param target
-     * @param container
+     * @param target 分发事件所代表的位置
+     * @param container 分发事件开始的view
      */
     private boolean clickOnView(final View target,final View container,final boolean longClick,final long time) {
         final float[] out = new float[2];
@@ -244,9 +287,15 @@ public class Clicker {
                     MotionEvent downEvent = getSimpleMotionEvent(MotionEvent.ACTION_DOWN,out[0],out[1]);
                     container.dispatchTouchEvent(downEvent);
                     downEvent.recycle();
+                    MotionEvent moveEvent = getSimpleMotionEvent(MotionEvent.ACTION_MOVE, out[0] + 1.0f, out[0] + 1.0f);
+                    container.dispatchTouchEvent(moveEvent);
                 }
             });
-            mSleeper.sleep(time);
+            if (time > 0) {
+                pause(time);
+            } else {
+                pause((int) (ViewConfiguration.getLongPressTimeout() * 2.5f));
+            }
             mInst.runOnMainSync(new Runnable() {
                 @Override
                 public void run() {
@@ -274,13 +323,6 @@ public class Clicker {
                 0);
     }
 
-    /**
-     * Returns click coordinates for the specified view.
-     *
-     * @param view the view to get click coordinates from
-     * @return click coordinates for a specified view
-     */
-
     private float[] getClickCoordinates(View view) {
         int[] xyLocation = new int[2];
         float[] xyToClick = new float[2];
@@ -288,7 +330,7 @@ public class Clicker {
 
         view.getLocationOnScreen(xyLocation);
         while (xyLocation[0] == 0 && xyLocation[1] == 0 && trialCount < 10) {
-            mSleeper.sleep(300);
+            pause(MINI_WAIT);
             view.getLocationOnScreen(xyLocation);
             trialCount++;
         }
@@ -339,99 +381,5 @@ public class Clicker {
         return false;
     }
 
-    private boolean clickOnScreen(float x, float y, View view) {
-        boolean success = false;
-        int retry = 0;
-        SecurityException ex = null;
 
-        while (!success && retry < 20) {
-            long downTime = SystemClock.uptimeMillis();
-            long eventTime = SystemClock.uptimeMillis();
-            MotionEvent event = MotionEvent.obtain(downTime, eventTime,
-                    MotionEvent.ACTION_DOWN, x, y, 0);
-            MotionEvent event2 = MotionEvent.obtain(downTime, eventTime,
-                    MotionEvent.ACTION_UP, x, y, 0);
-            try {
-                mInst.sendPointerSync(event);
-                mInst.sendPointerSync(event2);
-                success = true;
-            } catch (SecurityException e) {
-                ex = e;
-                mDialogUtils.hideSoftKeyboard(null, false, true);
-                mSleeper.sleep(MINI_WAIT);
-                retry++;
-                View identicalView = mViewGetter.getIdenticalView(view);
-                if (identicalView != null) {
-                    float[] xyToClick = getClickCoordinates(identicalView);
-                    x = xyToClick[0];
-                    y = xyToClick[1];
-                }
-            }
-        }
-        if (!success) {
-            Logger.e(LOG_TAG,String.format("Clicker.clickOnScreen(float,float,view) : " +
-                    "click at (" + x + ", " + y + ") can not be completed!\n" +
-                    "runtime:[x=%f,y=%f,view=%s]",x,y,view.toString()),ex);
-            return false;
-        }
-        //Logger.d(LOG_TAG,String.format(Locale.CHINA,"Clicker.clickOnScreen(float,float,view) : click at (%f,%f)",x,y));
-        return true;
-    }
-
-    /**
-     * 在屏幕上长按
-     *
-     * @param x    the x coordinate 在屏幕上的x坐标值
-     * @param y    the y coordinate 在屏幕上的y坐标值
-     * @param time 长按的时间
-     */
-
-    private boolean longClickOnScreen(float x, float y, long time, View view) {
-        boolean successfull = false;
-        int retry = 0;
-        SecurityException ex = null;
-        long downTime = SystemClock.uptimeMillis();
-        long eventTime = SystemClock.uptimeMillis();
-        MotionEvent event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, x, y, 0);
-
-        while (!successfull && retry < 20) {
-            try {
-                mInst.sendPointerSync(event);
-                successfull = true;
-                mSleeper.sleep(MINI_WAIT);
-            } catch (SecurityException e) {
-                ex = e;
-                mDialogUtils.hideSoftKeyboard(null, false, true);
-                mSleeper.sleep(MINI_WAIT);
-                retry++;
-                View identicalView = mViewGetter.getIdenticalView(view);
-                if (identicalView != null) {
-                    float[] xyToClick = getClickCoordinates(identicalView);
-                    x = xyToClick[0];
-                    y = xyToClick[1];
-                }
-            }
-        }
-        if (!successfull) {
-            Logger.e(LOG_TAG, String.format("Clicker.longClickOnScreen(float,float,long,view) : " +
-                    "Long click at (" + x + ", " + y + ") can not be completed!\n" +
-                    "runtime:[x=%f,y=%f,time=%l,view=%s]",x,y,time,view.toString()),ex);
-            return false;
-        }
-
-        eventTime = SystemClock.uptimeMillis();
-        event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_MOVE, x + 1.0f, y + 1.0f, 0);
-        mInst.sendPointerSync(event);
-        if (time > 0) {
-            mSleeper.sleep(time);
-        } else {
-            mSleeper.sleep((int) (ViewConfiguration.getLongPressTimeout() * 2.5f));
-        }
-
-        eventTime = SystemClock.uptimeMillis();
-        event = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP, x, y, 0);
-        mInst.sendPointerSync(event);
-        mSleeper.sleep();
-        return true;
-    }
 }

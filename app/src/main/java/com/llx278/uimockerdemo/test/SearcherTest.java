@@ -139,6 +139,9 @@ public class SearcherTest {
 
         Log.d("main","done");
 
+        Thread.sleep(200);
+        currentActivity.finish();
+
     }
 
 }
