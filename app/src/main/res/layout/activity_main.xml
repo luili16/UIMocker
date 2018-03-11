@@ -19,5 +19,11 @@
             android:text="ViewGetterTest"
             android:id="@+id/view_getter_test"
             />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="WebUITest"
+            android:id="@+id/web_ui_test"
+            />
     </LinearLayout>
 </LinearLayout>

@@ -35,9 +35,11 @@ public class Solo {
     private final Parser mParser;
     private final Gesture mGesture;
 
+
     private final ActivityUtils mActivityUtils;
     private final MyInstrumentation mInstrumentation;
     private final DialogUtils mDialogUtils;
+    private final WebUtils mWebUtils;
     private final Config mConfig;
 
     private Solo(Context context, Config config) {
@@ -55,6 +57,7 @@ public class Solo {
         mClicker = new Clicker(mActivityUtils, mViewGetter, mSender, mInstrumentation,
                 mSearcher, mDialogUtils);
         mParser = new Parser(mScroller,mInstrumentation,mSleeper);
+        mWebUtils = new WebUtils(mInstrumentation,mViewGetter,mSleeper);
 
     }
 

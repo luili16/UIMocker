@@ -6,6 +6,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
+import com.llx278.uimockerdemo.test.WebUITest;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -22,6 +24,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button webUITest = findViewById(R.id.web_ui_test);
+        webUITest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
+                startActivity(intent);
+            }
+        });
 
 
 

@@ -10,6 +10,7 @@ import com.llx278.uimockerdemo.test.ScrollerTest;
 import com.llx278.uimockerdemo.test.SearcherTest;
 import com.llx278.uimockerdemo.test.ViewGetterTest;
 import com.llx278.uimockerdemo.test.WaiterTest;
+import com.llx278.uimockerdemo.test.WebUITest;
 
 import junit.framework.Assert;
 
@@ -33,16 +34,17 @@ public class SoloThread extends Thread {
         boolean ret1 = mSolo.waitForActivity("com.llx278.uimockerdemo.MainActivity");
         Assert.assertEquals(true,ret1);
 
-        boolean ret = mSolo.waitForTextAndClick("^ViewGetterTest$");
-        assertEquals(true,ret);
+       // boolean ret = mSolo.waitForTextAndClick("^ViewGetterTest$");
+       // assertEquals(true,ret);
 
-        boolean resumeRet = mSolo.waitForOnResume("com.llx278.uimockerdemo.TestActivity");
-        assertEquals(true,resumeRet);
+       // boolean resumeRet = mSolo.waitForOnResume("com.llx278.uimockerdemo.TestActivity");
+       // assertEquals(true,resumeRet);
+        mSolo.waitForTextAndClick("WebUITest");
 
         try {
             //ViewGetterTest viewGetterTest = new ViewGetterTest();
             //viewGetterTest.run(mSolo);
-            ScrollerTest scrollerTest = new ScrollerTest();
+            /*ScrollerTest scrollerTest = new ScrollerTest();
             scrollerTest.run(mSolo);
             mSolo.waitForTextAndClick("^ViewGetterTest$");
             SearcherTest searcherTest = new SearcherTest();
@@ -52,9 +54,11 @@ public class SoloThread extends Thread {
             waiterTest.run(mSolo);
             mSolo.waitForTextAndClick("^ViewGetterTest$");
             ClickerTest clickerTest = new ClickerTest();
-            clickerTest.run(mSolo);
+            clickerTest.run(mSolo);*/
+            WebUITest webUITest = new WebUITest();
+            webUITest.run(mSolo);
             Log.d("main","all done!");
-            mSolo.getCurrentActivity().finish();
+            //mSolo.getCurrentActivity().finish();
         } catch (Exception e) {
             e.printStackTrace();
         }
