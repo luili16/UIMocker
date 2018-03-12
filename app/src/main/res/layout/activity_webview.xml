@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
 
-    <WebView
+   <!-- <WebView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@+id/web_view"
+        android:layout_weight="1"
+        />-->
+    <com.llx278.uimockerdemo.utils.X5WebView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/web_view"
+        android:id="@+id/tencent_web_view"
         />
 
-</android.support.constraint.ConstraintLayout>
+
+
+</LinearLayout>

@@ -27,9 +27,9 @@ public class WebUITest {
         Field mWebUtils = aClass.getDeclaredField("mWebUtils");
         mWebUtils.setAccessible(true);
         WebUtils webUtils = (WebUtils) mWebUtils.get(solo);
-        Activity currentActivity = solo.getCurrentActivity();
-        WebView webView = currentActivity.findViewById(R.id.web_view);
-        webUtils.getWebElements(true);
+        /*Activity currentActivity = solo.getCurrentActivity();
+        WebView webView = currentActivity.findViewById(R.id);*/
+        //webUtils.getWebElements(true);
 
 
 
