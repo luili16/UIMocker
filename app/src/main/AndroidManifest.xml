@@ -32,6 +32,16 @@
         <activity android:name=".TestActivity" />
         <activity android:name=".TestActivity1" />
         <activity android:name=".WebViewActivity" />
+
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true" />
+        <meta-data
+            android:name="xposeddescription"
+            android:value="hook wechat" />
+        <meta-data
+            android:name="xposedminversion"
+            android:value="53" />
     </application>
 
 </manifest>

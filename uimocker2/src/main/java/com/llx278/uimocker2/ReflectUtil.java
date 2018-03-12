@@ -1,6 +1,7 @@
 package com.llx278.uimocker2;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 
 import java.lang.reflect.Field;
@@ -8,6 +9,8 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import de.robv.android.xposed.XposedBridge;
 
 /**
  * Created by llx on 05/01/2018.
@@ -30,6 +33,22 @@ public class ReflectUtil {
             }
             throw e;
         }
+    }
+
+    public static boolean isAssignedFrom(String className,Object object) {
+
+        Class<?> aClass = object.getClass();
+        if (aClass.getName().equals(className)) {
+            return true;
+        } else {
+            while (!aClass.getName().equals(Object.class.getName())) {
+                aClass = aClass.getSuperclass();
+                if (aClass.getName().equals(className)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

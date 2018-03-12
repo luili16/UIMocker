@@ -1,6 +1,10 @@
 package com.llx278.uimocker2;
 
+import android.util.Log;
+
 import java.lang.reflect.Field;
+
+import de.robv.android.xposed.XposedBridge;
 
 /**
  * A reflection utility class.  
@@ -64,11 +68,12 @@ public class Reflect {
 		 * @return <T> T
 		 */
 		
-		public <T> T out(Class<T> outclazz) {
-			Field field = getField();
-			Object obj = getValue(field);
-			return outclazz.cast(obj);
+		public Object out() throws Exception {
+			Field field = ReflectUtil.findFieldRecursiveImpl(object.getClass(),name);
+			field.setAccessible(true);
+			return getValue(field);
 		}
+
 
 		/**
 		 * Set a value to a field 
@@ -76,57 +81,21 @@ public class Reflect {
 		 * @param value the value to set
 		 */
 		
-		public void in(Object value) {
-			Field field = getField();
-			try {
-				field.set(object, value);
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
-		}
-
-		/**
-		 * Set the class type 
-		 * 
-		 * @param clazz the type
-		 *
-		 * @return a field reference
-		 */
-		
-		public FieldRf type(Class<?> clazz) {
-			this.clazz = clazz;
-			return this;
-		}
-
-		private Field getField() {
-			if (clazz == null) {
-				clazz = object.getClass();
-			}
-
+		public void in(Object value) throws Exception {
 			Field field = null;
-			try {
-				field = clazz.getDeclaredField(name);
-				field.setAccessible(true);
-			} catch (NoSuchFieldException ignored) {}
-			return field;
+			field = ReflectUtil.findFieldRecursiveImpl(object.getClass(),name);
+			field.set(object, value);
 		}
 
-		private Object getValue(Field field) {
+		private Object getValue(Field field) throws Exception {
 			if (field == null) {
 				return null;
 			}
-			Object obj = null;
-			try {
-				obj = field.get(object);
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
-			return obj;
+
+			return field.get(object);
 		}
+
+
 	}
 
 }

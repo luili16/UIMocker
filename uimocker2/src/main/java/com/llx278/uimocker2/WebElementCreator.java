@@ -50,7 +50,6 @@ class WebElementCreator {
 	 */
 
 	public ArrayList<WebElement> getWebElementsFromWebViews(){
-		waitForWebElementsToBeCreated();
 		return new ArrayList<WebElement>(webElements);
 	}
 
@@ -82,9 +81,10 @@ class WebElementCreator {
 	 * @param webView the {@code WebView} the text is shown in
 	 */
 
-	public void createWebElementAndAddInList(String webData, WebView webView){
+	public void createWebElementAndAddInList(String webData, float scale,int[] locationOfWebViewXY){
 
-		WebElement webElement = createWebElementAndSetLocation(webData, webView);
+
+		WebElement webElement = createWebElementAndSetLocation(webData, scale,locationOfWebViewXY);
 
 		if((webElement!=null)) 
 			webElements.add(webElement);
@@ -101,10 +101,7 @@ class WebElementCreator {
 	 * @param height the height to set
 	 */
 
-	private void setLocation(WebElement webElement, WebView webView, int x, int y, int width, int height ){
-		float scale = webView.getScale();
-		int[] locationOfWebViewXY = new int[2];
-		webView.getLocationOnScreen(locationOfWebViewXY);
+	private void setLocation(WebElement webElement, float scale,int[] locationOfWebViewXY, int x, int y, int width, int height ){
 
 		int locationX = (int) (locationOfWebViewXY[0] + (x + (Math.floor(width / 2))) * scale);
 		int locationY = (int) (locationOfWebViewXY[1] + (y + (Math.floor(height / 2))) * scale);
@@ -122,7 +119,7 @@ class WebElementCreator {
 	 * @return a {@code WebElement} object with a given text and location
 	 */
 
-	private WebElement createWebElementAndSetLocation(String information, WebView webView){
+	private WebElement createWebElementAndSetLocation(String information, float scale,int[] locationOfWebViewxy){
 		String[] data = information.split(";,");
 		String[] elements = null;
 		int x = 0;
@@ -153,7 +150,8 @@ class WebElementCreator {
 
 		try{
 			webElement = new WebElement(data[0], data[1], data[2], data[3], data[4], attributes);
-			setLocation(webElement, webView, x, y, width, height);
+			//setLocation(webElement, webView, x, y, width, height);
+			setLocation(webElement,scale,locationOfWebViewxy,x,y,width,height);
 		}catch(Exception ignored) {}
 
 		return webElement;
@@ -165,7 +163,7 @@ class WebElementCreator {
 	 * @return true if successfully created before timout
 	 */
 
-	private boolean waitForWebElementsToBeCreated(){
+	public boolean waitForWebElementsToBeCreated(){
 		final long endTime = SystemClock.uptimeMillis() + 5000;
 
 		while(SystemClock.uptimeMillis() < endTime){

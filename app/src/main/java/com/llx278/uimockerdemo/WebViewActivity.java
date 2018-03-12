@@ -9,7 +9,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
 import com.llx278.uimocker2.Reflect;
-import com.llx278.uimockerdemo.utils.X5WebView;
 
 /**
  *
@@ -22,15 +21,13 @@ public class WebViewActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_webview);
-       /* final WebView webView = findViewById(R.id.web_view);
+        final WebView webView = findViewById(R.id.web_view);
         Log.d("main","准备loadur");
 
         webView.getSettings().setJavaScriptEnabled(true);
-        webView.loadUrl("https://www.baidu.com");*/
+        webView.loadUrl("https://www.baidu.com");
 
         Log.d("main", "准备load_url");
-        X5WebView tencentWebView = findViewById(R.id.tencent_web_view);
-        tencentWebView.loadUrl("https://www.baidu.com");
 
         Log.d("main", "loadUrl结束");
     }

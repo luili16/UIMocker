@@ -259,11 +259,11 @@ public class Solo {
      * @return 符合指定类名字的view
      */
     public View getCustomView(String className, View parent) {
-        ArrayList<View> viewsToReturn = getCustomViews(className, parent);
-        if (viewsToReturn != null && !viewsToReturn.isEmpty()) {
-            return viewsToReturn.get(0);
+        ArrayList<View> viewListByName = mViewGetter.getViewListByName(className, parent, true);
+        if (viewListByName.isEmpty()) {
+            return null;
         }
-        return null;
+        return viewListByName.get(0);
     }
 
     /**
