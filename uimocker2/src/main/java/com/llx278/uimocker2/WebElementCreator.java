@@ -1,12 +1,15 @@
 package com.llx278.uimocker2;
 
 import android.os.SystemClock;
+import android.util.Log;
 import android.webkit.WebView;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import de.robv.android.xposed.XposedBridge;
 
 /**
  * Contains TextView related methods. Examples are:
@@ -50,7 +53,7 @@ class WebElementCreator {
 	 */
 
 	public ArrayList<WebElement> getWebElementsFromWebViews(){
-		return new ArrayList<WebElement>(webElements);
+		return new ArrayList<>(webElements);
 	}
 
 	/**
@@ -78,23 +81,20 @@ class WebElementCreator {
 	 * Creates a {@ WebElement} object from the given text and {@code WebView}
 	 * 
 	 * @param webData the data of the web element 
-	 * @param webView the {@code WebView} the text is shown in
 	 */
 
 	public void createWebElementAndAddInList(String webData, float scale,int[] locationOfWebViewXY){
-
-
 		WebElement webElement = createWebElementAndSetLocation(webData, scale,locationOfWebViewXY);
 
-		if((webElement!=null)) 
+		if((webElement!=null)) {
 			webElements.add(webElement);
+		}
 	}
 
 	/**
 	 * Sets the location of a {@code WebElement} 
 	 * 
 	 * @param webElement the {@code TextView} object to set location 
-	 * @param webView the {@code WebView} the text is shown in
 	 * @param x the x location to set
 	 * @param y the y location to set
 	 * @param width the width to set
@@ -114,8 +114,7 @@ class WebElementCreator {
 	 * Creates a {@code WebView} object 
 	 * 
 	 * @param information the data of the web element
-	 * @param webView the web view the text is shown in
-	 * 
+	 *
 	 * @return a {@code WebElement} object with a given text and location
 	 */
 
@@ -133,7 +132,9 @@ class WebElementCreator {
 			width = Math.round(Float.valueOf(data[7]));
 			height = Math.round(Float.valueOf(data[8]));	
 			elements = data[9].split("\\#\\$");
-		}catch(Exception ignored){}
+		}catch(Exception ignored){
+			XposedBridge.log(ignored);
+		}
 
 		if(elements != null) {
 			for (int index = 0; index < elements.length; index++){
@@ -150,10 +151,10 @@ class WebElementCreator {
 
 		try{
 			webElement = new WebElement(data[0], data[1], data[2], data[3], data[4], attributes);
-			//setLocation(webElement, webView, x, y, width, height);
 			setLocation(webElement,scale,locationOfWebViewxy,x,y,width,height);
-		}catch(Exception ignored) {}
-
+		}catch(Exception ignored) {
+			XposedBridge.log(ignored);
+		}
 		return webElement;
 	}
 
@@ -163,17 +164,17 @@ class WebElementCreator {
 	 * @return true if successfully created before timout
 	 */
 
-	public boolean waitForWebElementsToBeCreated(){
-		final long endTime = SystemClock.uptimeMillis() + 5000;
+	public boolean waitForWebElementsToBeCreated(long timeout){
+		final long endTime = SystemClock.uptimeMillis() + timeout;
 
 		while(SystemClock.uptimeMillis() < endTime){
-
 			if(isFinished){
 				return true;
 			}
 
 			sleeper.sleepMini();
 		}
+
 		return false;
 	}
 

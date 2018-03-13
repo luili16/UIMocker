@@ -25,23 +25,18 @@ import de.robv.android.xposed.XposedBridge;
  * @author Renas Reda, renas.reda@robotium.com
  */
 
-class RobotiumWebClient extends WebChromeClient {
-    WebElementCreator webElementCreator;
-    private Instrumentation inst;
-    private WebChromeClient robotiumWebClient;
+class SystemWebChromeClient extends WebChromeClient {
+    private WebElementCreator webElementCreator;
     private WebChromeClient originalWebChromeClient = null;
     private X5WebChromeOnJsPromptCallback mCallback;
-
     /**
      * Constructs this object.
      *
      * @param webElementCreator the {@code WebElementCreator} instance
      */
 
-    public RobotiumWebClient(Instrumentation inst, WebElementCreator webElementCreator) {
-        this.inst = inst;
+    public SystemWebChromeClient(WebElementCreator webElementCreator) {
         this.webElementCreator = webElementCreator;
-        robotiumWebClient = this;
         mCallback = new X5WebChromeOnJsPromptCallback();
     }
 
@@ -87,12 +82,9 @@ class RobotiumWebClient extends WebChromeClient {
         @Override
         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
             super.beforeHookedMethod(param);
-
             Object thisWebView = param.args[0];
-
             String message = (String) param.args[2];
             if (message != null && (message.contains(";,") || message.contains("robotium-finished"))) {
-                XposedBridge.log("拦截到了一个js执行！");
                 if (message.equals("robotium-finished")) {
                     webElementCreator.setFinished(true);
                 } else {
@@ -104,12 +96,12 @@ class RobotiumWebClient extends WebChromeClient {
                         ((View) thisWebView).getLocationOnScreen(locationOfWebViewXY);
                     }
                     webElementCreator.createWebElementAndAddInList(message, scale, locationOfWebViewXY);
-                    Object r = param.args[4];
-                    Class<?> aClass1 = r.getClass();
-                    Method confirm = aClass1.getMethod("confirm");
-                    confirm.invoke(r);
-                    param.setResult(true);
                 }
+                Object r = param.args[4];
+                Class<?> aClass1 = r.getClass();
+                Method confirm = aClass1.getMethod("confirm");
+                confirm.invoke(r);
+                param.setResult(true);
             }
         }
     }

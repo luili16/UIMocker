@@ -39,7 +39,7 @@ public class SoloThread extends Thread {
 
        // boolean resumeRet = mSolo.waitForOnResume("com.llx278.uimockerdemo.TestActivity");
        // assertEquals(true,resumeRet);
-        mSolo.waitForTextAndClick("WebUITest");
+        //mSolo.waitForTextAndClick("WebUITest");
 
         try {
             //ViewGetterTest viewGetterTest = new ViewGetterTest();
@@ -55,8 +55,8 @@ public class SoloThread extends Thread {
             mSolo.waitForTextAndClick("^ViewGetterTest$");
             ClickerTest clickerTest = new ClickerTest();
             clickerTest.run(mSolo);*/
-            WebUITest webUITest = new WebUITest();
-            webUITest.run(mSolo);
+            //WebUITest webUITest = new WebUITest();
+            //webUITest.run(mSolo);
             Log.d("main","all done!");
             //mSolo.getCurrentActivity().finish();
         } catch (Exception e) {

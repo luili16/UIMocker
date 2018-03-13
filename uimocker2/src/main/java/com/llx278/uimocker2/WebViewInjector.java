@@ -1,15 +1,6 @@
 package com.llx278.uimocker2;
 
-import android.webkit.WebChromeClient;
 import android.webkit.WebView;
-
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.Method;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -20,26 +11,21 @@ import de.robv.android.xposed.XposedHelpers;
  * Created by llx on 2018/3/12.
  */
 
-public class WebViewInjector {
+class WebViewInjector {
 
     private WebElementCreator mWebElementCreator;
-    private RobotiumWebClient mRobotiumWebCLient;
-    private InstrumentationDecorator mInstrumentation;
-
-    public WebViewInjector(WebElementCreator creator,InstrumentationDecorator instrumentation) {
-        mRobotiumWebCLient = new RobotiumWebClient(instrumentation, mWebElementCreator);
+    private SystemWebChromeClient mSystemWebChromeCLient;
+    private XC_MethodHook.Unhook mHookedMethod;
+    WebViewInjector(WebElementCreator creator) {
         mWebElementCreator = creator;
-        mInstrumentation = instrumentation;
+        mSystemWebChromeCLient = new SystemWebChromeClient(mWebElementCreator);
     }
 
-
-
     /**
-     * 对指定的webview通过反射替换WebChromeClient
      * @param webView
      * @return
      */
-    public boolean injectAndExecuteJs(final Object webView, final String function) {
+    boolean inject(final Object webView, final String function, String frame) {
 
         try {
             if (webView == null) {
@@ -55,7 +41,7 @@ public class WebViewInjector {
             } else if (ReflectUtil.isAssignedFrom("com.tencent.smtt.sdk.WebView",webView)) {
                 XposedBridge.log("是腾讯的x5WebView");
 
-                final XC_MethodHook.Unhook andHookMethod = XposedHelpers.findAndHookMethod(
+                 mHookedMethod = XposedHelpers.findAndHookMethod(
                         "com.tencent.smtt.sdk.WebChromeClient",
                         webView.getClass().getClassLoader(),
                         "onJsPrompt",
@@ -64,21 +50,7 @@ public class WebViewInjector {
                         String.class,
                         String.class,
                         "com.tencent.smtt.export.external.interfaces.JsPromptResult",
-                        mRobotiumWebCLient.getX5WebChromeHookedCallback());
-                final String javaScript = getJavaScriptAsString();
-                mInstrumentation.runOnMainSync(new Runnable() {
-                    @Override
-                    public void run() {
-                        Class<?> aClass = webView.getClass();
-                        try {
-                            Method loadUrl = aClass.getMethod("loadUrl", String.class);
-                            loadUrl.invoke(webView,"javascript:" + javaScript + function);
-                        } catch (Exception e) {
-                            XposedBridge.log(e);
-                        }
-                    }
-                });
-                // 执行js结束
+                        mSystemWebChromeCLient.getX5WebChromeHookedCallback());
                 return true;
             }
         } catch (Exception e) {
@@ -88,34 +60,10 @@ public class WebViewInjector {
         return false;
     }
 
-    /**
-     * Returns the JavaScript file RobotiumWeb.js as a String
-     *
-     * @return the JavaScript file RobotiumWeb.js as a {@code String}
-     */
-
-    private String getJavaScriptAsString() {
-        InputStream fis = null;
-        try {
-            fis = new FileInputStream("/data/local/tmp/RobotiumWeb.js");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+    void unInject() {
+        if (mHookedMethod != null) {
+            XposedBridge.log("unInject成功");
+            mHookedMethod.unhook();
         }
-
-        StringBuilder javaScript = new StringBuilder();
-
-        try {
-            BufferedReader input =  new BufferedReader(new InputStreamReader(fis));
-            String line = null;
-            while (( line = input.readLine()) != null){
-                javaScript.append(line);
-                javaScript.append("\n");
-            }
-            input.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return javaScript.toString();
     }
-
 }

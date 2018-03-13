@@ -1,10 +1,3 @@
-/**
- * Used by the web methods.
- * 
- * @author Renas Reda, renas.reda@robotium.com
- * 
- */
-
 function allWebElements() {
 	for (var key in document.all){
 		try{

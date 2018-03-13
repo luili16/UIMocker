@@ -1,22 +1,19 @@
 package com.llx278.uimockerdemo.test;
 
 import android.app.Activity;
-import android.content.res.Resources;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.View;
-import android.webkit.WebView;
+import android.widget.TextView;
 
+import com.llx278.uimocker2.By;
 import com.llx278.uimocker2.Solo;
 import com.llx278.uimocker2.WebElement;
 import com.llx278.uimocker2.WebUtils;
-import com.llx278.uimockerdemo.R;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.XposedHelpers;
 
 /**
  * Created by llx on 2018/3/11.
@@ -47,13 +44,26 @@ public class WebUITest {
         if (!found) {
             return;
         }
-
+        XposedBridge.log("睡眠5s");
+        Thread.sleep(5000);
         Class<? extends Solo> aClass = solo.getClass();
         Field mWebUtils = aClass.getDeclaredField("mWebUtils");
         mWebUtils.setAccessible(true);
         WebUtils webUtils = (WebUtils) mWebUtils.get(solo);
-        webUtils.getWebElements(true,webView,null);
+        /*ArrayList<WebElement> webElements = webUtils.getWebElementList(true, webView, 5000);
+        XposedBridge.log("webElements : " + webElements.toString());
+        ArrayList<TextView> textViewListFromWebView = webUtils.getTextViewListFromWebView(webView, 5000);
+        XposedBridge.log("textViewListFromWebView : " + textViewListFromWebView.toString());*/
+        //ArrayList<WebElement> webElements = webUtils.getWebElementList(true, webView, 5000);
+       // XposedBridge.log(webElements.toString());
 
+        //By by = By.id("__next");
+        //ArrayList<WebElement> document = webUtils.getWebElementList(by, false, webView, 5000);
+        //XposedBridge.log(document.toString());
+
+        By content = By.textContent("视频");
+        boolean b1 = webUtils.clickOnWebElement(content, webView, true);
+        XposedBridge.log("b1 : " + b1);
         XposedBridge.log("获取结束!");
 
     }

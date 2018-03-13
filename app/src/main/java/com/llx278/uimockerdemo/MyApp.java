@@ -12,6 +12,6 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-        new SoloThread(getApplicationContext()).start();
+       // new SoloThread(getApplicationContext()).start();
     }
 }
