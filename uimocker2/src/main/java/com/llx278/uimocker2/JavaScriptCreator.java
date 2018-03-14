@@ -34,6 +34,12 @@ class JavaScriptCreator {
             "\tfinished();\n" +
             "}\n" +
             "\n" +
+            "function htmlContent() {\n" +
+            "    var content = document.getElementsByTagName(\"html\")[0].innerHtml;\n" +
+            "    promptElement(content);\n" +
+            "    finished();\n" +
+            "}\n" +
+            "\n" +
             "function clickElement(element){\n" +
             "\tvar e = document.createEvent('MouseEvents');\n" +
             "\te.initMouseEvent('click', true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, null);\n" +
@@ -46,8 +52,7 @@ class JavaScriptCreator {
             "\n" +
             "\t\tif(click == 'true'){\n" +
             "\t\t\tclickElement(element);\n" +
-            "\t\t}\n" +
-            "\t\telse{\n" +
+            "\t\t}else{\n" +
             "\t\t\tpromptElement(element);\n" +
             "\t\t}\n" +
             "\t} \n" +
@@ -58,9 +63,7 @@ class JavaScriptCreator {
             "\t\t\t\tif(element.id == id) {\n" +
             "\t\t\t\t\tif(click == 'true'){\n" +
             "\t\t\t\t\t\tclickElement(element);\n" +
-            "\t\t\t\t\t\treturn;\n" +
-            "\t\t\t\t\t}\n" +
-            "\t\t\t\t\telse{\n" +
+            "\t\t\t\t\t}else{\n" +
             "\t\t\t\t\t\tpromptElement(element);\n" +
             "\t\t\t\t\t}\n" +
             "\t\t\t\t}\n" +
@@ -78,9 +81,7 @@ class JavaScriptCreator {
             "\t\twhile(element) {\n" +
             "\t\t\tif(click == 'true'){\n" +
             "\t\t\t\tclickElement(element);\n" +
-            "\t\t\t\treturn;\n" +
-            "\t\t\t}\n" +
-            "\t\t\telse{\n" +
+            "\t\t\t}else{\n" +
             "\t\t\t\tpromptElement(element);\n" +
             "\t\t\t\telement = elements.iterateNext();\n" +
             "\t\t\t}\n" +
@@ -96,7 +97,6 @@ class JavaScriptCreator {
             "\t\t\ttry{\n" +
             "\t\t\t\tif(click == 'true'){\n" +
             "\t\t\t\t\tclickElement(elements[key]);\n" +
-            "\t\t\t\t\treturn;\n" +
             "\t\t\t\t}\n" +
             "\t\t\t\telse{\n" +
             "\t\t\t\t\tpromptElement(elements[key]);\n" +
@@ -115,7 +115,6 @@ class JavaScriptCreator {
             "\t\t\tif(attributeName != null && attributeName.trim().length>0 && attributeName == name){\n" +
             "\t\t\t\tif(click == 'true'){\n" +
             "\t\t\t\t\tclickElement(n);\n" +
-            "\t\t\t\t\treturn;\n" +
             "\t\t\t\t}\n" +
             "\t\t\t\telse{\n" +
             "\t\t\t\t\tpromptElement(n);\n" +
@@ -134,7 +133,6 @@ class JavaScriptCreator {
             "\t\t\tif(className != null && className.trim().length>0 && className == nameOfClass) {\n" +
             "\t\t\t\tif(click == 'true'){\n" +
             "\t\t\t\t\tclickElement(n);\n" +
-            "\t\t\t\t\treturn;\n" +
             "\t\t\t\t}\n" +
             "\t\t\t\telse{\n" +
             "\t\t\t\t\tpromptElement(n);\n" +
@@ -154,7 +152,6 @@ class JavaScriptCreator {
             "\t\t\tif(textContent.trim() == text.trim()){  \n" +
             "\t\t\t\tif(click == 'true'){\n" +
             "\t\t\t\t\tclickElement(n);\n" +
-            "\t\t\t\t\treturn;\n" +
             "\t\t\t\t}\n" +
             "\t\t\t\telse{\n" +
             "\t\t\t\t\tpromptText(n, range);\n" +
@@ -172,7 +169,6 @@ class JavaScriptCreator {
             "\t\t\ttry{\n" +
             "\t\t\t\tif(click == 'true'){\n" +
             "\t\t\t\t\tclickElement(elements[key]);\n" +
-            "\t\t\t\t\treturn;\n" +
             "\t\t\t\t}\n" +
             "\t\t\t\telse{\n" +
             "\t\t\t\t\tpromptElement(elements[key]);\n" +
@@ -246,6 +242,7 @@ class JavaScriptCreator {
             "}\n" +
             "\n" +
             "function promptElement(element) {\n" +
+            "    var split = \"\\#dkqjf765kdj09d\\#\";\n" +
             "\tvar id = element.id;\n" +
             "\tvar text = element.innerText;\n" +
             "\tif(text.trim().length == 0){\n" +
@@ -256,6 +253,7 @@ class JavaScriptCreator {
             "\tvar tagName = element.tagName;\n" +
             "\tvar attributes = \"\";\n" +
             "\tvar htmlAttributes = element.attributes;\n" +
+            "\tvar html = element.innerHTML;\n" +
             "\tfor (var i = 0, htmlAttribute; htmlAttribute = htmlAttributes[i]; i++){\n" +
             "\t\tattributes += htmlAttribute.name + \"::\" + htmlAttribute.value;\n" +
             "\t\tif (i + 1 < htmlAttributes.length) {\n" +
@@ -265,11 +263,12 @@ class JavaScriptCreator {
             "\n" +
             "\tvar rect = element.getBoundingClientRect();\n" +
             "\tif(rect.width > 0 && rect.height > 0 && rect.left >= 0 && rect.top >= 0){\n" +
-            "\t\tprompt(id + ';,' + text + ';,' + name + \";,\" + className + \";,\" + tagName + \";,\" + rect.left + ';,' + rect.top + ';,' + rect.width + ';,' + rect.height + ';,' + attributes);\n" +
+            "\t\tprompt('inject_result:elem:' + id + split + text + split + name + split + className + split + tagName + split + rect.left + split + rect.top + split + rect.width + split + rect.height + split + attributes + split + html);\n" +
             "\t}\n" +
             "}\n" +
             "\n" +
-            "function promptText(element, range) {\t\n" +
+            "function promptText(element, range) {\n" +
+            "    var split = \"\\#dkqjf765kdj09d\\#\";\n" +
             "\tvar text = element.textContent;\n" +
             "\tif(text.trim().length>0) {\n" +
             "\t\trange.selectNodeContents(element);\n" +
@@ -279,15 +278,14 @@ class JavaScriptCreator {
             "\t\t\tvar name = element.parentNode.getAttribute('name');\n" +
             "\t\t\tvar className = element.parentNode.className;\n" +
             "\t\t\tvar tagName = element.parentNode.tagName;\n" +
-            "\t\t\tprompt(id + ';,' + text + ';,' + name + \";,\" + className + \";,\" + tagName + \";,\" + rect.left + ';,' + rect.top + ';,' + rect.width + ';,' + rect.height);\n" +
+            "\t\t\tprompt('inject_result:text:'+id + split + text + split + name + split + className + split + tagName + split + rect.left + split + rect.top + split + rect.width + split + rect.height);\n" +
             "\t\t}\n" +
             "\t}\n" +
             "}\n" +
             "\n" +
             "function finished(){\n" +
-            "\tprompt('robotium-finished');\n" +
-            "}";
-
+            "\tprompt('inject_result:fini:finish');\n" +
+            "}\n";
     String createJavaScript(String function,String frame) {
         String javaScript = setWebFrame(JAVA_SCRIPT,frame);
         return "javascript:" + javaScript + function;
@@ -298,8 +296,10 @@ class JavaScriptCreator {
         if(frame.isEmpty() || frame.equals("document")){
             return javascript;
         }
-        javascript = javascript.replaceAll(Pattern.quote("document, "), "document.getElementById(\""+frame+"\").contentDocument, ");
-        javascript = javascript.replaceAll(Pattern.quote("document.body, "), "document.getElementById(\""+frame+"\").contentDocument, ");
+        javascript = javascript.replaceAll(Pattern.quote("document, "),
+                "document.getElementById(\""+frame+"\").contentDocument, ");
+        javascript = javascript.replaceAll(Pattern.quote("document.body, "),
+                "document.getElementById(\""+frame+"\").contentDocument, ");
         return javascript;
     }
 

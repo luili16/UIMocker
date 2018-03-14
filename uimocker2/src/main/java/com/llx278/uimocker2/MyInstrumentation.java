@@ -115,7 +115,7 @@ final class MyInstrumentation extends InstrumentationDecorator {
         synchronized (mActivityRecordStack) {
             if (deep < 0 || deep >= mActivityRecordStack.size()) {
                 Logger.e("illegal size of deep,current deep = " + deep + " deep must greater " +
-                        "than 1 and less than " + mActivityRecordStack.size(), null);
+                        "than 0 and less than " + mActivityRecordStack.size() + " or current Activity stack is empty!", null);
                 return false;
             }
             int size = mActivityRecordStack.size();

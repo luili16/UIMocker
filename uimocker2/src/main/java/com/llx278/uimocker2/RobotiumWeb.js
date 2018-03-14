@@ -18,6 +18,12 @@ function allTexts() {
 	finished();
 }
 
+function htmlContent() {
+    var content = document.getElementsByTagName("html")[0].innerHtml;
+    promptElement(content);
+    finished();
+}
+
 function clickElement(element){
 	var e = document.createEvent('MouseEvents');
 	e.initMouseEvent('click', true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
@@ -30,8 +36,7 @@ function id(id, click) {
 
 		if(click == 'true'){
 			clickElement(element);
-		}
-		else{
+		}else{
 			promptElement(element);
 		}
 	} 
@@ -42,9 +47,7 @@ function id(id, click) {
 				if(element.id == id) {
 					if(click == 'true'){
 						clickElement(element);
-						return;
-					}
-					else{
+					}else{
 						promptElement(element);
 					}
 				}
@@ -62,9 +65,7 @@ function xpath(xpath, click) {
 		while(element) {
 			if(click == 'true'){
 				clickElement(element);
-				return;
-			}
-			else{
+			}else{
 				promptElement(element);
 				element = elements.iterateNext();
 			}
@@ -80,7 +81,6 @@ function cssSelector(cssSelector, click) {
 			try{
 				if(click == 'true'){
 					clickElement(elements[key]);
-					return;
 				}
 				else{
 					promptElement(elements[key]);
@@ -99,7 +99,6 @@ function name(name, click) {
 			if(attributeName != null && attributeName.trim().length>0 && attributeName == name){
 				if(click == 'true'){
 					clickElement(n);
-					return;
 				}
 				else{
 					promptElement(n);
@@ -118,7 +117,6 @@ function className(nameOfClass, click) {
 			if(className != null && className.trim().length>0 && className == nameOfClass) {
 				if(click == 'true'){
 					clickElement(n);
-					return;
 				}
 				else{
 					promptElement(n);
@@ -138,7 +136,6 @@ function textContent(text, click) {
 			if(textContent.trim() == text.trim()){  
 				if(click == 'true'){
 					clickElement(n);
-					return;
 				}
 				else{
 					promptText(n, range);
@@ -156,7 +153,6 @@ function tagName(tagName, click) {
 			try{
 				if(click == 'true'){
 					clickElement(elements[key]);
-					return;
 				}
 				else{
 					promptElement(elements[key]);
@@ -230,6 +226,7 @@ function enterTextByTagName(tagName, text) {
 }
 
 function promptElement(element) {
+    var split = "\#dkqjf765kdj09d\#";
 	var id = element.id;
 	var text = element.innerText;
 	if(text.trim().length == 0){
@@ -240,6 +237,7 @@ function promptElement(element) {
 	var tagName = element.tagName;
 	var attributes = "";
 	var htmlAttributes = element.attributes;
+	var html = element.innerHTML;
 	for (var i = 0, htmlAttribute; htmlAttribute = htmlAttributes[i]; i++){
 		attributes += htmlAttribute.name + "::" + htmlAttribute.value;
 		if (i + 1 < htmlAttributes.length) {
@@ -249,11 +247,12 @@ function promptElement(element) {
 
 	var rect = element.getBoundingClientRect();
 	if(rect.width > 0 && rect.height > 0 && rect.left >= 0 && rect.top >= 0){
-		prompt(id + ';,' + text + ';,' + name + ";," + className + ";," + tagName + ";," + rect.left + ';,' + rect.top + ';,' + rect.width + ';,' + rect.height + ';,' + attributes);
+		prompt('inject_result:elem:' + id + split + text + split + name + split + className + split + tagName + split + rect.left + split + rect.top + split + rect.width + split + rect.height + split + attributes + split + html);
 	}
 }
 
-function promptText(element, range) {	
+function promptText(element, range) {
+    var split = "\#dkqjf765kdj09d\#";
 	var text = element.textContent;
 	if(text.trim().length>0) {
 		range.selectNodeContents(element);
@@ -263,11 +262,11 @@ function promptText(element, range) {
 			var name = element.parentNode.getAttribute('name');
 			var className = element.parentNode.className;
 			var tagName = element.parentNode.tagName;
-			prompt(id + ';,' + text + ';,' + name + ";," + className + ";," + tagName + ";," + rect.left + ';,' + rect.top + ';,' + rect.width + ';,' + rect.height);
+			prompt('inject_result:text:'+id + split + text + split + name + split + className + split + tagName + split + rect.left + split + rect.top + split + rect.width + split + rect.height);
 		}
 	}
 }
 
 function finished(){
-	prompt('robotium-finished');
+	prompt('inject_result:fini:finish');
 }

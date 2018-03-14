@@ -57,7 +57,7 @@ public class Solo {
         mClicker = new Clicker(mActivityUtils, mViewGetter, mSender, mInstrumentation,
                 mSearcher, mDialogUtils);
         mParser = new Parser(mScroller,mInstrumentation,mSleeper);
-        mWebUtils = new WebUtils(mInstrumentation,mViewGetter,mSleeper);
+        mWebUtils = new WebUtils(mInstrumentation);
 
     }
 

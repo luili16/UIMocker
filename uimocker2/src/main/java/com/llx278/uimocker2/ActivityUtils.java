@@ -32,16 +32,7 @@ public class ActivityUtils {
      * @return true 对应的activity已经创建 false超时
      */
     public boolean waitForOnCreate(String activityName,long timeout,int deep) {
-        long endTime = SystemClock.uptimeMillis() + timeout;
-        while (SystemClock.uptimeMillis() < endTime) {
-            if (mMyInst.isExpectedActivityLifeCycle(activityName,
-                    MyInstrumentation.ActivityStateRecord.ON_CREATE,deep)) {
-                return true;
-            }
-            pause();
-        }
-
-        return false;
+        return waitFor(MyInstrumentation.ActivityStateRecord.ON_CREATE,activityName,timeout,deep);
     }
 
     /**
@@ -52,15 +43,7 @@ public class ActivityUtils {
      * @return true 对应的activity已经创建，false超时
      */
     public boolean waitForOnResume(String activityName,long timeout,int deep) {
-        long endTime = SystemClock.uptimeMillis() + timeout;
-        while (SystemClock.uptimeMillis() < endTime) {
-            if (mMyInst.isExpectedActivityLifeCycle(activityName,
-                    MyInstrumentation.ActivityStateRecord.ON_RESUME,deep)) {
-                return true;
-            }
-            pause();
-        }
-        return false;
+        return waitFor(MyInstrumentation.ActivityStateRecord.ON_RESUME,activityName,timeout,deep);
     }
 
     /**
@@ -71,10 +54,14 @@ public class ActivityUtils {
      * @return true 对应的activity已经创建，false超时
      */
     public boolean waitForOnPause(String activityName,long timeout,int deep) {
+        return waitFor(MyInstrumentation.ActivityStateRecord.ON_PAUSE,activityName,timeout,deep);
+    }
+
+    private boolean waitFor(int lifeCycle,String activityName,long timeout,int deep) {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() < endTime) {
             if (mMyInst.isExpectedActivityLifeCycle(activityName,
-                    MyInstrumentation.ActivityStateRecord.ON_PAUSE,deep)) {
+                    lifeCycle,deep)) {
                 return true;
             }
             pause();

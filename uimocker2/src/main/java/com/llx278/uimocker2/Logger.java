@@ -9,13 +9,14 @@ import java.util.Locale;
 import de.robv.android.xposed.XposedBridge;
 
 /**
+ * Logger 工具类
  * Created by llx on 05/01/2018.
  */
 
 public class Logger {
     private static final String TAG = "uimocker";
     private static final boolean DEBUG = true;
-    private static final boolean XPOSED_ENABLE = false;
+    private static final boolean XPOSED_ENABLE = true;
     private static final String SPILT = "  ";
 
     public static void d(String tag, String msg) {
@@ -57,6 +58,10 @@ public class Logger {
                 Log.e(tag,msg,e);
             }
         }
+    }
+
+    public static void e(Throwable e) {
+        e("",e);
     }
 
     public static void e(String msg,Throwable e) {

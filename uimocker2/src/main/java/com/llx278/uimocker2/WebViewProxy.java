@@ -76,31 +76,47 @@ interface WebViewProxy {
 
     void removeJavascriptInterface(String name);
 
-    boolean	requestChildRectangleOnScreen(View child, Rect rect, boolean immediate);
+    boolean requestChildRectangleOnScreen(View child, Rect rect, boolean immediate);
 
-    boolean	requestFocus(int direction, Rect previouslyFocusedRect);
+    boolean requestFocus(int direction, Rect previouslyFocusedRect);
 
-    void	requestFocusNodeHref(Message hrefMsg);
+    void requestFocusNodeHref(Message hrefMsg);
 
-    void	requestImageRef(Message msg);
+    void requestImageRef(Message msg);
 
-    void	saveWebArchive(String filename);
-    void	setBackgroundColor(int color);
-    void	setDownloadListener(Object listener);
-    void	setFindListener(Object listener);
-    void	setHttpAuthUsernamePassword(String host, String realm, String username, String password);
-    void	setInitialScale(int scaleInPercent);
+    void saveWebArchive(String filename);
+
+    void setBackgroundColor(int color);
+
+    void setDownloadListener(Object listener);
+
+    void setFindListener(Object listener);
+
+    void setHttpAuthUsernamePassword(String host, String realm, String username, String password);
+
+    void setInitialScale(int scaleInPercent);
+
     void setLayerType(int layerType, Paint paint);
-    void	setMapTrackballToArrowKeys(boolean setMap);
-    void	setNetworkAvailable(boolean networkUp);
-    void	setWebChromeClient(Object client);
-    void	setWebViewClient(Object client);
-    boolean	shouldDelayChildPressedState();
-    void	stopLoading();
-    void	zoomBy(float zoomFactor);
-    boolean	zoomIn();
-    boolean	zoomOut();
 
+    void setMapTrackballToArrowKeys(boolean setMap);
+
+    void setNetworkAvailable(boolean networkUp);
+
+    void setWebChromeClient(Object client);
+
+    void setWebViewClient(Object client);
+
+    boolean shouldDelayChildPressedState();
+
+    void stopLoading();
+
+    void zoomBy(float zoomFactor);
+
+    boolean zoomIn();
+
+    boolean zoomOut();
+
+    void getLocationOnScreen(int[] location);
 
 
 }

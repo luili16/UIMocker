@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.llx278.uimocker2.By;
+import com.llx278.uimocker2.Logger;
 import com.llx278.uimocker2.Solo;
 import com.llx278.uimocker2.WebElement;
 import com.llx278.uimocker2.WebUtils;
@@ -23,7 +24,7 @@ public class WebUITest {
 
     public void run(Solo solo) throws Exception {
         XposedBridge.log("进入 webUiTest");
-
+        solo.waitForTextAndClick("^浏览器demo$");
         boolean b = solo.waitForOnResume("com.example.test_webview_demo.BrowserActivity", 1000 * 20);
         if (!b) {
             XposedBridge.log("b is " + b);
@@ -56,13 +57,11 @@ public class WebUITest {
         XposedBridge.log("textViewListFromWebView : " + textViewListFromWebView.toString());*/
         //ArrayList<WebElement> webElements = webUtils.getWebElementList(true, webView, 5000);
        // XposedBridge.log(webElements.toString());
+        By by = By.tagName("html");
+        ArrayList<WebElement> document = webUtils.getWebElementList(by, false, webView);
 
-        //By by = By.id("__next");
-        //ArrayList<WebElement> document = webUtils.getWebElementList(by, false, webView, 5000);
-        //XposedBridge.log(document.toString());
-
-        By content = By.textContent("视频");
-        boolean b1 = webUtils.clickOnWebElement(content, webView, true);
+        By content = By.className("login");
+        boolean b1 = webUtils.clickOnWebElement(content, webView);
         XposedBridge.log("b1 : " + b1);
         XposedBridge.log("获取结束!");
 
