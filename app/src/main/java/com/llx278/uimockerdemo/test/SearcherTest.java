@@ -43,7 +43,7 @@ public class SearcherTest {
         Field mSearcher = aClass.getDeclaredField("mSearcher");
         mSearcher.setAccessible(true);
         Searcher searcher = (Searcher) mSearcher.get(solo);
-        Activity currentActivity = solo.getCurrentActivity();
+        Activity currentActivity = solo.getActivityUtils().getCurrentActivity();
 
         TextView text1 = searcher.searchTextViewByText("^text1$", true);
         assertNotNull(text1);

@@ -30,7 +30,7 @@ public class ClickerTest {
         Field mClicker = aClass.getDeclaredField("mClicker");
         mClicker.setAccessible(true);
         Clicker clicker = (Clicker) mClicker.get(solo);
-        Activity currentActivity = solo.getCurrentActivity();
+        Activity currentActivity = solo.getActivityUtils().getCurrentActivity();
 
         final Button bt = currentActivity.findViewById(R.id.container_1_mybutton_1);
         solo.runOnMainSync(new Runnable() {

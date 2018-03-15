@@ -25,24 +25,17 @@ public class Clicker {
     private final String LOG_TAG = "uimocker";
     private final ViewGetter mViewGetter;
     private final InstrumentationDecorator mInst;
-    private final ActivityUtils mActivityUtils;
-    private final Sender mSender;
     private final Searcher mSearcher;
-
-    private final DialogUtils mDialogUtils;
+    private final int MIN_CLICK_INTERCEPT = 50;
     private final int MINI_WAIT = 300;
-    private final int WAIT_TIME = 1500;
 
-    public Clicker(ActivityUtils activityUtils, ViewGetter viewGetter,
-                   Sender sender, InstrumentationDecorator inst,
-                   Searcher searcher, DialogUtils dialogUtils) {
+    public Clicker(ViewGetter viewGetter,
+                   InstrumentationDecorator inst,
+                   Searcher searcher) {
 
-        this.mActivityUtils = activityUtils;
         this.mViewGetter = viewGetter;
-        this.mSender = sender;
         this.mInst = inst;
         this.mSearcher = searcher;
-        this.mDialogUtils = dialogUtils;
     }
 
     private void pause(long time) {
@@ -58,6 +51,7 @@ public class Clicker {
             MotionEvent downEvent = getSimpleMotionEvent(MotionEvent.ACTION_DOWN, x, y);
             mInst.sendPointerSync(downEvent);
             downEvent.recycle();
+            pause(MIN_CLICK_INTERCEPT);
             MotionEvent upEvent = getSimpleMotionEvent(MotionEvent.ACTION_UP, x, y);
             mInst.sendPointerSync(upEvent);
             upEvent.recycle();
@@ -113,7 +107,6 @@ public class Clicker {
      * @return true 点击成功 false 点击失败
      */
     public boolean clickOnView(View target) {
-
         return clickOnScreen(target,false,0);
     }
 
@@ -149,70 +142,12 @@ public class Clicker {
     }
 
 
-    public boolean clickOnText(String regex,long timeout,boolean scroll) {
-        return clickOnText(regex,timeout,false,scroll,0);
+    public boolean clickOnText(String regex) {
+        return clickOnText(regex,false,0);
     }
 
-    public boolean longClickOnText(String regex,long timeout,boolean scroll,long time) {
-        return clickOnText(regex,timeout,true,scroll,time);
-    }
-
-    /**
-     * Clicks on an ActionBar Home/Up button.
-     */
-
-    public void clickOnActionBarHomeButton() {
-        Activity activity = mActivityUtils.getCurrentActivity();
-        MenuItem homeMenuItem = null;
-
-        try {
-            Class<?> cls = Class.forName("com.android.internal.view.menu.ActionMenuItem");
-            Class<?> partypes[] = new Class[6];
-            partypes[0] = Context.class;
-            partypes[1] = Integer.TYPE;
-            partypes[2] = Integer.TYPE;
-            partypes[3] = Integer.TYPE;
-            partypes[4] = Integer.TYPE;
-            partypes[5] = CharSequence.class;
-            Constructor<?> ct = cls.getConstructor(partypes);
-            Object argList[] = new Object[6];
-            argList[0] = activity;
-            argList[1] = 0;
-            argList[2] = android.R.id.home;
-            argList[3] = 0;
-            argList[4] = 0;
-            argList[5] = "";
-            homeMenuItem = (MenuItem) ct.newInstance(argList);
-        } catch (Exception ex) {
-            Log.d(LOG_TAG, "Can not find methods to invoke Home button!");
-        }
-
-        if (homeMenuItem != null) {
-            try{
-                activity.getWindow().getCallback().onMenuItemSelected(Window.FEATURE_OPTIONS_PANEL, homeMenuItem);
-            }catch(Exception ignored) {}
-        }
-    }
-
-
-
-    public boolean clickOnMenuItem(String regex,long timeout) {
-        openMenu();
-        return clickOnText(regex,timeout,true);
-    }
-
-
-    public void openMenu(){
-        pause(MINI_WAIT);
-
-        if(!mDialogUtils.waitForDialogToOpen(MINI_WAIT, false)) {
-            try{
-                mSender.sendKeyCode(KeyEvent.KEYCODE_MENU);
-                mDialogUtils.waitForDialogToOpen(WAIT_TIME, true);
-            }catch(SecurityException e){
-                Logger.d(LOG_TAG,"Can not open the menu!");
-            }
-        }
+    public boolean longClickOnText(String regex,long time) {
+        return clickOnText(regex,true,time);
     }
 
     /**
@@ -372,7 +307,7 @@ public class Clicker {
         return true;
     }
 
-    private boolean clickOnText(String regex, long timeout, boolean longClick, boolean scroll, long time) {
+    private boolean clickOnText(String regex, boolean longClick,long time) {
         TextView tv = mSearcher.searchTextViewByText(regex, true);
         if (tv != null) {
             return clickOnScreen(tv, longClick, time);
@@ -380,6 +315,4 @@ public class Clicker {
         Logger.e(LOG_TAG,"can not search textView from regex:" + regex + " click failed!",null);
         return false;
     }
-
-
 }

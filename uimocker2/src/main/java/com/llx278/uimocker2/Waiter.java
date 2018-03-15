@@ -28,14 +28,16 @@ public class Waiter {
     private final ViewGetter mViewGetter;
     private final Searcher mSearcher;
     private final Scroller mScroller;
+    private final WebUtils mWebUtils;
 
     public Waiter(ActivityUtils activityUtils,
-                  ViewGetter viewGetter, Searcher searcher,Scroller scroller) {
+                  ViewGetter viewGetter, Searcher searcher,Scroller scroller,WebUtils webUtils) {
 
         mActivityUtils = activityUtils;
         mViewGetter = viewGetter;
         mSearcher = searcher;
         mScroller = scroller;
+        mWebUtils = webUtils;
     }
 
     private void pause() {
@@ -148,6 +150,10 @@ public class Waiter {
             }
         }
         return false;
+    }
+
+    public boolean waitForTextAppear(String regex) {
+        return waitForTextAppear(regex,DEFAULT_WAIT_TIMEOUT);
     }
 
     /**
@@ -455,6 +461,40 @@ public class Waiter {
             }
         }
         return null;
+    }
+
+    /**
+     * 等待by指定的元素已经加载进dom，并返回此webElement的列表
+     * @param by 指定的by
+     * @param webView 指定的webView
+     * @param timeout 超时时间
+     * @return 返回by指定的所有元素的列表
+     */
+    public ArrayList<WebElement> waitForWebElementAppearAndGet(By by,View webView,long timeout) {
+
+        long endTime = SystemClock.uptimeMillis() + timeout;
+        while (SystemClock.uptimeMillis() < endTime) {
+
+            pause();
+            ArrayList<WebElement> webElementList = mWebUtils.getWebElementList(by, false, webView);
+            if (webElementList != null && !webElementList.isEmpty()) {
+                return webElementList;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 等待by指定的元素已经加载进dom
+     * 指定的元素是否显示在屏幕上面并没有太大的意义。
+     * @param by by
+     * @param webView 指定的webview
+     * @param timeout 超时时间
+     * @return true 出现在屏幕上，false 没有出现在屏幕上
+     */
+    public boolean waitForWebElementAppear(By by,View webView,long timeout) {
+        return waitForWebElementAppearAndGet(by,webView,timeout) != null;
     }
 
     private boolean isActivityMatching(Activity currentActivity, String activityName) {

@@ -35,8 +35,8 @@ public class ViewGetterTest {
         Field mViewGetter = aClass.getDeclaredField("mViewGetter");
         mViewGetter.setAccessible(true);
         ViewGetter viewGetter = (ViewGetter) mViewGetter.get(solo);
-        Activity currentActivity = solo.getCurrentActivity();
-        boolean text1Ret = solo.waitForTextAppear("^text1$",1000 * 5,false);
+        Activity currentActivity = solo.getActivityUtils().getCurrentActivity();
+        boolean text1Ret = solo.getWaiter().waitForTextAppear("^text1$",1000 * 5);
         assertTrue(text1Ret);
 
         List<View> viewsList1 = viewGetter.getViewList();
@@ -45,7 +45,7 @@ public class ViewGetterTest {
         List<View> viewList2 = viewGetter.getViewList(true);
         assertNotNull(viewList2);
 
-        Activity viewGetterTestActivity = solo.getCurrentActivity();
+        Activity viewGetterTestActivity = solo.getActivityUtils().getCurrentActivity();
         View container1 = viewGetterTestActivity.findViewById(R.id.container_1);
         List<View> viewList3 = viewGetter.getViewList(container1, true);
         assertEquals(6,viewList3.size());

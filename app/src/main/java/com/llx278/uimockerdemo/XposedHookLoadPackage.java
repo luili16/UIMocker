@@ -1,16 +1,12 @@
 package com.llx278.uimockerdemo;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import android.util.Log;
-import android.view.View;
 
-import com.llx278.uimocker2.Reflect;
+import com.llx278.uimocker2.Logger;
 import com.llx278.uimocker2.Solo;
-import com.llx278.uimockerdemo.test.WebUITest;
-
-import java.lang.reflect.Field;
+import com.llx278.uimockerdemo.test.SysWebUITest;
+import com.llx278.uimockerdemo.test.X5WebUITest;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -32,14 +28,35 @@ public class XposedHookLoadPackage implements IXposedHookLoadPackage {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     super.afterHookedMethod(param);
-                    XposedBridge.log("进入 application！！！！！");
-                    final Solo solo = Solo.getInstance((Context) param.args[0],null);
+                    XposedBridge.log("进入 com.example.test_webview_demo application！！！！！");
+                    final Solo solo = Solo.getInstance((Context) param.args[0]);
                     new Thread(){
                         @Override
                         public void run() {
 
                             try {
-                                WebUITest webUITest = new WebUITest();
+                                X5WebUITest webUITest = new X5WebUITest();
+                                webUITest.run(solo);
+                            } catch (Exception e) {
+                                XposedBridge.log(e);
+                            }
+                        }
+                    }.start();
+                }
+            });
+        }else if ("com.android.browser".equals(lpparam.packageName)) {
+            XposedHelpers.findAndHookMethod(Application.class, "attach", Context.class, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    super.afterHookedMethod(param);
+                    Logger.d("进入 com.android.browser application");
+                    final Solo solo = Solo.getInstance((Context) param.args[0]);
+                    new Thread(){
+                        @Override
+                        public void run() {
+
+                            try {
+                                SysWebUITest webUITest = new SysWebUITest();
                                 webUITest.run(solo);
                             } catch (Exception e) {
                                 XposedBridge.log(e);

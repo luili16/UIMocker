@@ -14,7 +14,7 @@ import de.robv.android.xposed.XposedBridge;
 class WebElementCreator {
 
 	private static final long DEFAULT_SLEEP_TIME = 200;
-	private static final long DEFAULT_WAITING_TIME_OUT = 5000;
+	private static final long DEFAULT_WAITING_TIME_OUT = 3000;
 	private List<WebElement> webElements;
 	private boolean isFinished = false;
 

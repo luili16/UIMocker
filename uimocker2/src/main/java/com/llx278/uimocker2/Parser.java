@@ -22,12 +22,10 @@ public class Parser {
 
     private Scroller mScroller;
     private InstrumentationDecorator mInstrumentation;
-    private Sleeper mSleeper;
 
-    public Parser(Scroller scroller, InstrumentationDecorator instrumentation, Sleeper sleeper) {
+    public Parser(Scroller scroller, InstrumentationDecorator instrumentation) {
         mScroller = scroller;
         mInstrumentation = instrumentation;
-        mSleeper = sleeper;
     }
 
     /**

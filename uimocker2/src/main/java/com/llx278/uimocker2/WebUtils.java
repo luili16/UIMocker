@@ -222,7 +222,7 @@ public class WebUtils {
 		return webElementsAsTextViews;
 	}
 
-	private boolean executeJavaScript(final By by, boolean shouldClick,Object webView,String frame) {
+	private boolean executeJavaScript(final By by, boolean shouldClick,View webView,String frame) {
 		if(by instanceof By.Id){
 			return executeJavaScriptFunction("id(\""+by.getValue()+"\", \"" + String.valueOf(shouldClick) + "\");",webView,frame);
 		}
@@ -247,7 +247,7 @@ public class WebUtils {
 		return false;
 	}
 
-	private boolean executeJavaScriptFunction(final String function, final Object webView,String frame) {
+	private boolean executeJavaScriptFunction(final String function, final View webView,String frame) {
 		if(webView == null) {
 			return false;
 		}

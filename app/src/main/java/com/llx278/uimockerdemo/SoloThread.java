@@ -1,16 +1,10 @@
 package com.llx278.uimockerdemo;
 
-import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
+import com.llx278.uimocker2.ActivityUtils;
 import com.llx278.uimocker2.Solo;
-import com.llx278.uimockerdemo.test.ClickerTest;
-import com.llx278.uimockerdemo.test.ScrollerTest;
-import com.llx278.uimockerdemo.test.SearcherTest;
-import com.llx278.uimockerdemo.test.ViewGetterTest;
-import com.llx278.uimockerdemo.test.WaiterTest;
-import com.llx278.uimockerdemo.test.WebUITest;
 
 import junit.framework.Assert;
 
@@ -26,20 +20,21 @@ public class SoloThread extends Thread {
     private Solo mSolo;
 
     public SoloThread(Context context) {
-        mSolo = Solo.getInstance(context,null);
+        mSolo = Solo.getInstance(context);
     }
 
     @Override
     public void run() {
-        boolean ret1 = mSolo.waitForActivity("com.llx278.uimockerdemo.MainActivity");
-        Assert.assertEquals(true,ret1);
+        ActivityUtils activityUtils = mSolo.getActivityUtils();
+        boolean b = activityUtils.waitForOnCreate("com.llx278.uimockerdemo.MainActivity", 2000, 0);
+        Assert.assertEquals(true,b);
 
        // boolean ret = mSolo.waitForTextAndClick("^ViewGetterTest$");
        // assertEquals(true,ret);
 
        // boolean resumeRet = mSolo.waitForOnResume("com.llx278.uimockerdemo.TestActivity");
        // assertEquals(true,resumeRet);
-        //mSolo.waitForTextAndClick("WebUITest");
+        //mSolo.waitForTextAndClick("X5WebUITest");
 
         try {
             //ViewGetterTest viewGetterTest = new ViewGetterTest();
@@ -55,7 +50,7 @@ public class SoloThread extends Thread {
             mSolo.waitForTextAndClick("^ViewGetterTest$");
             ClickerTest clickerTest = new ClickerTest();
             clickerTest.run(mSolo);*/
-            //WebUITest webUITest = new WebUITest();
+            //X5WebUITest webUITest = new X5WebUITest();
             //webUITest.run(mSolo);
             Log.d("main","all done!");
             //mSolo.getCurrentActivity().finish();

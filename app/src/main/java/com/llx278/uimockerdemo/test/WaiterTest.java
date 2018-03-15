@@ -32,7 +32,7 @@ public class WaiterTest {
         Field mWaiter = aClass.getDeclaredField("mWaiter");
         mWaiter.setAccessible(true);
         Waiter waiter = (Waiter) mWaiter.get(solo);
-        Activity currentActivity = solo.getCurrentActivity();
+        Activity currentActivity = solo.getActivityUtils().getCurrentActivity();
 
         boolean b7 = waiter.waitForActivity("com.llx278.uimockerdemo.TestActivity", 1000);
         Assert.assertTrue(b7);
@@ -58,7 +58,7 @@ public class WaiterTest {
         Assert.assertTrue(b12);
         boolean b13 = waiter.waitForActivityOnResume("com.llx278.uimockerdemo.TestActivity1", 1000,0);
         Assert.assertTrue(b13);
-        Activity newActivity = solo.getCurrentActivity();
+        Activity newActivity = solo.getActivityUtils().getCurrentActivity();
         Assert.assertEquals("com.llx278.uimockerdemo.TestActivity1",newActivity.getClass().getName());
         newActivity.finish();
 

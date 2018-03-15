@@ -10,6 +10,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Contains the waitForDialogToClose() method.
@@ -23,7 +24,6 @@ class DialogUtils {
 	private final InstrumentationDecorator instrumentation;
 	private final ActivityUtils activityUtils;
 	private final ViewGetter viewGetter;
-	private final Sleeper sleeper;
 	private final static int TIMEOUT_DIALOG_TO_CLOSE = 1000;
 	private final int MINISLEEP = 200;
 
@@ -32,14 +32,19 @@ class DialogUtils {
 	 *
 	 * @param activityUtils the {@code ActivityUtils} instance
 	 * @param viewGetter the {@code ViewGetter} instance
-	 * @param sleeper the {@code Sleeper} instance
 	 */
 
-	public DialogUtils(InstrumentationDecorator instrumentation, ActivityUtils activityUtils, ViewGetter viewGetter, Sleeper sleeper) {
+	public DialogUtils(InstrumentationDecorator instrumentation, ActivityUtils activityUtils, ViewGetter viewGetter) {
 		this.instrumentation = instrumentation;
 		this.activityUtils = activityUtils;
 		this.viewGetter = viewGetter;
-		this.sleeper = sleeper;
+	}
+
+	private void pause(long duration) {
+		try {
+			Thread.sleep(duration);
+		} catch (InterruptedException ignore) {
+		}
 	}
 
 	/**
@@ -58,7 +63,7 @@ class DialogUtils {
 			if(!isDialogOpen()){
 				return true;
 			}
-			sleeper.sleep(MINISLEEP);
+			pause(MINISLEEP);
 		}
 		return false;
 	}
@@ -76,8 +81,9 @@ class DialogUtils {
 		final long endTime = SystemClock.uptimeMillis() + timeout;
 		boolean dialogIsOpen = isDialogOpen();
 
-		if(sleepFirst)
-			sleeper.sleep();
+		if(sleepFirst) {
+			pause(MINISLEEP);
+		}
 		
 		if(dialogIsOpen){
 			return true;
@@ -88,7 +94,7 @@ class DialogUtils {
 			if(isDialogOpen()){
 				return true;
 			}
-			sleeper.sleepMini();
+			pause(MINISLEEP);
 		}
 		return false;
 	}
@@ -187,7 +193,7 @@ class DialogUtils {
 		}
 
 		if(shouldSleepAfter){
-			sleeper.sleep();
+			pause(MINISLEEP);
 		}
 	}
 }

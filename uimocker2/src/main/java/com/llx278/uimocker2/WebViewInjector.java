@@ -1,12 +1,18 @@
 package com.llx278.uimocker2;
 
+import android.content.Context;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.View;
 import android.webkit.JsPromptResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
@@ -16,14 +22,14 @@ import de.robv.android.xposed.XposedHelpers;
  * Created by llx on 2018/3/12.
  */
 
-class WebViewInjector {
+class WebViewInjector{
     private XC_MethodHook.Unhook mCurrentHookedMethod;
     private WebElementCreator mWebElementCreator;
     WebViewInjector(WebElementCreator creator) {
         mWebElementCreator = creator;
     }
 
-    boolean injectTo(final Object webView) {
+    boolean injectTo(final View webView) {
 
         try {
             if (webView == null) {
@@ -31,6 +37,7 @@ class WebViewInjector {
             }
 
             if (webView instanceof WebView) {
+
                 mCurrentHookedMethod = XposedHelpers.findAndHookMethod(WebChromeClient.class,
                         "onJsPrompt",
                         WebView.class,
@@ -39,8 +46,9 @@ class WebViewInjector {
                         String.class,
                         JsPromptResult.class,
                         new WebChromeHookedCallback());
-
+                return true;
             } else if (ReflectUtil.isAssignedFrom("com.tencent.smtt.sdk.WebView",webView)) {
+
                  mCurrentHookedMethod = XposedHelpers.findAndHookMethod(
                         "com.tencent.smtt.sdk.WebChromeClient",
                         webView.getClass().getClassLoader(),
@@ -53,6 +61,7 @@ class WebViewInjector {
                         new X5WebChromeHookedCallback());
                 return true;
             }
+
         } catch (Exception e) {
             Logger.e(e);
         }
