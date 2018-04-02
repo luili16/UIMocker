@@ -25,8 +25,8 @@ public class SoloThread extends Thread {
 
     private Solo mSolo;
 
-    public SoloThread(Context context) {
-        mSolo = new Solo(context);
+    public SoloThread(Solo solo) {
+        mSolo = solo;
     }
 
     @Override
