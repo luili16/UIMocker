@@ -1,6 +1,7 @@
 package com.llx278.uimocker2;
 
 import android.os.SystemClock;
+import android.util.Log;
 import android.webkit.WebView;
 
 import java.util.ArrayList;
@@ -8,104 +9,49 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-/**
- * Contains TextView related methods. Examples are:
- * getTextViewsFromWebViews(), createTextViewAndAddInList().
- * 
- * @author Renas Reda, renas.reda@robotium.com
- * 
- */
-
 class WebElementCreator {
 
+	private static final long DEFAULT_SLEEP_TIME = 200;
+	private static final long DEFAULT_WAITING_TIME_OUT = 3000;
 	private List<WebElement> webElements;
-	private Sleeper sleeper;
 	private boolean isFinished = false;
 
-	/**
-	 * Constructs this object.
-	 * 
-	 * @param sleeper the {@code Sleeper} instance
-	 * 
-	 */
-
-	public WebElementCreator(Sleeper sleeper){
-		this.sleeper = sleeper;
+	WebElementCreator(){
 		webElements = new CopyOnWriteArrayList<WebElement>();
 	}
 
-	/**
-	 * Prepares for start of creating {@code TextView} objects based on web elements 
-	 */
-
-	public void prepareForStart(){
+	void prepareForStart(){
 		setFinished(false);
 		webElements.clear();
 	}
 
-	/**
-	 * Returns an {@code ArrayList} of {@code TextView} objects based on the web elements shown
-	 * 
-	 * @return an {@code ArrayList} of {@code TextView} objects based on the web elements shown
-	 */
 
-	public ArrayList<WebElement> getWebElementsFromWebViews(){
-		waitForWebElementsToBeCreated();
-		return new ArrayList<WebElement>(webElements);
+	ArrayList<WebElement> getWebElementsFromWebViews(){
+		return new ArrayList<>(webElements);
 	}
 
-	/**
-	 * Returns true if all {@code TextView} objects based on web elements have been created
-	 * 
-	 * @return true if all {@code TextView} objects based on web elements have been created
-	 */
 
 	public boolean isFinished(){
 		return isFinished;
 	}
 
 
-	/**
-	 * Set to true if all {@code TextView} objects have been created
-	 * 
-	 * @param isFinished true if all {@code TextView} objects have been created
-	 */
-
-	public void setFinished(boolean isFinished){
+	void setFinished(boolean isFinished){
 		this.isFinished = isFinished;
 	}
 
-	/**
-	 * Creates a {@ WebElement} object from the given text and {@code WebView}
-	 * 
-	 * @param webData the data of the web element 
-	 * @param webView the {@code WebView} the text is shown in
-	 */
 
-	public void createWebElementAndAddInList(String webData, WebView webView){
+	void createWebElementAndAddInList(String webData, float scale, int[] locationOfWebViewXY){
+		WebElement webElement = createWebElementAndSetLocation(webData, scale,locationOfWebViewXY);
 
-		WebElement webElement = createWebElementAndSetLocation(webData, webView);
-
-		if((webElement!=null)) 
+		if((webElement!=null)) {
 			webElements.add(webElement);
+		}
 	}
 
-	/**
-	 * Sets the location of a {@code WebElement} 
-	 * 
-	 * @param webElement the {@code TextView} object to set location 
-	 * @param webView the {@code WebView} the text is shown in
-	 * @param x the x location to set
-	 * @param y the y location to set
-	 * @param width the width to set
-	 * @param height the height to set
-	 */
-
-	private void setLocation(WebElement webElement, WebView webView, int x, int y, int width, int height ){
-		float scale = webView.getScale();
-		int[] locationOfWebViewXY = new int[2];
-		webView.getLocationOnScreen(locationOfWebViewXY);
-
+	private void setLocation(WebElement webElement, float scale,int[] locationOfWebViewXY, int x, int y, int width, int height ){
+		// 注意 x,y,width,height可能是负值，这样的话在将webView上的坐标转换为屏幕上的坐标的时候就会产生偏移
+		// 这里并没有去理会如何对这样偏移做修正，因此，如果坐标与预想的不准确的话极有可能是这里出了问题!
 		int locationX = (int) (locationOfWebViewXY[0] + (x + (Math.floor(width / 2))) * scale);
 		int locationY = (int) (locationOfWebViewXY[1] + (y + (Math.floor(height / 2))) * scale);
 
@@ -113,30 +59,26 @@ class WebElementCreator {
 		webElement.setLocationY(locationY);
 	}
 
-	/**
-	 * Creates a {@code WebView} object 
-	 * 
-	 * @param information the data of the web element
-	 * @param webView the web view the text is shown in
-	 * 
-	 * @return a {@code WebElement} object with a given text and location
-	 */
-
-	private WebElement createWebElementAndSetLocation(String information, WebView webView){
-		String[] data = information.split(";,");
+	private WebElement createWebElementAndSetLocation(String information, float scale,int[] locationOfWebViewxy){
+		String regex = "\\#dkqjf765kdj09d\\#";
+		String[] data = information.split(regex);
 		String[] elements = null;
 		int x = 0;
 		int y = 0;
 		int width = 0;
 		int height = 0;
+		String html = null;
 		Hashtable<String, String> attributes = new Hashtable<String, String>();
 		try{
+			// 注意：x,y,width,height的值有可能是负值
 			x = Math.round(Float.valueOf(data[5]));
 			y = Math.round(Float.valueOf(data[6]));
 			width = Math.round(Float.valueOf(data[7]));
 			height = Math.round(Float.valueOf(data[8]));	
 			elements = data[9].split("\\#\\$");
-		}catch(Exception ignored){}
+			html = data[10];
+		}catch(Exception ignored){
+		}
 
 		if(elements != null) {
 			for (int index = 0; index < elements.length; index++){
@@ -152,30 +94,32 @@ class WebElementCreator {
 		WebElement webElement = null;
 
 		try{
-			webElement = new WebElement(data[0], data[1], data[2], data[3], data[4], attributes);
-			setLocation(webElement, webView, x, y, width, height);
-		}catch(Exception ignored) {}
-
+			webElement = new WebElement(data[0], data[1], data[2], data[3], data[4], attributes,html);
+			setLocation(webElement,scale,locationOfWebViewxy,x,y,width,height);
+		}catch(Exception ignored) {
+			Log.e("uimocker2","",ignored);
+		}
 		return webElement;
 	}
 
-	/**
-	 * Waits for {@code WebElement} objects to be created
-	 * 
-	 * @return true if successfully created before timout
-	 */
+	private void pause(long time) {
+		try {
+			Thread.sleep(time);
+		} catch (InterruptedException ignore) {
+		}
+	}
 
-	private boolean waitForWebElementsToBeCreated(){
-		final long endTime = SystemClock.uptimeMillis() + 5000;
+
+	boolean waitForWebElementsToBeCreated(){
+		final long endTime = SystemClock.uptimeMillis() + DEFAULT_WAITING_TIME_OUT;
 
 		while(SystemClock.uptimeMillis() < endTime){
-
 			if(isFinished){
 				return true;
 			}
-
-			sleeper.sleepMini();
+			pause(DEFAULT_SLEEP_TIME);
 		}
+
 		return false;
 	}
 

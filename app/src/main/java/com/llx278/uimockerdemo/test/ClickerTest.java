@@ -6,7 +6,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
-import android.widget.ScrollView;
 
 import com.llx278.uimocker2.Clicker;
 import com.llx278.uimocker2.Solo;
@@ -30,7 +29,7 @@ public class ClickerTest {
         Field mClicker = aClass.getDeclaredField("mClicker");
         mClicker.setAccessible(true);
         Clicker clicker = (Clicker) mClicker.get(solo);
-        Activity currentActivity = solo.getCurrentActivity();
+        Activity currentActivity = solo.getActivityUtils().getCurrentActivity();
 
         final Button bt = currentActivity.findViewById(R.id.container_1_mybutton_1);
         solo.runOnMainSync(new Runnable() {

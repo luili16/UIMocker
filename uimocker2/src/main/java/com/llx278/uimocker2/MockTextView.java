@@ -10,7 +10,7 @@ import android.widget.TextView;
  * 
  */
 
-class RobotiumTextView extends TextView {
+class MockTextView extends TextView {
 	private int locationX = 0;
 	private int locationY = 0;
 
@@ -20,7 +20,7 @@ class RobotiumTextView extends TextView {
 	 * @param context the given context
 	 */
 	
-	public RobotiumTextView(Context context){
+	public MockTextView(Context context){
 		super(context);
 	}
 	
@@ -31,7 +31,7 @@ class RobotiumTextView extends TextView {
 	 * @param text the given text to be set
 	 */
 	
-	public RobotiumTextView(Context context, String text, int locationX, int locationY) {
+	public MockTextView(Context context, String text, int locationX, int locationY) {
 		super(context);
 		this.setText(text);
 		setLocationX(locationX);

@@ -1,131 +1,68 @@
 package com.llx278.uimocker2;
 
 import java.lang.reflect.Field;
-
-/**
- * A reflection utility class.  
- * 
- * @author Per-Erik Bergman, bergman@uncle.se
- * 
- */
+import java.lang.reflect.Method;
 
 public class Reflect {
 	private Object object;
 
-	/**
-	 * Constructs this object 
-	 * 
-	 * @param object the object to reflect on
-	 */
-	
 	public Reflect(Object object) {
 		if (object == null)
 			throw new IllegalArgumentException("Object can not be null.");
 		this.object = object;
 	}
 
-	/**
-	 * Get a field from the object 
-	 * 
-	 * @param name the name of the field
-	 * 
-	 * @return a field reference
-	 */
-	
-	public FieldRf field(String name) {
-		return new FieldRf(object, name);
+	public FieldRf field(String fieldName) {
+		return new FieldRf(object, fieldName);
 	}
 
-	/**
-	 * A field reference.  
-	 */
+	MethodRf method(String methodName,Class<?> ... paramTypes) {
+		return new MethodRf(object,methodName,paramTypes);
+	}
+
 	public class FieldRf {
-		private Class<?> clazz;
-		private Object object;
-		private String name;
+		private Object mObject;
+		private String mName;
 
-		/**
-		 * Constructs this object 
-		 * 
-		 * @param object the object to reflect on
-		 * @param name the name of the field
-		 */
-		
-		public FieldRf(Object object, String name) {
-			this.object = object;
-			this.name = name;
+		FieldRf(Object object, String name) {
+			mObject = object;
+			mName = name;
 		}
-
-		/**
-		 * Constructs this object 
-		 * 
-		 * @param outclazz the output type
-		 *
-		 * @return <T> T
-		 */
 		
-		public <T> T out(Class<T> outclazz) {
-			Field field = getField();
-			Object obj = getValue(field);
-			return outclazz.cast(obj);
+		public Object out() throws Exception {
+			Field field = ReflectUtil.findFieldRecursiveImpl(mObject.getClass(), mName);
+			field.setAccessible(true);
+			return getValue(field);
 		}
-
-		/**
-		 * Set a value to a field 
-		 * 
-		 * @param value the value to set
-		 */
 		
-		public void in(Object value) {
-			Field field = getField();
-			try {
-				field.set(object, value);
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
-		}
-
-		/**
-		 * Set the class type 
-		 * 
-		 * @param clazz the type
-		 *
-		 * @return a field reference
-		 */
-		
-		public FieldRf type(Class<?> clazz) {
-			this.clazz = clazz;
-			return this;
-		}
-
-		private Field getField() {
-			if (clazz == null) {
-				clazz = object.getClass();
-			}
-
+		public void in(Object value) throws Exception {
 			Field field = null;
-			try {
-				field = clazz.getDeclaredField(name);
-				field.setAccessible(true);
-			} catch (NoSuchFieldException ignored) {}
-			return field;
+			field = ReflectUtil.findFieldRecursiveImpl(mObject.getClass(), mName);
+			field.set(mObject, value);
 		}
 
-		private Object getValue(Field field) {
+		private Object getValue(Field field) throws Exception {
 			if (field == null) {
 				return null;
 			}
-			Object obj = null;
-			try {
-				obj = field.get(object);
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
-			return obj;
+			return field.get(mObject);
+		}
+	}
+
+	class MethodRf {
+		private Object mObject;
+		private String mMethodName;
+		private Class<?>[] mParamTypes;
+		MethodRf(Object object, String methodName, Class<?>... paramTypes) {
+			mObject = object;
+			mMethodName = methodName;
+			mParamTypes = paramTypes;
+		}
+
+		Object invoke(Object... args) throws Exception {
+			Method method;
+			method = mObject.getClass().getMethod(mMethodName,mParamTypes);
+			return method.invoke(mObject,args);
 		}
 	}
 

@@ -2,7 +2,6 @@ package com.llx278.uimocker2;
 
 import android.content.Context;
 import android.graphics.Point;
-import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.Display;
 import android.view.View;
@@ -10,19 +9,13 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.WindowManager;
 import android.webkit.WebView;
-import android.widget.Button;
 import android.widget.HorizontalScrollView;
-import android.widget.ListView;
 import android.widget.ScrollView;
-import android.widget.TextView;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 获得指定条件的View
@@ -327,7 +320,7 @@ public class ViewGetter {
             Object instance = instanceField.get(null);
             return Collections.unmodifiableList((ArrayList<View>) viewsField.get(instance));
         } catch (Exception e) {
-            Logger.e("ViewGetter.getWindowViews", e);
+            MLogger.e("ViewGetter.getWindowViews", e);
             return null;
         }
     }

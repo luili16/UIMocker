@@ -10,6 +10,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Contains the waitForDialogToClose() method.
@@ -18,12 +19,11 @@ import java.util.List;
  * 
  */
 
-class DialogUtils {
+public class DialogUtils {
 
 	private final InstrumentationDecorator instrumentation;
 	private final ActivityUtils activityUtils;
 	private final ViewGetter viewGetter;
-	private final Sleeper sleeper;
 	private final static int TIMEOUT_DIALOG_TO_CLOSE = 1000;
 	private final int MINISLEEP = 200;
 
@@ -32,14 +32,19 @@ class DialogUtils {
 	 *
 	 * @param activityUtils the {@code ActivityUtils} instance
 	 * @param viewGetter the {@code ViewGetter} instance
-	 * @param sleeper the {@code Sleeper} instance
 	 */
 
-	public DialogUtils(InstrumentationDecorator instrumentation, ActivityUtils activityUtils, ViewGetter viewGetter, Sleeper sleeper) {
+	DialogUtils(InstrumentationDecorator instrumentation, ActivityUtils activityUtils, ViewGetter viewGetter) {
 		this.instrumentation = instrumentation;
 		this.activityUtils = activityUtils;
 		this.viewGetter = viewGetter;
-		this.sleeper = sleeper;
+	}
+
+	private void pause(long duration) {
+		try {
+			Thread.sleep(duration);
+		} catch (InterruptedException ignore) {
+		}
 	}
 
 	/**
@@ -50,7 +55,7 @@ class DialogUtils {
 	 */
 
 	public boolean waitForDialogToClose(long timeout) {
-		waitForDialogToOpen(TIMEOUT_DIALOG_TO_CLOSE, false);
+		waitForDialogToOpen(TIMEOUT_DIALOG_TO_CLOSE);
 		final long endTime = SystemClock.uptimeMillis() + timeout;
 
 		while (SystemClock.uptimeMillis() < endTime) {
@@ -58,7 +63,7 @@ class DialogUtils {
 			if(!isDialogOpen()){
 				return true;
 			}
-			sleeper.sleep(MINISLEEP);
+			pause(MINISLEEP);
 		}
 		return false;
 	}
@@ -72,12 +77,9 @@ class DialogUtils {
 	 * @return {@code true} if the {@code Dialog} is opened before the defaultWaitTimeout and {@code false} if it is not opened
 	 */
 
-	public boolean waitForDialogToOpen(long timeout, boolean sleepFirst) {
+	public boolean waitForDialogToOpen(long timeout) {
 		final long endTime = SystemClock.uptimeMillis() + timeout;
 		boolean dialogIsOpen = isDialogOpen();
-
-		if(sleepFirst)
-			sleeper.sleep();
 		
 		if(dialogIsOpen){
 			return true;
@@ -88,7 +90,7 @@ class DialogUtils {
 			if(isDialogOpen()){
 				return true;
 			}
-			sleeper.sleepMini();
+			pause(MINISLEEP);
 		}
 		return false;
 	}
@@ -187,7 +189,7 @@ class DialogUtils {
 		}
 
 		if(shouldSleepAfter){
-			sleeper.sleep();
+			pause(MINISLEEP);
 		}
 	}
 }

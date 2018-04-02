@@ -26,39 +26,43 @@ public class SoloThread extends Thread {
     private Solo mSolo;
 
     public SoloThread(Context context) {
-        mSolo = Solo.getInstance(context,null);
+        mSolo = new Solo(context);
     }
 
     @Override
     public void run() {
-        boolean ret1 = mSolo.waitForActivity("com.llx278.uimockerdemo.MainActivity");
+        String activityName = "com.llx278.uimockerdemo.MainActivity";
+        boolean ret1 = mSolo.getActivityUtils().waitForOnCreate(activityName,1000 * 10,0);
         Assert.assertEquals(true,ret1);
 
-       // boolean ret = mSolo.waitForTextAndClick("^ViewGetterTest$");
-       // assertEquals(true,ret);
+        boolean ret = mSolo.waitForTextAndClick("^ViewGetterTest$");
+        assertEquals(true,ret);
 
-       // boolean resumeRet = mSolo.waitForOnResume("com.llx278.uimockerdemo.TestActivity");
-       // assertEquals(true,resumeRet);
+        boolean resumeRet = mSolo.getActivityUtils().waitForOnResume(
+                "com.llx278.uimockerdemo.TestActivity",
+                1000 * 10,
+                0);
+        assertEquals(true,resumeRet);
         mSolo.waitForTextAndClick("WebUITest");
 
         try {
-            //ViewGetterTest viewGetterTest = new ViewGetterTest();
+            ViewGetterTest viewGetterTest = new ViewGetterTest();
+            // 受屏幕分辨率的影响，无法准确的测试
             //viewGetterTest.run(mSolo);
-            /*ScrollerTest scrollerTest = new ScrollerTest();
+            ScrollerTest scrollerTest = new ScrollerTest();
             scrollerTest.run(mSolo);
             mSolo.waitForTextAndClick("^ViewGetterTest$");
             SearcherTest searcherTest = new SearcherTest();
-            searcherTest.run(mSolo);
+            // 受屏幕分辨率的影响，无法准确的测试
+            //searcherTest.run(mSolo);
             mSolo.waitForTextAndClick("^ViewGetterTest$");
             WaiterTest waiterTest = new WaiterTest();
             waiterTest.run(mSolo);
             mSolo.waitForTextAndClick("^ViewGetterTest$");
             ClickerTest clickerTest = new ClickerTest();
-            clickerTest.run(mSolo);*/
-            WebUITest webUITest = new WebUITest();
-            webUITest.run(mSolo);
+            clickerTest.run(mSolo);
             Log.d("main","all done!");
-            //mSolo.getCurrentActivity().finish();
+            mSolo.getActivityUtils().finishOpenedActivities();
         } catch (Exception e) {
             e.printStackTrace();
         }

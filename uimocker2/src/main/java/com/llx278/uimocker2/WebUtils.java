@@ -1,186 +1,289 @@
 package com.llx278.uimocker2;
 
-import android.webkit.WebChromeClient;
-import android.webkit.WebView;
+import android.view.View;
+import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
+
+import de.robv.android.xposed.XposedBridge;
 
 
 /**
- * Contains web related methods. Examples are:
- * enterTextIntoWebElement(), getWebTexts(), getWebElements().
- * 
- * @author Renas Reda, renas.reda@robotium.com
- * 
+ * 包含操作web元素相关的方法
  */
-
 public class WebUtils {
 
-	private ViewGetter viewGetter;
-	private InstrumentationDecorator inst;
-	RobotiumWebClient robotiumWebCLient;
-	WebElementCreator webElementCreator;
-	WebChromeClient originalWebChromeClient = null;
+	private static final String DEFAULT_FRAME = "document";
+
+	private WebElementCreator mWebElementCreator;
+	private WebViewInjector mInjector;
+	private WebViewExecutor mExecutor;
+	private JavaScriptCreator mJSCreator;
+	private InstrumentationDecorator mInst;
+
+	WebUtils(InstrumentationDecorator instrumentation){
+		mInst = instrumentation;
+		mWebElementCreator = new WebElementCreator();
+		mInjector = new WebViewInjector(mWebElementCreator,mInst);
+		mExecutor = new WebViewExecutor(instrumentation);
+		mJSCreator = new JavaScriptCreator();
+	}
+
+	/**
+	 * 从给定的webview里面取出所有的Web元素，默认的frame是{@link WebUtils#DEFAULT_FRAME}
+	 * @param onlySufficientlyVisible true 只抓取当前屏幕上面可见的 false 抓取由frame指定的所有web元素
+	 * @param webView 指定的webview
+	 * @return 抓取后所有元素的列表
+	 */
+	public ArrayList<WebElement> getWebElementList(boolean onlySufficientlyVisible, View webView) {
+		return getWebElementList(onlySufficientlyVisible,webView,DEFAULT_FRAME);
+	}
+
+	/**
+	 * 从给定的webview里面取出所有的Web元素
+	 * @param onlySufficientlyVisible true 只抓取当前屏幕上面可见的 false 抓取由frame指定的所有web元素
+	 * @param webView 指定的WebView
+	 * @param frame 默认是document
+	 * @return 抓取后所有元素的列表
+	 */
+	public ArrayList<WebElement> getWebElementList(boolean onlySufficientlyVisible, View webView,String frame){
+		boolean javaScriptWasExecuted = executeJavaScriptFunction("allWebElements();",webView,frame);
+		return getWebElementList(javaScriptWasExecuted, onlySufficientlyVisible,webView);
+	}
+
+	/**
+	 * 从指定的By(例如 by.id)里面取出所有的web元素,默认的frame是document
+	 * @param by 指定的by
+	 * @param onlySufficientlyVisbile true 只抓取当前屏幕上面可见的 false 抓取由frame指定的所有web元素
+	 * @param webView 指定的webview
+	 * @return 抓取到的所有元素列表
+	 */
+	public ArrayList<WebElement> getWebElementList(By by, boolean onlySufficientlyVisbile,View webView) {
+		return getWebElementList(by,onlySufficientlyVisbile,webView,DEFAULT_FRAME);
+	}
+	/**
+	 * 从指定的By(例如 by.id)里面取出所有的web元素
+	 * @param by 指定的by
+	 * @param onlySufficientlyVisible true 只抓取当前屏幕上面可见的 false 抓取由frame指定的所有web元素
+	 * @param webView 指定的webview
+	 * @param frame 指定的frame
+	 * @return 抓取到的所有元素列表
+	 */
+	public ArrayList<WebElement> getWebElementList(By by, boolean onlySufficientlyVisible,View webView,String frame){
+		boolean javaScriptWasExecuted = executeJavaScript(by,false,webView,frame);
+		return getWebElementList(javaScriptWasExecuted,onlySufficientlyVisible,webView);
+	}
+
+	/**
+	 * 将指定WebView里面的所有元素全部转换为WebView
+	 * @param webView
+	 * @return
+	 */
+	public ArrayList<TextView> getTextViewListFromWebView(View webView) {
+		return getTextViewListFromWebView(webView,DEFAULT_FRAME);
+	}
+
+	public ArrayList<TextView> getTextViewListFromWebView(View webView,String frame) {
+		boolean javaScriptWasExecuted = executeJavaScriptFunction("allTexts();",webView,frame);
+		return createAndReturnTextViewsFromWebElements(javaScriptWasExecuted,webView);
+	}
+
+	/**
+	 * 点击by指定的元素
+	 * @param by 指定的by
+	 * @param webView 指定的webView
+	 * @return true 点击成功 false 点击失败
+	 */
+	public boolean clickOnWebElement(By by,View webView) {
+		return executeJavaScript(by,true,webView,DEFAULT_FRAME);
+	}
+
+	/**
+	 * 判断指定的webView是否支持回退
+	 * @return true 支持 false 不支持
+	 */
+	public boolean canGoBack(View webView) {
+		WebViewProxy proxy = WebViewProxyCreator.create(webView);
+		return proxy.canGoBack();
+	}
 
 
 	/**
-	 * Constructs this object.
-	 * 
-	 * @param instrumentation the {@code Instrumentation} instance
-	 * @param viewGetter the {@code ViewFetcher}
-	 * @param sleeper the {@code Sleeper} instance
+	 * 判断指定的webView是否支持快进
+	 * @param webView 指定的webView
+	 * @return true 支持快进 false 不支持
 	 */
-
-	public WebUtils(InstrumentationDecorator instrumentation, ViewGetter viewGetter, Sleeper sleeper){
-		this.inst = instrumentation;
-		this.viewGetter = viewGetter;
-		webElementCreator = new WebElementCreator(sleeper);
-		robotiumWebCLient = new RobotiumWebClient(instrumentation, webElementCreator);
+	public boolean canGoForward(View webView) {
+		WebViewProxy proxy = WebViewProxyCreator.create(webView);
+		return proxy.canGoForward();
 	}
 
-	public ArrayList<WebElement> getWebElements(boolean onlySufficientlyVisible,Object webView,Object webChromeClient){
-		boolean javaScriptWasExecuted = executeJavaScriptFunction("allWebElements();",null,null);
-
-		return getWebElements(javaScriptWasExecuted, onlySufficientlyVisible);
+	/**
+	 * 回退
+	 * @param webView 指定的webview
+	 */
+	public void goBack(View webView){
+		WebViewProxy proxy = WebViewProxyCreator.create(webView);
+		proxy.goBack();
 	}
 
-	private ArrayList<WebElement> getWebElements(boolean javaScriptWasExecuted, boolean onlySufficientlyVisbile){
-		ArrayList<WebElement> webElements = new ArrayList<WebElement>();
-
-		if(javaScriptWasExecuted){
-			for(WebElement webElement : webElementCreator.getWebElementsFromWebViews()){
-				if(!onlySufficientlyVisbile){
-					webElements.add(webElement);
-				}
-				else if(isWebElementSufficientlyShown(webElement)){
-					webElements.add(webElement);
-				}
-			}
-		}
-		return webElements;
+	/**
+	 * 前进或者后退指定的steps
+	 * @param webView 指定的webView
+	 * @param steps 步数
+	 */
+	public void goBackOrForward(View webView,int steps){
+		WebViewProxy proxy = WebViewProxyCreator.create(webView);
+		proxy.goBackOrForward(steps);
 	}
 
-	public final boolean isWebElementSufficientlyShown(WebElement webElement){
-		final WebView webView = viewGetter.getFreshestView(viewGetter.getViewListByClass(WebView.class, true));
+	/**
+	 * 向前
+	 * @param webView 指定的webView
+	 */
+	public void goForward(View webView){
+		WebViewProxy proxy = WebViewProxyCreator.create(webView);
+		proxy.goForward();
+	}
+
+	/**
+	 * reload
+	 * @param webView 指定的webview
+	 */
+	public void reload(View webView) {
+		WebViewProxy proxy = WebViewProxyCreator.create(webView);
+		proxy.reload();
+	}
+
+	public boolean pageDown(View webView,boolean bottom) {
+		WebViewProxy proxy = WebViewProxyCreator.create(webView);
+		return proxy.pageDown(bottom);
+	}
+
+	public boolean pageUp(View webView,boolean top) {
+		WebViewProxy proxy = WebViewProxyCreator.create(webView);
+		return proxy.pageUp(top);
+	}
+
+	/**
+	 * 判断指定的webVie，是否支持goBack或者forward指定的steps
+	 * @param steps 移动的步数
+	 * @return true 支持 false 不支持
+	 */
+	public boolean canGoBackOrForward(View webView,int steps) {
+		WebViewProxy proxy = WebViewProxyCreator.create(webView);
+		return proxy.canGoBackOrForward(steps);
+	}
+
+	public void loadUrl(View webView,String url) {
+		WebViewProxy proxy = WebViewProxyCreator.create(webView);
+		proxy.loadUrl(url);
+	}
+
+	private boolean isWebElementSufficientlyShown(WebElement webElement,View webView){
+
 		final int[] xyWebView = new int[2];
-
 		if(webView != null && webElement != null){
 			webView.getLocationOnScreen(xyWebView);
-
 			if(xyWebView[1] + webView.getHeight() > webElement.getLocationY())
 				return true;
 		}
 		return false;
 	}
 
-	private boolean executeJavaScriptFunction(final String function, final Object webView, Object webChromeClient) {
+	private void enterTextIntoWebElement(final By by, final String text,View webView,String frame){
+		if(by instanceof By.Id){
+			executeJavaScriptFunction("enterTextById(\""+by.getValue()+"\", \""+text+"\");",webView,frame);
+		}
+		else if(by instanceof By.Xpath){
+			executeJavaScriptFunction("enterTextByXpath(\""+by.getValue()+"\", \""+text+"\");",webView,frame);
+		}
+		else if(by instanceof By.CssSelector){
+			executeJavaScriptFunction("enterTextByCssSelector(\""+by.getValue()+"\", \""+text+"\");",webView,frame);
+		}
+		else if(by instanceof By.Name){
+			executeJavaScriptFunction("enterTextByName(\""+by.getValue()+"\", \""+text+"\");",webView,frame);
+		}
+		else if(by instanceof By.ClassName){
+			executeJavaScriptFunction("enterTextByClassName(\""+by.getValue()+"\", \""+text+"\");",webView,frame);
+		}
+		else if(by instanceof By.Text){
+			executeJavaScriptFunction("enterTextByTextContent(\""+by.getValue()+"\", \""+text+"\");",webView,frame);
+		}
+		else if(by instanceof By.TagName){
+			executeJavaScriptFunction("enterTextByTagName(\""+by.getValue()+"\", \""+text+"\");",webView,frame);
+		}
+	}
 
+	private ArrayList <TextView> createAndReturnTextViewsFromWebElements(boolean javaScriptWasExecuted,View webView){
+		ArrayList<TextView> webElementsAsTextViews = new ArrayList<>();
+		if(javaScriptWasExecuted){
+			for(WebElement webElement : mWebElementCreator.getWebElementsFromWebViews()){
+				if(isWebElementSufficientlyShown(webElement,webView)){
+					MockTextView textView = new MockTextView(mInst.getContext(), webElement.getText(),
+							webElement.getLocationX(), webElement.getLocationY());
+					webElementsAsTextViews.add(textView);
+				}
+			}
+		}
+		return webElementsAsTextViews;
+	}
+
+	private boolean executeJavaScript(final By by, boolean shouldClick,View webView,String frame) {
+		if(by instanceof By.Id){
+			return executeJavaScriptFunction("id(\""+by.getValue()+"\", \"" + String.valueOf(shouldClick) + "\");",webView,frame);
+		}
+		else if(by instanceof By.Xpath){
+			return executeJavaScriptFunction("xpath(\""+by.getValue()+"\", \"" + String.valueOf(shouldClick) + "\");",webView,frame);
+		}
+		else if(by instanceof By.CssSelector){
+			return executeJavaScriptFunction("cssSelector(\""+by.getValue()+"\", \"" + String.valueOf(shouldClick) + "\");",webView,frame);
+		}
+		else if(by instanceof By.Name){
+			return executeJavaScriptFunction("name(\""+by.getValue()+"\", \"" + String.valueOf(shouldClick) + "\");",webView,frame);
+		}
+		else if(by instanceof By.ClassName){
+			return executeJavaScriptFunction("className(\""+by.getValue()+"\", \"" + String.valueOf(shouldClick) + "\");",webView,frame);
+		}
+		else if(by instanceof By.Text){
+			return executeJavaScriptFunction("textContent(\""+by.getValue()+"\", \"" + String.valueOf(shouldClick) + "\");",webView,frame);
+		}
+		else if(by instanceof By.TagName){
+			return executeJavaScriptFunction("tagName(\""+by.getValue()+"\", \"" + String.valueOf(shouldClick) + "\");",webView,frame);
+		} else if (by instanceof By.Attribute) {
+			return executeJavaScriptFunction("attribute(\""+by.getValue()+"\", \"" + String.valueOf(shouldClick) + "\");",webView,frame);
+		}
+		return false;
+	}
+
+	private boolean executeJavaScriptFunction(final String function, final View webView,String frame) {
 		if(webView == null) {
 			return false;
 		}
+		mWebElementCreator.prepareForStart();
+		boolean finish = false;
+		if (mInjector.injectTo(webView)) {
+			final String javaScript = mJSCreator.createJavaScript(function,frame);
+			mExecutor.executeJavaScript(javaScript,webView);
+			finish = mWebElementCreator.waitForWebElementsToBeCreated();
+		}
+		mInjector.unInject(webView);
+		return finish;
+	}
 
-		/*final String javaScript = setWebFrame(prepareForStartOfJavascriptExecution(webView));
+	private ArrayList<WebElement> getWebElementList(boolean javaScriptWasExecuted,
+													boolean onlySufficientlyVisbile,View webView){
+		ArrayList<WebElement> webElements = new ArrayList<>();
 
-		inst.runOnMainSync(new Runnable() {
-			public void run() {
-				if (webView instanceof WebView) {
-					((WebView) webView).loadUrl("javascript:" + javaScript + function);
+		if(javaScriptWasExecuted){
+			for(WebElement webElement : mWebElementCreator.getWebElementsFromWebViews()){
+				if(!onlySufficientlyVisbile){
+					webElements.add(webElement);
+				} else if(isWebElementSufficientlyShown(webElement,webView)){
+					webElements.add(webElement);
 				}
 			}
-		});*/
-
-		return true;
-	}
-
-	private String setWebFrame(String javascript){
-		String frame = "document";
-
-		if(frame.isEmpty() || frame.equals("document")){
-			return javascript;
 		}
-		javascript = javascript.replaceAll(Pattern.quote("document, "), "document.getElementById(\""+frame+"\").contentDocument, ");
-		javascript = javascript.replaceAll(Pattern.quote("document.body, "), "document.getElementById(\""+frame+"\").contentDocument, ");
-		return javascript;
-	}
-
-	/**
-	 * Prepares for start of JavaScript execution
-	 * 
-	 * @return the JavaScript as a String
-	 */
-	private String prepareForStartOfJavascriptExecution(WebView webViews) {
-		webElementCreator.prepareForStart();
-
-		WebChromeClient currentWebChromeClient = getCurrentWebChromeClient();
-
-		if(currentWebChromeClient != null && !currentWebChromeClient.getClass().isAssignableFrom(RobotiumWebClient.class)){
-			originalWebChromeClient = currentWebChromeClient;	
-		}
-		robotiumWebCLient.enableJavascriptAndSetRobotiumWebClient(webViews, originalWebChromeClient);
-		return getJavaScriptAsString();
-	}
-	
-	/**
-	 * Returns the current WebChromeClient through reflection
-	 * 
-	 * @return the current WebChromeClient
-	 * 
-	 */
-
-	private WebChromeClient getCurrentWebChromeClient(){
-		WebChromeClient currentWebChromeClient = null;
-
-		Object currentWebView = viewGetter.getFreshestView(viewGetter.getViewListByClass(WebView.class, true));
-
-		try{
-			if (android.os.Build.VERSION.SDK_INT >= 19) {
-				Object mClientAdapter = new Reflect(currentWebView).field("mContentsClientAdapter").out(Object.class);
-				currentWebChromeClient = new Reflect(mClientAdapter).field("mWebChromeClient").out(WebChromeClient.class);
-			}
-			else {
-				Object mCallbackProxy = new Reflect(currentWebView).field("mCallbackProxy").out(Object.class);
-				currentWebChromeClient = new Reflect(mCallbackProxy).field("mWebChromeClient").out(WebChromeClient.class);
-			}
-		}catch(Exception ignored){}
-
-		return currentWebChromeClient;
-	}
-
-	/**
-	 * Returns the JavaScript file RobotiumWeb.js as a String
-	 *  
-	 * @return the JavaScript file RobotiumWeb.js as a {@code String} 
-	 */
-
-	private String getJavaScriptAsString() {
-		InputStream fis = null;
-		try {
-			fis = new FileInputStream("/data/local/tmp/RobotiumWeb.js");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-
-		StringBuffer javaScript = new StringBuffer();
-
-		try {
-			BufferedReader input =  new BufferedReader(new InputStreamReader(fis));
-			String line = null;
-			while (( line = input.readLine()) != null){
-				javaScript.append(line);
-				javaScript.append("\n");
-			}
-			input.close();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		return javaScript.toString();
+		return webElements;
 	}
 }

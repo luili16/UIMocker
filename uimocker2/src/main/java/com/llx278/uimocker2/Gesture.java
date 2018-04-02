@@ -296,7 +296,7 @@ public class Gesture {
     private Point getSize() {
         Activity currentActivity = mActivityUtils.getCurrentActivity();
         if (currentActivity == null) {
-            Logger.d(TAG, "swipeOnScreenEdge currentActivity is null!!");
+            MLogger.d(TAG, "swipeOnScreenEdge currentActivity is null!!");
             return null;
         }
         Point outSize = new Point();

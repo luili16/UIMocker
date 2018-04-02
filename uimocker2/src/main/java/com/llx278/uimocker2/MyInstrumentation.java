@@ -2,12 +2,16 @@ package com.llx278.uimocker2;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 
@@ -26,33 +30,76 @@ final class MyInstrumentation extends InstrumentationDecorator {
      */
     private final Stack<ActivityStateRecord> mActivityRecordStack;
 
+    private ArrayList<ActivityLifeCycleObserver> mObserverList = new ArrayList<>();
+
     MyInstrumentation(Context context) {
         super(context);
         mActivityRecordStack = new Stack<>();
     }
 
+    /**
+     * 添加一个observer
+     * @param observer 指定的observer
+     */
+    void addActivityLifeCycleObserver(ActivityLifeCycleObserver observer) {
+        if (observer != null && !mObserverList.contains(observer)) {
+            mObserverList.add(observer);
+        }
+    }
+
+    /**
+     * 移除一个observer
+     * @param observer 指定的observer
+     */
+    void removeActivityLifeCycleObserver(ActivityLifeCycleObserver observer) {
+        if (mObserverList.contains(observer)) {
+            mObserverList.remove(observer);
+        }
+    }
+
     @Override
     public void callActivityOnCreate(Activity activity, Bundle icicle) {
-        if (DEBUG) {
-            Logger.d(TAG, "callActivityOnCreate : " + activity.getClass().getName());
-            Logger.d(TAG, "ActivityName :" + activity.getClass().getName());
-            Logger.d(TAG, "savedBundle:" + (icicle == null ? "null" : icicle.toString()));
-            Logger.d(TAG, "intent : " + (activity.getIntent() == null ? "null" : activity.getIntent().toString()));
-            if (activity.getIntent() != null) {
-                Bundle extras = activity.getIntent().getExtras();
-                Logger.d(TAG, "extras:" + (extras == null ? "null" : extras.toString()));
-                if (extras != null) {
-                    Logger.d("printBundle");
 
-                }
-            }
+        if (DEBUG) {
+            printActivityInfo(activity, icicle);
         }
-        // 不应该阻止activity的执行，仅仅是通知上层调用者某个activity调用了onCreate方法而已
+
+        for (ActivityLifeCycleObserver observer : mObserverList) {
+            observer.beforeOnCreate(activity,icicle);
+        }
 
         super.callActivityOnCreate(activity, icicle);
+
         addToRecordStack(activity, ActivityStateRecord.ON_CREATE);
+
+        for (ActivityLifeCycleObserver observer : mObserverList) {
+            observer.afterOnCreate(activity,icicle);
+        }
+
         if (DEBUG) {
             printStackInfo(mActivityRecordStack);
+        }
+    }
+
+    private void printActivityInfo(Activity activity, Bundle icicle) {
+        MLogger.d(TAG, "callActivityOnCreate : " + activity.getClass().getName());
+        MLogger.d(TAG, "ActivityName :" + activity.getClass().getName());
+        MLogger.d(TAG, "savedBundle:" + (icicle == null ? "null" : icicle.toString()));
+        MLogger.d(TAG, "intent : " + (activity.getIntent() == null ? "null" : activity.getIntent().toString()));
+        if (activity.getIntent() != null) {
+            Bundle extras = activity.getIntent().getExtras();
+            MLogger.d(TAG, "extras:" + (extras == null ? "null" : extras.toString()));
+            if (extras != null) {
+                MLogger.d("printBundle");
+                Set<String> ketSet = extras.keySet();
+                for (String key : ketSet) {
+                    Object value = extras.get(key);
+                    try {
+                        MLogger.d(TAG, "(key : value)=(" + key + " : " + value + ")");
+                    } catch (Exception ignore) {
+                    }
+                }
+            }
         }
     }
 
@@ -60,10 +107,21 @@ final class MyInstrumentation extends InstrumentationDecorator {
     @Override
     public void callActivityOnResume(Activity activity) {
         if (DEBUG) {
-            Logger.d(TAG, "callActivityOnResume activityName : " + activity.getClass().getName());
+            MLogger.d(TAG, "callActivityOnResume activityName : " + activity.getClass().getName());
         }
+
+        for (ActivityLifeCycleObserver observer : mObserverList) {
+            observer.beforeOnResume(activity);
+        }
+
         super.callActivityOnResume(activity);
+
         addToRecordStack(activity, ActivityStateRecord.ON_RESUME);
+
+        for (ActivityLifeCycleObserver observer : mObserverList) {
+            observer.afterOnResume(activity);
+        }
+
         if (DEBUG) {
             printStackInfo(mActivityRecordStack);
         }
@@ -72,10 +130,21 @@ final class MyInstrumentation extends InstrumentationDecorator {
     @Override
     public void callActivityOnPause(Activity activity) {
         if (DEBUG) {
-            Logger.d(TAG, "callActivityOnPause activityName : " + activity.getClass().getName());
+            MLogger.d(TAG, "callActivityOnPause activityName : " + activity.getClass().getName());
         }
+
+        for (ActivityLifeCycleObserver observer : mObserverList) {
+            observer.beforeOnPause(activity);
+        }
+
         super.callActivityOnPause(activity);
+
         addToRecordStack(activity, ActivityStateRecord.ON_PAUSE);
+
+        for (ActivityLifeCycleObserver observer : mObserverList) {
+            observer.afterOnPause(activity);
+        }
+
         if (DEBUG) {
             printStackInfo(mActivityRecordStack);
         }
@@ -84,15 +153,29 @@ final class MyInstrumentation extends InstrumentationDecorator {
     @Override
     public void callActivityOnDestroy(Activity activity) {
         if (DEBUG) {
-            Logger.d(TAG, "callActivityOnDestroy activityName : " + activity.getClass().getName());
+            MLogger.d(TAG, "callActivityOnDestroy activityName : " + activity.getClass().getName());
+        }
+
+        for (ActivityLifeCycleObserver observer : mObserverList) {
+            observer.beforeOnDestroy(activity);
         }
 
         super.callActivityOnDestroy(activity);
+
+        for (ActivityLifeCycleObserver observer : mObserverList) {
+            observer.afterOnDestroy(activity);
+        }
+
         removeActivityFromStack(activity);
+
         if (DEBUG) {
             printStackInfo(mActivityRecordStack);
         }
     }
+
+
+
+    // ------------ package method ------------------
 
     /**
      * 判断给定的activityName经历了指定的lifeCycle
@@ -105,7 +188,7 @@ final class MyInstrumentation extends InstrumentationDecorator {
      *                     栈顶和栈顶的下一个.
      * @return true 指定的activity经历了指定的lifeCycle false 指定的lifeCycle还没有发生
      */
-    public boolean isExpectedActivityLifeCycle(String activityName, int lifeCycle, int deep) {
+    boolean isExpectedActivityLifeCycle(String activityName, int lifeCycle, int deep) {
 
         if (lifeCycle > ActivityStateRecord.ON_PAUSE) {
             Log.d("main", "lifeCycle : " + lifeCycle);
@@ -114,8 +197,8 @@ final class MyInstrumentation extends InstrumentationDecorator {
 
         synchronized (mActivityRecordStack) {
             if (deep < 0 || deep >= mActivityRecordStack.size()) {
-                Logger.e("illegal size of deep,current deep = " + deep + " deep must greater " +
-                        "than 1 and less than " + mActivityRecordStack.size(), null);
+                MLogger.e("illegal size of deep,current deep = " + deep + " deep must greater " +
+                        "than 0 and less than " + mActivityRecordStack.size() + " or current Activity stack is empty!", null);
                 return false;
             }
             int size = mActivityRecordStack.size();
@@ -132,8 +215,6 @@ final class MyInstrumentation extends InstrumentationDecorator {
             return false;
         }
     }
-
-    // ------------ package method ------------------
 
     Activity getCurrentActivity() {
         if (mActivityRecordStack.isEmpty()) {
@@ -184,7 +265,7 @@ final class MyInstrumentation extends InstrumentationDecorator {
                         }
                     });
                 } catch (Exception e) {
-                    Logger.e("", e);
+                    MLogger.e("", e);
                 }
             }
         }
@@ -205,7 +286,7 @@ final class MyInstrumentation extends InstrumentationDecorator {
         }
     }
 
-    void addToRecordStack(Activity activity, int currentLifeCycle) {
+    private void addToRecordStack(Activity activity, int currentLifeCycle) {
 
         synchronized (mActivityRecordStack) {
             if (mActivityRecordStack.isEmpty() && currentLifeCycle == ActivityStateRecord.ON_CREATE) {
@@ -240,7 +321,7 @@ final class MyInstrumentation extends InstrumentationDecorator {
             ActivityStateRecord activity = iterator.next();
             sb.append(activity.toString()).append("   ");
         }
-        Logger.d(TAG, "stackInfo : [" + sb.toString() + "]");
+        MLogger.d(TAG, "stackInfo : [" + sb.toString() + "]");
     }
 
     private void removeActivityFromStack(Activity activity) {
@@ -258,7 +339,7 @@ final class MyInstrumentation extends InstrumentationDecorator {
                 if (activity != null && activityFromWeakReference != null &&
                         activityFromWeakReference.equals(activity)) {
                     if (DEBUG) {
-                        Logger.d(TAG, "hit an has destroyed activity( which name is '" +
+                        MLogger.d(TAG, "hit an has destroyed activity( which name is '" +
                                 activity.getClass().getName() + "'),now remove it!");
                     }
                     activityStackIterator.remove();

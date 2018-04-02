@@ -1,32 +1,26 @@
 package com.llx278.uimockerdemo.test;
 
 import android.app.Activity;
-import android.provider.Contacts;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.llx278.uimocker2.Filter;
-import com.llx278.uimocker2.ReflectUtil;
 import com.llx278.uimocker2.Scroller;
 import com.llx278.uimocker2.Searcher;
 import com.llx278.uimocker2.Solo;
-import com.llx278.uimocker2.UIUtil;
 import com.llx278.uimockerdemo.R;
 import com.llx278.uimockerdemo.widget.MyButton;
 
-import junit.framework.Assert;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
 
 /**
  * Created by liu on 18-3-9.
@@ -43,7 +37,7 @@ public class SearcherTest {
         Field mSearcher = aClass.getDeclaredField("mSearcher");
         mSearcher.setAccessible(true);
         Searcher searcher = (Searcher) mSearcher.get(solo);
-        Activity currentActivity = solo.getCurrentActivity();
+        Activity currentActivity = solo.getActivityUtils().getCurrentActivity();
 
         TextView text1 = searcher.searchTextViewByText("^text1$", true);
         assertNotNull(text1);
@@ -54,7 +48,7 @@ public class SearcherTest {
         ArrayList<TextView> textViewArrayList = searcher.searchTextViewListByText("^text(0-9)?", true);
         assertNotNull(textViewArrayList);
         assertFalse(textViewArrayList.isEmpty());
-        assertEquals(9,textViewArrayList.size());
+        assertEquals(10,textViewArrayList.size());
         ScrollView scrollView = currentActivity.findViewById(R.id.container_3_scrollview_1);
         TextView text16View = searcher.searchTextViewByTextWithVerticallyScroll("^scrollText21$",
                 true, scrollView,
