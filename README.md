@@ -3,5 +3,13 @@
 
 ## 如何使用
 
+```
+Solo solo = new Solo(getApplicationContext());
+// click
+solo.getClicker().clickOnText("...")
+// scroll
+solo.getScroller().scrollViewVertically(...)
 
+...
+```
 
