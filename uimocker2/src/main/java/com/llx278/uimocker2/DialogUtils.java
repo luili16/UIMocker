@@ -2,6 +2,7 @@ package com.llx278.uimocker2;
 
 
 import android.app.Activity;
+import android.app.Instrumentation;
 import android.content.Context;
 import android.os.SystemClock;
 import android.view.ContextThemeWrapper;
@@ -21,7 +22,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class DialogUtils {
 
-	private final InstrumentationDecorator instrumentation;
+	private final Context mContext;
 	private final ActivityUtils activityUtils;
 	private final ViewGetter viewGetter;
 	private final static int TIMEOUT_DIALOG_TO_CLOSE = 1000;
@@ -34,8 +35,8 @@ public class DialogUtils {
 	 * @param viewGetter the {@code ViewGetter} instance
 	 */
 
-	DialogUtils(InstrumentationDecorator instrumentation, ActivityUtils activityUtils, ViewGetter viewGetter) {
-		this.instrumentation = instrumentation;
+	DialogUtils(Context context, ActivityUtils activityUtils, ViewGetter viewGetter) {
+		this.mContext = context;
 		this.activityUtils = activityUtils;
 		this.viewGetter = viewGetter;
 	}
@@ -158,7 +159,7 @@ public class DialogUtils {
 
 		Activity activity = activityUtils.getCurrentActivity();
 		if(activity == null){
-			inputMethodManager = (InputMethodManager) instrumentation.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+			inputMethodManager = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
 		}
 		else {
 			inputMethodManager = (InputMethodManager)  activity.getSystemService(Activity.INPUT_METHOD_SERVICE);

@@ -1,5 +1,6 @@
 package com.llx278.uimocker2;
 
+import android.app.Instrumentation;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -35,18 +36,16 @@ public class Scroller {
     private static final long DEFAULT_PAUSE_DURATION = 100;
 
     private boolean mCanScroll = false;
-    private final InstrumentationDecorator mInst;
     private final ViewGetter mViewGetter;
     private final Gesture mGesture;
     private int mScreenWidth = -1;
     private int mScreenHeight = -1;
 
 
-    public Scroller(InstrumentationDecorator inst, ViewGetter viewGetter, Gesture gesture) {
-        mInst = inst;
+    public Scroller(Context context, ViewGetter viewGetter, Gesture gesture) {
         mViewGetter = viewGetter;
         mGesture = gesture;
-        WindowManager wm = (WindowManager) mInst.getContext().getSystemService(Context.WINDOW_SERVICE);
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Point point = new Point();
         if (wm != null) {
             wm.getDefaultDisplay().getSize(point);
@@ -196,7 +195,7 @@ public class Scroller {
 
         int originalY = view.getScrollY();
         final int scrollAmount = scrollTo;
-        mInst.runOnMainSync(new Runnable() {
+        Scheduler.runOnMainSync(new Runnable() {
             public void run() {
                 view.scrollBy(0, scrollAmount);
             }
@@ -268,14 +267,14 @@ public class Scroller {
     public boolean scrollWebView(final WebView webView, VerticalDirection direction, final boolean allTheWay) {
 
         if (direction == DOWN_TO_UP) {
-            mInst.runOnMainSync(new Runnable() {
+            Scheduler.runOnMainSync(new Runnable() {
                 public void run() {
                     mCanScroll = webView.pageDown(allTheWay);
                 }
             });
         }
         if (direction == UP_TO_DOWN) {
-            mInst.runOnMainSync(new Runnable() {
+            Scheduler.runOnMainSync(new Runnable() {
                 public void run() {
                     mCanScroll = webView.pageUp(allTheWay);
                 }
@@ -375,7 +374,7 @@ public class Scroller {
             lineToMoveTo = line;
         }
 
-        mInst.runOnMainSync(new Runnable() {
+        Scheduler.runOnMainSync(new Runnable() {
             public void run() {
                 view.setSelection(lineToMoveTo);
             }
@@ -406,7 +405,7 @@ public class Scroller {
 
         int originalX = view.getScrollX();
         final int scrollAmount = scrollTo;
-        mInst.runOnMainSync(new Runnable() {
+        Scheduler.runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 view.scrollBy(scrollAmount, 0);

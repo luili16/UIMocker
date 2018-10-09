@@ -1,5 +1,6 @@
 package com.llx278.uimocker2;
 
+import android.app.Instrumentation;
 import android.content.Context;
 import android.graphics.Point;
 import android.text.TextUtils;
@@ -36,10 +37,10 @@ public class ViewGetter {
         }
     }
 
-    private InstrumentationDecorator mInstrumentation;
+    private Context mContext;
 
-    public ViewGetter(InstrumentationDecorator instrumentation) {
-        mInstrumentation = instrumentation;
+    public ViewGetter(Context context) {
+       mContext = context;
     }
 
     /**
@@ -365,7 +366,7 @@ public class ViewGetter {
             float windowHeight;
 
             WindowManager windowManager = (WindowManager)
-                    mInstrumentation.getContext().getSystemService(Context.WINDOW_SERVICE);
+                    mContext.getSystemService(Context.WINDOW_SERVICE);
             Point outSize = new Point();
             if (windowManager == null) {
                 throw new RuntimeException("get windowManager failed!");

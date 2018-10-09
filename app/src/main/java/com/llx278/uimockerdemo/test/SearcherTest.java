@@ -9,6 +9,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.llx278.uimocker2.Filter;
+import com.llx278.uimocker2.Scheduler;
 import com.llx278.uimocker2.Scroller;
 import com.llx278.uimocker2.Searcher;
 import com.llx278.uimocker2.Solo;
@@ -80,7 +81,7 @@ public class SearcherTest {
 
         ScrollView scrollView3 = currentActivity.findViewById(R.id.container_6_scrollView_0);
         final EditText editText = currentActivity.findViewById(R.id.container_6_1_edit_view_8);
-        solo.runOnMainSync(new Runnable() {
+        Scheduler.runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 editText.setText("hello world!");

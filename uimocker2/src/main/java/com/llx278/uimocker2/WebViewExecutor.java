@@ -1,9 +1,8 @@
 package com.llx278.uimocker2;
 
 import android.annotation.SuppressLint;
+import android.app.Instrumentation;
 import android.webkit.WebSettings;
-
-import de.robv.android.xposed.XposedBridge;
 
 
 /**
@@ -13,15 +12,12 @@ import de.robv.android.xposed.XposedBridge;
 
 class WebViewExecutor {
 
-    private InstrumentationDecorator mInst;
-
-    WebViewExecutor(InstrumentationDecorator inst) {
-        mInst = inst;
+    WebViewExecutor() {
     }
 
     void executeJavaScript(final String url, Object webView) {
         final WebViewProxy proxy = WebViewProxyCreator.create(webView);
-        mInst.runOnMainSync(new Runnable() {
+        Scheduler.runOnMainSync(new Runnable() {
             @SuppressLint("SetJavaScriptEnabled")
             @Override
             public void run() {

@@ -1,11 +1,12 @@
 package com.llx278.uimocker2;
 
+import android.app.Instrumentation;
+import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import de.robv.android.xposed.XposedBridge;
 
 
 /**
@@ -19,13 +20,13 @@ public class WebUtils {
 	private WebViewInjector mInjector;
 	private WebViewExecutor mExecutor;
 	private JavaScriptCreator mJSCreator;
-	private InstrumentationDecorator mInst;
+	private Context mContext;
 
-	WebUtils(InstrumentationDecorator instrumentation){
-		mInst = instrumentation;
+	WebUtils(Context context){
+		mContext= context;
 		mWebElementCreator = new WebElementCreator();
-		mInjector = new WebViewInjector(mWebElementCreator,mInst);
-		mExecutor = new WebViewExecutor(instrumentation);
+		mInjector = new WebViewInjector(mWebElementCreator);
+		mExecutor = new WebViewExecutor();
 		mJSCreator = new JavaScriptCreator();
 	}
 
@@ -220,7 +221,7 @@ public class WebUtils {
 		if(javaScriptWasExecuted){
 			for(WebElement webElement : mWebElementCreator.getWebElementsFromWebViews()){
 				if(isWebElementSufficientlyShown(webElement,webView)){
-					MockTextView textView = new MockTextView(mInst.getContext(), webElement.getText(),
+					MockTextView textView = new MockTextView(mContext, webElement.getText(),
 							webElement.getLocationX(), webElement.getLocationY());
 					webElementsAsTextViews.add(textView);
 				}

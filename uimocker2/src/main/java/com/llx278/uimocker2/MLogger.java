@@ -7,7 +7,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import de.robv.android.xposed.XposedBridge;
 
 /**
  * MLogger 工具类
@@ -23,7 +22,7 @@ class MLogger {
             Log.d(tag,msg);
             try {
                 String time = timeStamp2DateStr(System.currentTimeMillis());
-                XposedBridge.log(time + "#" +tag + "#" + msg);
+                //XposedBridge.log(time + "#" +tag + "#" + msg);
             } catch (Exception ignore) {
             }
         }
@@ -38,7 +37,7 @@ class MLogger {
             Log.i(TAG,msg);
             try {
                 String time = timeStamp2DateStr(System.currentTimeMillis());
-                XposedBridge.log(time + "#" +tag + "#" + msg);
+                //XposedBridge.log(time + "#" +tag + "#" + msg);
             } catch (Exception ignore) {
             }
         }
@@ -53,7 +52,7 @@ class MLogger {
             Log.e(tag,msg,e);
             try {
                 String time = timeStamp2DateStr(System.currentTimeMillis());
-                XposedBridge.log(time + "#" +tag + "#" + msg);
+                //XposedBridge.log(time + "#" +tag + "#" + msg);
             } catch (Exception ignore) {
             }
         }

@@ -1,6 +1,7 @@
 package com.llx278.uimocker2;
 
 import android.app.Activity;
+import android.app.Instrumentation;
 import android.os.Bundle;
 import android.os.SystemClock;
 
@@ -9,12 +10,12 @@ import android.os.SystemClock;
  */
 public class ActivityUtils {
     private static final String TAG = "ActivityUtils";
-    private final MyInstrumentation mMyInst;
     public static final long DEFAULT_PAUSE_TIME = 500;
     private static long PAUSE_TIME = DEFAULT_PAUSE_TIME;
 
-    ActivityUtils(MyInstrumentation myInst) {
-        mMyInst = myInst;
+    private ActivityLifeCycleCallbackImpl mImpl;
+    ActivityUtils(ActivityLifeCycleCallbackImpl impl) {
+        mImpl = impl;
     }
 
     private void pause() {
@@ -25,11 +26,11 @@ public class ActivityUtils {
     }
 
     public void addActivityLifeObserver(ActivityLifeCycleObserver observer) {
-        mMyInst.addActivityLifeCycleObserver(observer);
+        mImpl.addActivityLifeCycleObserver(observer);
     }
 
     public void removeActivityLifeObserver(ActivityLifeCycleObserver observer) {
-        mMyInst.removeActivityLifeCycleObserver(observer);
+        mImpl.removeActivityLifeCycleObserver(observer);
     }
 
     /**
@@ -40,7 +41,7 @@ public class ActivityUtils {
      * @return true 对应的activity已经创建 false超时
      */
     public boolean waitForOnCreate(String activityName,long timeout,int deep) {
-        return waitFor(MyInstrumentation.ActivityStateRecord.ON_CREATE,activityName,timeout,deep);
+        return waitFor(ActivityLifeCycleCallbackImpl.ActivityStateRecord.ON_CREATE,activityName,timeout,deep);
     }
 
     /**
@@ -51,7 +52,7 @@ public class ActivityUtils {
      * @return true 对应的activity已经创建，false超时
      */
     public boolean waitForOnResume(String activityName,long timeout,int deep) {
-        return waitFor(MyInstrumentation.ActivityStateRecord.ON_RESUME,activityName,timeout,deep);
+        return waitFor(ActivityLifeCycleCallbackImpl.ActivityStateRecord.ON_RESUME,activityName,timeout,deep);
     }
 
     /**
@@ -62,13 +63,13 @@ public class ActivityUtils {
      * @return true 对应的activity已经创建，false超时
      */
     public boolean waitForOnPause(String activityName,long timeout,int deep) {
-        return waitFor(MyInstrumentation.ActivityStateRecord.ON_PAUSE,activityName,timeout,deep);
+        return waitFor(ActivityLifeCycleCallbackImpl.ActivityStateRecord.ON_PAUSE,activityName,timeout,deep);
     }
 
     private boolean waitFor(int lifeCycle,String activityName,long timeout,int deep) {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() < endTime) {
-            if (mMyInst.isExpectedActivityLifeCycle(activityName,
+            if (mImpl.isExpectedActivityLifeCycle(activityName,
                     lifeCycle,deep)) {
                 return true;
             }
@@ -83,8 +84,8 @@ public class ActivityUtils {
      * @return 当前页面最前的activity
      */
     public Activity getCurrentActivity() {
-        if (mMyInst != null) {
-            return mMyInst.getCurrentActivity();
+        if (mImpl != null) {
+            return mImpl.getCurrentActivity();
         }
         return null;
     }
@@ -93,8 +94,8 @@ public class ActivityUtils {
      * 关闭当前所有已经打开的activity
      */
     public void finishOpenedActivities() {
-        if (mMyInst != null) {
-            mMyInst.finishAllOpenedActivities();
+        if (mImpl != null) {
+            mImpl.finishAllOpenedActivities();
         }
     }
 
@@ -104,8 +105,8 @@ public class ActivityUtils {
      * @param activityName 指定的activity name
      */
     public void goBackToActivity(String activityName) {
-        if (mMyInst != null) {
-            mMyInst.goBackToActivity(activityName);
+        if (mImpl != null) {
+            mImpl.goBackToActivity(activityName);
         }
     }
 }

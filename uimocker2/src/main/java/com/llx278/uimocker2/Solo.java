@@ -1,8 +1,11 @@
 package com.llx278.uimocker2;
 
 import android.app.Activity;
+import android.app.Application;
+import android.app.Instrumentation;
 import android.content.Context;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -11,6 +14,8 @@ import android.widget.TextView;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -18,7 +23,7 @@ import java.lang.reflect.Method;
  * 使得使用更加的方便一些。
  * @author llx
  */
-public class Solo implements ISolo {
+public class Solo {
 
     private static final long DEFAULT_SLEEP = 200;
     private static final long DEFAULT_TIME_OUT = 1000 * 20;
@@ -27,32 +32,55 @@ public class Solo implements ISolo {
     private static final String TAG = "Solo";
 
 
-    private final Clicker mClicker;
-    private final Scroller mScroller;
-    private final Searcher mSearcher;
+    private Clicker mClicker;
+    private Scroller mScroller;
+    private Searcher mSearcher;
 
-    private final ViewGetter mViewGetter;
-    private final Waiter mWaiter;
-    private final Gesture mGesture;
+    private ViewGetter mViewGetter;
+    private Waiter mWaiter;
+    private Gesture mGesture;
 
-    private final ActivityUtils mActivityUtils;
-    private final MyInstrumentation mInstrumentation;
-    private final DialogUtils mDialogUtils;
-    private final WebUtils mWebUtils;
+    private ActivityUtils mActivityUtils;
+    private Instrumentation mInstrumentation;
+    private DialogUtils mDialogUtils;
+    private WebUtils mWebUtils;
+    private ActivityLifeCycleCallbackImpl mImpl;
+    private Context mContext;
 
-    public Solo(Context context) {
+    public Solo(Application app, Instrumentation instrumentation) {
 
-        mInstrumentation = new MyInstrumentation(context);
+        try {
 
-        mActivityUtils = new ActivityUtils(mInstrumentation);
-        mViewGetter = new ViewGetter(mInstrumentation);
-        mGesture = new Gesture(mInstrumentation,mActivityUtils);
-        mScroller = new Scroller(mInstrumentation, mViewGetter, mGesture);
-        mSearcher = new Searcher(mViewGetter, mScroller);
-        mWebUtils = new WebUtils(mInstrumentation);
-        mWaiter = new Waiter( mActivityUtils, mViewGetter, mSearcher,mScroller,mWebUtils);
-        mDialogUtils = new DialogUtils(mInstrumentation, mActivityUtils, mViewGetter);
-        mClicker = new Clicker( mViewGetter, mInstrumentation, mSearcher);
+            if (instrumentation == null) {
+                Class<?> activityThreadClass = null;
+                activityThreadClass = Class.forName("android.app.ActivityThread");
+                Method currentActivityThreadMethod = activityThreadClass.getMethod("currentActivityThread");
+                Object sCurrentActivityThread = currentActivityThreadMethod.invoke(null);
+                Class<?> aClass = sCurrentActivityThread.getClass();
+                Field mInstrumentationField = ReflectUtil.findFieldRecursiveImpl(aClass, "mInstrumentation");
+                mInstrumentationField.setAccessible(true);
+                mInstrumentation = (Instrumentation) mInstrumentationField.get(sCurrentActivityThread);
+            } else {
+                mInstrumentation = instrumentation;
+            }
+
+
+
+            mContext = app.getApplicationContext();
+            mImpl = new ActivityLifeCycleCallbackImpl();
+            app.registerActivityLifecycleCallbacks(mImpl);
+            mActivityUtils = new ActivityUtils(mImpl);
+            mViewGetter = new ViewGetter(mContext);
+            mGesture = new Gesture(mInstrumentation,mActivityUtils);
+            mScroller = new Scroller(mContext, mViewGetter, mGesture);
+            mSearcher = new Searcher(mViewGetter, mScroller);
+            mWebUtils = new WebUtils(mContext);
+            mWaiter = new Waiter( mActivityUtils, mViewGetter, mSearcher,mScroller,mWebUtils);
+            mDialogUtils = new DialogUtils(mContext, mActivityUtils, mViewGetter);
+            mClicker = new Clicker( mViewGetter, mInstrumentation, mSearcher);
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void pause(long duration) {
@@ -62,47 +90,42 @@ public class Solo implements ISolo {
         }
     }
 
-    @Override
+    public ActivityLifeCycleCallbackImpl getActivityLifeCycleCallback() {
+        return mImpl;
+    }
+
     public Clicker getClicker() {
         return mClicker;
     }
 
-    @Override
     public Scroller getScroller() {
         return mScroller;
     }
 
-    @Override
     public Searcher getSearcher() {
         return mSearcher;
     }
 
-    @Override
     public ViewGetter getViewGetter() {
         return mViewGetter;
     }
 
-    @Override
     public Waiter getWaiter() {
         return mWaiter;
     }
 
-    @Override
     public Gesture getGesture() {
         return mGesture;
     }
 
-    @Override
     public ActivityUtils getActivityUtils() {
         return mActivityUtils;
     }
 
-    @Override
     public DialogUtils getDialogUtils() {
         return mDialogUtils;
     }
 
-    @Override
     public WebUtils getWebUtils(){
         return mWebUtils;
     }
@@ -113,7 +136,6 @@ public class Solo implements ISolo {
      * @param id 指定的id
      * @return 找的view，如果为空，则说明在默认给定的时间里面没有找到
      */
-    @Override
     public View findViewById(int id) {
         return findViewById(id, DEFAULT_TIME_OUT);
     }
@@ -125,7 +147,6 @@ public class Solo implements ISolo {
      * @param timeout 超时时间
      * @return 找的view，如果为空，则说明在给定的时间里面没有找到
      */
-    @Override
     public View findViewById(int id, long timeout) {
         long endTime = SystemClock.uptimeMillis() + timeout;
         while (SystemClock.uptimeMillis() < endTime) {
@@ -150,7 +171,6 @@ public class Solo implements ISolo {
      * @param parent 待寻找的view
      * @return 找到的view，如果为空则说明在默认超时时间里面没有找到
      */
-    @Override
     public View findViewById(int id, View parent) {
         return findViewById(id,parent,DEFAULT_TIME_OUT);
     }
@@ -163,7 +183,6 @@ public class Solo implements ISolo {
      * @param timeout 超时时间
      * @return 找到的view，如果为空则说明在超时时间里面没有找到
      */
-    @Override
     public View findViewById(int id, View parent, long timeout) {
         if (parent == null) {
             return null;
@@ -180,7 +199,28 @@ public class Solo implements ISolo {
         return null;
     }
 
-    @Override
+    /**
+     * 根据Id找到给定parent里面的所有view
+     * @param id id
+     * @param parent 带寻找的view
+     * @return 找到的view的列表
+     */
+    public ArrayList<View> findViewByIds(int id,View parent) {
+
+        ArrayList<View> views = new ArrayList<>();
+        if (parent == null) {
+            return views;
+        }
+
+        List<View> allViews = getViewGetter().getViewList(parent, true);
+        for (View v : allViews) {
+            if (v.getId() == id) {
+                views.add(v);
+            }
+        }
+        return views;
+    }
+
     public void mockSoftKeyBordSearchButton(EditText editText) throws Exception {
 
         Class<?> etClass = editText.getClass().getSuperclass();
@@ -202,32 +242,22 @@ public class Solo implements ISolo {
         onEditorActionMethod.invoke(onEditorActionListener, editText, EditorInfo.IME_ACTION_SEARCH, null);
     }
 
-    @Override
     public Context getContext() {
-        return mInstrumentation.getContext();
+        return mContext;
     }
 
-    @Override
-    public void runOnMainSync(Runnable runnable) {
-        mInstrumentation.runOnMainSync(runnable);
-    }
-
-    @Override
     public void sleep(long time){
         pause(time);
     }
 
-    @Override
     public void littleSleep() {
         pause(LITTLE_SLEEP);
     }
 
-    @Override
     public void littleSleep(int multiple) {
         pause(LITTLE_SLEEP * multiple);
     }
 
-    @Override
     public boolean waitForTextAndClick(String regex) {
         View view = mWaiter.waitForTextAppearAndGet(regex, DEFAULT_TIME_OUT);
         return mClicker.clickOnView(view);

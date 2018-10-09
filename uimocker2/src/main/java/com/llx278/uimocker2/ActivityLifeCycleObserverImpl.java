@@ -9,6 +9,9 @@ import android.os.Bundle;
  */
 
 public class ActivityLifeCycleObserverImpl implements ActivityLifeCycleObserver {
+
+
+
     @Override
     public void beforeOnCreate(Activity activity, Bundle icicle) {
 

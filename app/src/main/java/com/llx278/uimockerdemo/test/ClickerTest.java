@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.HorizontalScrollView;
 
 import com.llx278.uimocker2.Clicker;
+import com.llx278.uimocker2.Scheduler;
 import com.llx278.uimocker2.Solo;
 import com.llx278.uimockerdemo.R;
 
@@ -32,7 +33,7 @@ public class ClickerTest {
         Activity currentActivity = solo.getActivityUtils().getCurrentActivity();
 
         final Button bt = currentActivity.findViewById(R.id.container_1_mybutton_1);
-        solo.runOnMainSync(new Runnable() {
+        Scheduler.runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 bt.setOnClickListener(new View.OnClickListener() {
@@ -79,7 +80,7 @@ public class ClickerTest {
         Assert.assertTrue(found);
 
         final Button button = currentActivity.findViewById(R.id.container_2_mybutton_1);
-        solo.runOnMainSync(new Runnable() {
+        Scheduler.runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 button.setOnClickListener(new View.OnClickListener() {
@@ -124,7 +125,7 @@ public class ClickerTest {
 
         HorizontalScrollView container =  currentActivity.findViewById(R.id.container_3_scrollview_2);
         final Button target = currentActivity.findViewById(R.id.container_3_scrollview_2_bt1);
-        solo.runOnMainSync(new Runnable() {
+        Scheduler.runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 target.setOnClickListener(new View.OnClickListener() {

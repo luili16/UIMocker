@@ -5,6 +5,7 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.ScrollView;
 
+import com.llx278.uimocker2.Scheduler;
 import com.llx278.uimocker2.Solo;
 import com.llx278.uimocker2.Waiter;
 import com.llx278.uimockerdemo.R;
@@ -43,7 +44,7 @@ public class WaiterTest {
         Assert.assertFalse(b10);
         final Button bt = currentActivity.findViewById(R.id.container_1_button_1);
         Thread.sleep(1000);
-        solo.runOnMainSync(new Runnable() {
+        Scheduler.runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 bt.performClick();

@@ -1,5 +1,6 @@
 package com.llx278.uimocker2;
 
+import android.app.Instrumentation;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,13 +16,13 @@ public class Clicker {
 
     private final String LOG_TAG = "uimocker";
     private final ViewGetter mViewGetter;
-    private final InstrumentationDecorator mInst;
+    private final Instrumentation mInst;
     private final Searcher mSearcher;
     private final int MIN_CLICK_INTERCEPT = 50;
     private final int MINI_WAIT = 300;
 
     public Clicker(ViewGetter viewGetter,
-                   InstrumentationDecorator inst,
+                   Instrumentation inst,
                    Searcher searcher) {
 
         this.mViewGetter = viewGetter;
@@ -195,7 +196,7 @@ public class Clicker {
             return false;
         }
         if (!longClick) {
-            mInst.runOnMainSync(new Runnable() {
+            Scheduler.runOnMainSync(new Runnable() {
                 @Override
                 public void run() {
                     MotionEvent downEvent = getSimpleMotionEvent(MotionEvent.ACTION_DOWN,out[0],out[1]);
@@ -207,7 +208,7 @@ public class Clicker {
                 }
             });
         } else {
-            mInst.runOnMainSync(new Runnable() {
+            Scheduler.runOnMainSync(new Runnable() {
                 @Override
                 public void run() {
                     MotionEvent downEvent = getSimpleMotionEvent(MotionEvent.ACTION_DOWN,out[0],out[1]);
@@ -222,7 +223,7 @@ public class Clicker {
             } else {
                 pause((int) (ViewConfiguration.getLongPressTimeout() * 2.5f));
             }
-            mInst.runOnMainSync(new Runnable() {
+            Scheduler.runOnMainSync(new Runnable() {
                 @Override
                 public void run() {
                     MotionEvent upEvent = getSimpleMotionEvent(MotionEvent.ACTION_UP,out[0],out[1]);

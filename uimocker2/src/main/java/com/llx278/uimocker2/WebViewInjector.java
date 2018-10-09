@@ -1,5 +1,6 @@
 package com.llx278.uimocker2;
 
+import android.app.Instrumentation;
 import android.graphics.Bitmap;
 import android.os.Message;
 import android.text.TextUtils;
@@ -13,8 +14,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 
-import de.robv.android.xposed.XC_MethodHook;
-
 
 /**
  * 根据webview的类型(是系统的webview还是腾讯的x5)选择不同的注入方式
@@ -22,13 +21,10 @@ import de.robv.android.xposed.XC_MethodHook;
  */
 
 class WebViewInjector {
-    private XC_MethodHook.Unhook mCurrentHookedMethod;
     private WebElementCreator mWebElementCreator;
     private InjectedWebChromeClient mInjectedClient;
-    private InstrumentationDecorator mInst;
 
-    WebViewInjector(WebElementCreator creator,InstrumentationDecorator inst) {
-        mInst = inst;
+    WebViewInjector(WebElementCreator creator) {
         mWebElementCreator = creator;
     }
 
@@ -47,7 +43,7 @@ class WebViewInjector {
                 WebChromeClient client = (WebChromeClient)
                         new Reflect(mClientAdapter).field("mWebChromeClient").out();
                 mInjectedClient = new InjectedWebChromeClient(client);
-                mInst.runOnMainSync(new Runnable() {
+                Scheduler.runOnMainSync(new Runnable() {
                     @Override
                     public void run() {
                         ((WebView) webView).setWebChromeClient(mInjectedClient);
@@ -93,7 +89,7 @@ class WebViewInjector {
             WebChromeClient client = (WebChromeClient)
                     new Reflect(mClientAdapter).field("mWebChromeClient").out();
             if (client.equals(mInjectedClient)) {
-                mInst.runOnMainSync(new Runnable() {
+                Scheduler.runOnMainSync(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -106,10 +102,6 @@ class WebViewInjector {
             }
         } catch (Exception e) {
             MLogger.e(e);
-        }
-
-        if (mCurrentHookedMethod != null) {
-            mCurrentHookedMethod.unhook();
         }
 
     }
@@ -150,33 +142,6 @@ class WebViewInjector {
         int[] locationOfWebViewXY = new int[2];
         proxy.getLocationOnScreen(locationOfWebViewXY);
         mWebElementCreator.createWebElementAndAddInList(msg, scale, locationOfWebViewXY);
-    }
-
-    private class WebChromeHookedCallback extends XC_MethodHook {
-        @Override
-        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-            WebView thisWebView = (WebView) param.args[0];
-            String message = (String) param.args[2];
-            JsPromptResult r = (JsPromptResult) param.args[4];
-            if (handleMessage(thisWebView, message)) {
-                r.confirm();
-                param.setResult(true);
-            }
-        }
-    }
-
-    private class X5WebChromeHookedCallback extends XC_MethodHook {
-        @Override
-        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-            View thisWebView = (View) param.args[0];
-            String message = (String) param.args[2];
-            Object r = param.args[4];
-            if (handleMessage(thisWebView, message)) {
-                Reflect reflect = new Reflect(r);
-                reflect.method("confirm").invoke();
-                param.setResult(true);
-            }
-        }
     }
 
     /**

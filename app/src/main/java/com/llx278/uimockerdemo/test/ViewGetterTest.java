@@ -11,6 +11,7 @@ import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.llx278.uimocker2.Scheduler;
 import com.llx278.uimocker2.Solo;
 import com.llx278.uimocker2.ViewGetter;
 import com.llx278.uimockerdemo.R;
@@ -109,7 +110,7 @@ public class ViewGetterTest {
 
         List<View> viewList = viewGetter.getViewList();
         final Button button1 = viewGetterTestActivity.findViewById(R.id.container_1_button_1);
-        solo.runOnMainSync(new Runnable() {
+        Scheduler.runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 button1.setText("I");

@@ -1,6 +1,7 @@
 package com.llx278.uimocker2;
 
 import android.app.Activity;
+import android.app.Instrumentation;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.os.SystemClock;
@@ -20,9 +21,9 @@ public class Gesture {
     private static final String TAG = "Gesture";
 
     private ActivityUtils mActivityUtils;
-    private final MyInstrumentation mInstrumentation;
+    private final Instrumentation mInstrumentation;
 
-    public Gesture(MyInstrumentation inst, ActivityUtils activityUtils) {
+    public Gesture(Instrumentation inst, ActivityUtils activityUtils) {
         mInstrumentation = inst;
         mActivityUtils = activityUtils;
     }
