@@ -9,22 +9,17 @@ import java.util.Locale;
 
 
 /**
- * MLogger 工具类
+ * Logger 工具类
  * Created by llx on 05/01/2018.
  */
 
-class MLogger {
+class Logger {
     private static final String TAG = "uimocker";
     private static final boolean DEBUG = true;
 
     public static void d(String tag, String msg) {
         if(DEBUG) {
             Log.d(tag,msg);
-            try {
-                String time = timeStamp2DateStr(System.currentTimeMillis());
-                //XposedBridge.log(time + "#" +tag + "#" + msg);
-            } catch (Exception ignore) {
-            }
         }
     }
 
@@ -35,11 +30,6 @@ class MLogger {
     public static void i(String tag,String msg) {
         if (DEBUG){
             Log.i(TAG,msg);
-            try {
-                String time = timeStamp2DateStr(System.currentTimeMillis());
-                //XposedBridge.log(time + "#" +tag + "#" + msg);
-            } catch (Exception ignore) {
-            }
         }
     }
 
@@ -50,11 +40,6 @@ class MLogger {
     public static void e(String tag,String msg,Throwable e){
         if (e != null) {
             Log.e(tag,msg,e);
-            try {
-                String time = timeStamp2DateStr(System.currentTimeMillis());
-                //XposedBridge.log(time + "#" +tag + "#" + msg);
-            } catch (Exception ignore) {
-            }
         }
     }
 
@@ -64,9 +49,5 @@ class MLogger {
 
     public static void e(String msg,Throwable e) {
         e(TAG,msg,e);
-    }
-
-    private static String timeStamp2DateStr(long timestamp) {
-        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).format(new Date(timestamp));
     }
 }

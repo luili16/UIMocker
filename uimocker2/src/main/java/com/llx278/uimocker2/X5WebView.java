@@ -33,7 +33,7 @@ class X5WebView implements WebViewProxy {
         try {
             return (boolean) mReflect.method("canGoBack").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return false;
     }
@@ -43,7 +43,7 @@ class X5WebView implements WebViewProxy {
         try {
             return (boolean) mReflect.method("canGoBackOrForward",int.class).invoke(steps);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return false;
     }
@@ -54,7 +54,7 @@ class X5WebView implements WebViewProxy {
         try {
             return (boolean) mReflect.method("canGoForward").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return false;
     }
@@ -64,7 +64,7 @@ class X5WebView implements WebViewProxy {
         try {
             return (boolean) mReflect.method("canZoomIn").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return false;
     }
@@ -74,7 +74,7 @@ class X5WebView implements WebViewProxy {
         try {
             return (boolean) mReflect.method("canZoomOut").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return false;
     }
@@ -84,7 +84,7 @@ class X5WebView implements WebViewProxy {
         try {
             return (View) mReflect.method("findFocus").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return null;
     }
@@ -94,7 +94,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("findNext").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -103,7 +103,7 @@ class X5WebView implements WebViewProxy {
         try {
             return (String) mReflect.method("getOriginalUrl").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return null;
     }
@@ -113,7 +113,7 @@ class X5WebView implements WebViewProxy {
         try {
             return (int) mReflect.method("getProgress").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return 0;
     }
@@ -124,7 +124,7 @@ class X5WebView implements WebViewProxy {
         try {
             return (float) mReflect.method("getScale").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return 0;
     }
@@ -135,7 +135,7 @@ class X5WebView implements WebViewProxy {
             Reflect.MethodRf getSettings = mReflect.method("getSettings");
             return getSettings.invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return null;
     }
@@ -145,7 +145,7 @@ class X5WebView implements WebViewProxy {
         try {
             return (String) mReflect.method("getTitle").invoke();
         }catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return null;
     }
@@ -155,7 +155,7 @@ class X5WebView implements WebViewProxy {
         try {
             return (String) mReflect.method("getUrl").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return null;
     }
@@ -165,7 +165,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("goBack").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -174,7 +174,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("goBackOrForward",int.class).invoke(steps);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -183,7 +183,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("goForward").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -192,7 +192,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("invokeZoomPicker").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -202,7 +202,7 @@ class X5WebView implements WebViewProxy {
             mReflect.method("loadData",String.class,String.class,String.class).
                     invoke(data,mimeType,encoding);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -212,7 +212,7 @@ class X5WebView implements WebViewProxy {
             mReflect.method("loadDataWithBaseURL",String.class,String.class,String.class,String.class,String.class).
                     invoke(baseUrl,data,mimeType,encoding,historyUrl);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -221,7 +221,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("loadUrl",String.class).invoke(url);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -230,7 +230,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("loadUrl",String.class,Map.class).invoke(url,additionalHttpHeaders);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -239,7 +239,7 @@ class X5WebView implements WebViewProxy {
         try {
             return (boolean) mReflect.method("pageDown",boolean.class).invoke(bottom);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return false;
     }
@@ -249,7 +249,7 @@ class X5WebView implements WebViewProxy {
         try {
             return (boolean) mReflect.method("pageUp",boolean.class).invoke(top);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return false;
     }
@@ -259,7 +259,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("pauseTimers").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -268,7 +268,7 @@ class X5WebView implements WebViewProxy {
         try {
             return (boolean) mReflect.method("performLongClick").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return false;
     }
@@ -278,7 +278,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("postUrl",String.class,byte[].class).invoke(url,postData);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -287,7 +287,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("reload").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -296,7 +296,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("removeJavascriptInterface",String.class).invoke(name);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -306,7 +306,7 @@ class X5WebView implements WebViewProxy {
             return (boolean) mReflect.method("requestChildRectangleOnScreen",View.class,Rect.class,boolean.class).
                     invoke(child,rect,immediate);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return false;
     }
@@ -317,7 +317,7 @@ class X5WebView implements WebViewProxy {
             return (boolean) mReflect.method("requestFocus",int.class,Rect.class).
                     invoke(direction,previouslyFocusedRect);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return false;
     }
@@ -327,7 +327,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("requestFocusNodeHref",Message.class).invoke(hrefMsg);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -336,7 +336,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("requestImageRef",Message.class).invoke(msg);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -345,7 +345,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("saveWebArchive",String.class).invoke(filename);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -354,7 +354,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("setBackgroundColor",int.class).invoke(color);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -365,7 +365,7 @@ class X5WebView implements WebViewProxy {
                     loadClass("com.tencent.smtt.sdk.DownloadListener");
             mReflect.method("setDownloadListener",downLoadListenerClass).invoke(listener);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
 
     }
@@ -377,7 +377,7 @@ class X5WebView implements WebViewProxy {
                     loadClass("com.tencent.smtt.export.external.interfaces.IX5WebViewBase$FindListener");
             mReflect.method("setFindListener",findClass).invoke(listener);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -387,7 +387,7 @@ class X5WebView implements WebViewProxy {
             mReflect.method("setHttpAuthUsernamePassword",String.class,String.class,String.class,String.class).
                     invoke(host,realm,username,password);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -396,7 +396,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("setInitialScale",int.class).invoke(scaleInPercent);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -405,7 +405,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("setLayerType",int.class,Paint.class).invoke(layerType,paint);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -414,7 +414,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("setMapTrackballToArrowKeys",boolean.class).invoke(setMap);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -423,7 +423,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("setNetworkAvailable",boolean.class).invoke(networkUp);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -434,7 +434,7 @@ class X5WebView implements WebViewProxy {
                     loadClass("com.tencent.smtt.sdk.WebChromeClient");
             mReflect.method("setWebChromeClient",webChromeClientClass).invoke(client);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -445,7 +445,7 @@ class X5WebView implements WebViewProxy {
                     loadClass("com.tencent.smtt.sdk.WebViewClient");
             mReflect.method("setWebViewClient",webViewClientClass).invoke(client);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -455,7 +455,7 @@ class X5WebView implements WebViewProxy {
         try {
             return (boolean) mReflect.method("shouldDelayChildPressedState").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
 
         return false;
@@ -466,7 +466,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("stopLoading").invoke();
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -475,7 +475,7 @@ class X5WebView implements WebViewProxy {
         try {
             mReflect.method("zoomBy",float.class).invoke(zoomFactor);
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
     }
 
@@ -486,7 +486,7 @@ class X5WebView implements WebViewProxy {
            return (boolean) mReflect.method("zoomIn").invoke();
 
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return false;
     }
@@ -498,7 +498,7 @@ class X5WebView implements WebViewProxy {
             return (boolean) mReflect.method("zoomOut").invoke();
 
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return false;
     }

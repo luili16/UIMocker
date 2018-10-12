@@ -1,7 +1,6 @@
 package com.llx278.uimocker2;
 
 import android.annotation.SuppressLint;
-import android.app.Instrumentation;
 import android.webkit.WebSettings;
 
 
@@ -31,7 +30,7 @@ class WebViewExecutor {
                     }
                     proxy.loadUrl(url);
                 } catch (Exception e) {
-                    MLogger.e(e);
+                    Logger.e(e);
                 }
             }
         });

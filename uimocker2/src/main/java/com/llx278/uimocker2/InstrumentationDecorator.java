@@ -16,7 +16,6 @@ import android.os.Looper;
 import android.os.PersistableBundle;
 import android.support.annotation.CallSuper;
 import android.support.annotation.RequiresApi;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
@@ -73,7 +72,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void onCreate(Bundle arguments) {
         if (DEBUG) {
-            MLogger.d(TAG,"onCreate");
+            Logger.d(TAG,"onCreate");
         }
         mInstrumentation.onCreate(arguments);
     }
@@ -82,7 +81,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void start() {
         if (DEBUG) {
-            MLogger.d(TAG,"start");
+            Logger.d(TAG,"start");
         }
         mInstrumentation.start();
     }
@@ -91,7 +90,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void onStart() {
         if (DEBUG) {
-            MLogger.d(TAG,"onStart");
+            Logger.d(TAG,"onStart");
         }
         mInstrumentation.onStart();
     }
@@ -100,7 +99,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public boolean onException(Object obj, Throwable e) {
         if (DEBUG) {
-            MLogger.d(TAG,"onException");
+            Logger.d(TAG,"onException");
         }
         return mInstrumentation.onException(obj, e);
     }
@@ -109,7 +108,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void sendStatus(int resultCode, Bundle results) {
         if (DEBUG) {
-            MLogger.d(TAG,"sendStatus");
+            Logger.d(TAG,"sendStatus");
         }
         mInstrumentation.sendStatus(resultCode, results);
     }
@@ -119,7 +118,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void addResults(Bundle results) {
         if (DEBUG) {
-            MLogger.d(TAG,"addResults");
+            Logger.d(TAG,"addResults");
         }
         mInstrumentation.addResults(results);
     }
@@ -128,7 +127,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void finish(int resultCode, Bundle results) {
         if (DEBUG) {
-            MLogger.d(TAG,"finish");
+            Logger.d(TAG,"finish");
         }
         mInstrumentation.finish(resultCode, results);
 
@@ -138,7 +137,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void setAutomaticPerformanceSnapshots() {
         if (DEBUG) {
-            MLogger.d(TAG,"setAutomaticPerformanceSnapshots");
+            Logger.d(TAG,"setAutomaticPerformanceSnapshots");
         }
         mInstrumentation.setAutomaticPerformanceSnapshots();
     }
@@ -147,7 +146,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void startPerformanceSnapshot() {
         if (DEBUG) {
-            MLogger.d(TAG,"startPerformanceSnapshot");
+            Logger.d(TAG,"startPerformanceSnapshot");
         }
         mInstrumentation.startPerformanceSnapshot();
     }
@@ -156,7 +155,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void endPerformanceSnapshot() {
         if (DEBUG) {
-            MLogger.d(TAG,"endPerformanceSnapshot");
+            Logger.d(TAG,"endPerformanceSnapshot");
         }
         mInstrumentation.endPerformanceSnapshot();
     }
@@ -165,7 +164,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void onDestroy() {
         if (DEBUG) {
-            MLogger.d(TAG,"onDestroy");
+            Logger.d(TAG,"onDestroy");
         }
         mInstrumentation.onDestroy();
     }
@@ -174,7 +173,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public Context getContext() {
         if (DEBUG) {
-            MLogger.d(TAG,"getContext");
+            Logger.d(TAG,"getContext");
         }
         return mContext;
     }
@@ -183,7 +182,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public ComponentName getComponentName() {
         if (DEBUG) {
-            MLogger.d(TAG,"getComponentName");
+            Logger.d(TAG,"getComponentName");
         }
         return mInstrumentation.getComponentName();
     }
@@ -192,7 +191,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public Context getTargetContext() {
         if (DEBUG) {
-            MLogger.d(TAG,"getTargetContext");
+            Logger.d(TAG,"getTargetContext");
         }
         return mContext;
     }
@@ -202,7 +201,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public String getProcessName() {
         if (DEBUG) {
-            MLogger.d(TAG,"getProcessName");
+            Logger.d(TAG,"getProcessName");
         }
         return mInstrumentation.getProcessName();
     }
@@ -211,7 +210,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public boolean isProfiling() {
         if (DEBUG) {
-            MLogger.d(TAG,"isProfiling");
+            Logger.d(TAG,"isProfiling");
         }
         return mInstrumentation.isProfiling();
     }
@@ -220,7 +219,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void startProfiling() {
         if (DEBUG) {
-            MLogger.d(TAG,"startProfiling");
+            Logger.d(TAG,"startProfiling");
         }
         mInstrumentation.startProfiling();
     }
@@ -229,7 +228,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void stopProfiling() {
         if (DEBUG) {
-            MLogger.d(TAG,"stopProfiling");
+            Logger.d(TAG,"stopProfiling");
         }
         mInstrumentation.stopProfiling();
     }
@@ -238,7 +237,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void setInTouchMode(boolean inTouch) {
         if (DEBUG) {
-            MLogger.d(TAG,"setTouchMode");
+            Logger.d(TAG,"setTouchMode");
         }
         mInstrumentation.setInTouchMode(inTouch);
     }
@@ -247,7 +246,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void waitForIdle(Runnable recipient) {
         if (DEBUG) {
-            MLogger.d(TAG,"waitForIdle");
+            Logger.d(TAG,"waitForIdle");
         }
         mInstrumentation.waitForIdle(recipient);
     }
@@ -256,7 +255,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void waitForIdleSync() {
         if (DEBUG) {
-            MLogger.d(TAG,"waitForIdleSync");
+            Logger.d(TAG,"waitForIdleSync");
         }
         mInstrumentation.waitForIdleSync();
     }
@@ -265,7 +264,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void runOnMainSync(Runnable runner) {
         if (DEBUG) {
-            MLogger.d(TAG,"runOnMainSync");
+            Logger.d(TAG,"runOnMainSync");
         }
         mInstrumentation.runOnMainSync(runner);
 
@@ -275,7 +274,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public Activity startActivitySync(Intent intent) {
         if (DEBUG) {
-            MLogger.d(TAG,"startActivitySync");
+            Logger.d(TAG,"startActivitySync");
         }
         return mInstrumentation.startActivitySync(intent);
     }
@@ -285,7 +284,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void addMonitor(Instrumentation.ActivityMonitor monitor) {
         if (DEBUG) {
-            MLogger.d(TAG,"registerMonitor");
+            Logger.d(TAG,"registerMonitor");
         }
         mInstrumentation.addMonitor(monitor);
     }
@@ -295,7 +294,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     public Instrumentation.ActivityMonitor addMonitor(
             IntentFilter filter, ActivityResult result, boolean block) {
         if (DEBUG) {
-            MLogger.d(TAG,"addMonitor");
+            Logger.d(TAG,"addMonitor");
         }
         return mInstrumentation.addMonitor(filter, result, block);
     }
@@ -305,7 +304,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     public Instrumentation.ActivityMonitor addMonitor(
             String cls, ActivityResult result, boolean block) {
         if (DEBUG) {
-            MLogger.d(TAG,"addMonitor");
+            Logger.d(TAG,"addMonitor");
         }
         return mInstrumentation.addMonitor(cls, result, block);
     }
@@ -314,7 +313,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public boolean checkMonitorHit(Instrumentation.ActivityMonitor monitor, int minHits) {
         if (DEBUG) {
-            MLogger.d(TAG,"checkMonitorHit");
+            Logger.d(TAG,"checkMonitorHit");
         }
         return mInstrumentation.checkMonitorHit(monitor, minHits);
     }
@@ -323,7 +322,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public Activity waitForMonitor(Instrumentation.ActivityMonitor monitor) {
         if (DEBUG) {
-            MLogger.d(TAG,"waitForMonitor");
+            Logger.d(TAG,"waitForMonitor");
         }
         return mInstrumentation.waitForMonitor(monitor);
     }
@@ -332,7 +331,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public Activity waitForMonitorWithTimeout(Instrumentation.ActivityMonitor monitor, long timeOut) {
         if (DEBUG) {
-            MLogger.d(TAG,"waitForMonitorWithTimeout");
+            Logger.d(TAG,"waitForMonitorWithTimeout");
         }
         return mInstrumentation.waitForMonitorWithTimeout(monitor, timeOut);
     }
@@ -341,7 +340,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void removeMonitor(Instrumentation.ActivityMonitor monitor) {
         if (DEBUG) {
-            MLogger.d(TAG,"removeMonitor");
+            Logger.d(TAG,"removeMonitor");
         }
         mInstrumentation.removeMonitor(monitor);
     }
@@ -351,7 +350,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     public boolean invokeMenuActionSync(Activity targetActivity,
                                         int id, int flag) {
         if (DEBUG) {
-            MLogger.d(TAG,"invokeMenuActionSync");
+            Logger.d(TAG,"invokeMenuActionSync");
         }
         return mInstrumentation.invokeMenuActionSync(targetActivity, id, flag);
     }
@@ -360,7 +359,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public boolean invokeContextMenuAction(Activity targetActivity, int id, int flag) {
         if (DEBUG) {
-            MLogger.d(TAG,"invokeContextMenuAction");
+            Logger.d(TAG,"invokeContextMenuAction");
         }
         return mInstrumentation.invokeContextMenuAction(targetActivity, id, flag);
     }
@@ -369,7 +368,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void sendStringSync(String text) {
         if (DEBUG) {
-            MLogger.d(TAG,"sendStringSync");
+            Logger.d(TAG,"sendStringSync");
         }
         mInstrumentation.sendStringSync(text);
     }
@@ -378,7 +377,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void sendKeySync(KeyEvent event) {
         if (DEBUG) {
-            MLogger.d(TAG,"sendKeySync");
+            Logger.d(TAG,"sendKeySync");
         }
         mInstrumentation.sendKeySync(event);
     }
@@ -387,7 +386,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void sendKeyDownUpSync(int key) {
         if (DEBUG) {
-            MLogger.d(TAG,"sendKeyDownUpSync");
+            Logger.d(TAG,"sendKeyDownUpSync");
         }
         mInstrumentation.sendKeyDownUpSync(key);
     }
@@ -396,7 +395,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void sendCharacterSync(int keyCode) {
         if (DEBUG) {
-            MLogger.d(TAG,"sendCharacterSync");
+            Logger.d(TAG,"sendCharacterSync");
         }
         mInstrumentation.sendCharacterSync(keyCode);
     }
@@ -405,7 +404,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void sendPointerSync(MotionEvent event) {
         if (DEBUG) {
-            MLogger.d(TAG,"sendPointerSync");
+            Logger.d(TAG,"sendPointerSync");
         }
         mInstrumentation.sendPointerSync(event);
     }
@@ -414,7 +413,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void sendTrackballEventSync(MotionEvent event) {
         if (DEBUG) {
-            MLogger.d(TAG,"sendTrackballEventSync");
+            Logger.d(TAG,"sendTrackballEventSync");
         }
         mInstrumentation.sendTrackballEventSync(event);
     }
@@ -425,7 +424,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
             throws InstantiationException, IllegalAccessException,
             ClassNotFoundException {
         if (DEBUG) {
-            MLogger.d(TAG,"newApplication(ClassLoader cl, String className, Context context)");
+            Logger.d(TAG,"newApplication(ClassLoader cl, String className, Context context)");
         }
         return mInstrumentation.newApplication(cl, className, context);
     }
@@ -436,7 +435,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
             throws InstantiationException, IllegalAccessException,
             ClassNotFoundException {
         if (DEBUG) {
-            MLogger.d(TAG,"newApplication(Class<?> clazz, Context context)");
+            Logger.d(TAG,"newApplication(Class<?> clazz, Context context)");
         }
         return Instrumentation.newApplication(clazz, context);
     }
@@ -445,7 +444,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void callApplicationOnCreate(Application app) {
         if (DEBUG) {
-            MLogger.d(TAG,"callApplicationOnCreate");
+            Logger.d(TAG,"callApplicationOnCreate");
         }
         mInstrumentation.callApplicationOnCreate(app);
     }
@@ -458,7 +457,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
                                 Object lastNonConfigurationInstance) throws InstantiationException,
             IllegalAccessException {
         if (DEBUG) {
-            MLogger.d(TAG,"newActivity(Class<?> clazz, Context context,\n" +
+            Logger.d(TAG,"newActivity(Class<?> clazz, Context context,\n" +
                     "IBinder token, Application application, Intent intent, ActivityInfo info,\n" +
                     "CharSequence title, Activity parent, String id,\n" +
                     "Object lastNonConfigurationInstance)");
@@ -474,7 +473,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
             throws InstantiationException, IllegalAccessException,
             ClassNotFoundException {
         if (DEBUG) {
-            MLogger.d(TAG,"newActivity(ClassLoader cl, String className,Intent intent)");
+            Logger.d(TAG,"newActivity(ClassLoader cl, String className,Intent intent)");
         }
         return mInstrumentation.newActivity(cl, className, intent);
     }
@@ -483,7 +482,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void callActivityOnCreate(Activity activity, Bundle icicle) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnCreate(Activity activity, Bundle icicle)");
+            Logger.d(TAG,"callActivityOnCreate(Activity activity, Bundle icicle)");
         }
         mInstrumentation.callActivityOnCreate(activity, icicle);
     }
@@ -494,7 +493,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     public void callActivityOnCreate(Activity activity, Bundle icicle,
                                      PersistableBundle persistentState) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnCreate(Activity activity, Bundle icicle PersistableBundle persistentState)");
+            Logger.d(TAG,"callActivityOnCreate(Activity activity, Bundle icicle PersistableBundle persistentState)");
         }
         mInstrumentation.callActivityOnCreate(activity, icicle, persistentState);
     }
@@ -503,7 +502,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void callActivityOnDestroy(Activity activity) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnDestroy");
+            Logger.d(TAG,"callActivityOnDestroy");
         }
         mInstrumentation.callActivityOnDestroy(activity);
     }
@@ -512,7 +511,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void callActivityOnRestoreInstanceState(Activity activity, Bundle savedInstanceState) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnRestoreInstanceState");
+            Logger.d(TAG,"callActivityOnRestoreInstanceState");
         }
         mInstrumentation.callActivityOnRestoreInstanceState(activity, savedInstanceState);
     }
@@ -523,7 +522,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     public void callActivityOnRestoreInstanceState(Activity activity, Bundle savedInstanceState,
                                                    PersistableBundle persistentState) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnRestoreInstanceState()Activity activity, Bundle savedInstanceState,\n" +
+            Logger.d(TAG,"callActivityOnRestoreInstanceState()Activity activity, Bundle savedInstanceState,\n" +
                     "                                                   PersistableBundle persistentState");
         }
         mInstrumentation.callActivityOnRestoreInstanceState(activity, savedInstanceState, persistentState);
@@ -533,7 +532,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void callActivityOnPostCreate(Activity activity, Bundle icicle) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnPostCreate");
+            Logger.d(TAG,"callActivityOnPostCreate");
         }
         mInstrumentation.callActivityOnPostCreate(activity, icicle);
     }
@@ -544,7 +543,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     public void callActivityOnPostCreate(Activity activity, Bundle icicle,
                                          PersistableBundle persistentState) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnPostCreate(Activity activity, Bundle icicle,\n" +
+            Logger.d(TAG,"callActivityOnPostCreate(Activity activity, Bundle icicle,\n" +
                     "PersistableBundle persistentState)");
         }
         mInstrumentation.callActivityOnPostCreate(activity, icicle, persistentState);
@@ -554,7 +553,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void callActivityOnNewIntent(Activity activity, Intent intent) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnNewIntent");
+            Logger.d(TAG,"callActivityOnNewIntent");
         }
         mInstrumentation.callActivityOnNewIntent(activity, intent);
     }
@@ -563,7 +562,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void callActivityOnStart(Activity activity) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnStart");
+            Logger.d(TAG,"callActivityOnStart");
         }
         mInstrumentation.callActivityOnStart(activity);
     }
@@ -572,7 +571,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void callActivityOnRestart(Activity activity) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnRestart");
+            Logger.d(TAG,"callActivityOnRestart");
         }
         mInstrumentation.callActivityOnRestart(activity);
     }
@@ -581,7 +580,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void callActivityOnResume(Activity activity) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnResume");
+            Logger.d(TAG,"callActivityOnResume");
         }
         mInstrumentation.callActivityOnResume(activity);
     }
@@ -590,7 +589,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void callActivityOnStop(Activity activity) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnStop");
+            Logger.d(TAG,"callActivityOnStop");
         }
         mInstrumentation.callActivityOnStop(activity);
     }
@@ -599,7 +598,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void callActivityOnSaveInstanceState(Activity activity, Bundle outState) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnSaveInstanceState(Activity activity, Bundle outState)");
+            Logger.d(TAG,"callActivityOnSaveInstanceState(Activity activity, Bundle outState)");
         }
         mInstrumentation.callActivityOnSaveInstanceState(activity, outState);
     }
@@ -610,7 +609,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     public void callActivityOnSaveInstanceState(Activity activity, Bundle outState,
                                                 PersistableBundle outPersistentState) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnSaveInstanceState(Activity activity, Bundle outState,outPersistentState)");
+            Logger.d(TAG,"callActivityOnSaveInstanceState(Activity activity, Bundle outState,outPersistentState)");
         }
         mInstrumentation.callActivityOnSaveInstanceState(activity, outState, outPersistentState);
     }
@@ -619,7 +618,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void callActivityOnPause(Activity activity) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnStop");
+            Logger.d(TAG,"callActivityOnStop");
         }
         mInstrumentation.callActivityOnPause(activity);
     }
@@ -628,7 +627,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void callActivityOnUserLeaving(Activity activity) {
         if (DEBUG) {
-            MLogger.d(TAG,"callActivityOnUserLeaving");
+            Logger.d(TAG,"callActivityOnUserLeaving");
         }
         mInstrumentation.callActivityOnUserLeaving(activity);
     }
@@ -638,7 +637,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void startAllocCounting() {
         if (DEBUG) {
-            MLogger.d(TAG,"startAllocCounting");
+            Logger.d(TAG,"startAllocCounting");
         }
         mInstrumentation.startAllocCounting();
     }
@@ -648,7 +647,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public void stopAllocCounting() {
         if (DEBUG) {
-            MLogger.d(TAG,"stopAllocCounting");
+            Logger.d(TAG,"stopAllocCounting");
         }
         mInstrumentation.stopAllocCounting();
     }
@@ -658,7 +657,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
     @CallSuper
     public Bundle getAllocCounts() {
         if (DEBUG) {
-            MLogger.d(TAG,"getAllocCounts");
+            Logger.d(TAG,"getAllocCounts");
         }
         return mInstrumentation.getAllocCounts();
     }
@@ -667,7 +666,7 @@ public abstract class InstrumentationDecorator extends Instrumentation {
    @CallSuper
     public Bundle getBinderCounts() {
        if (DEBUG) {
-           MLogger.d(TAG,"getBinderCounts");
+           Logger.d(TAG,"getBinderCounts");
        }
        return mInstrumentation.getBinderCounts();
     }

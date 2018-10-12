@@ -2,7 +2,6 @@ package com.llx278.uimocker2;
 
 import android.app.Activity;
 import android.app.Application;
-import android.app.Instrumentation;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -78,7 +77,7 @@ public class ActivityLifeCycleCallbackImpl implements Application.ActivityLifecy
             ActivityStateRecord activity = iterator.next();
             sb.append(activity.toString()).append("   ");
         }
-        MLogger.d(TAG, "stackInfo : [" + sb.toString() + "]");
+        Logger.d(TAG, "stackInfo : [" + sb.toString() + "]");
     }
 
     private void addToRecordStack(Activity activity, int currentLifeCycle) {
@@ -108,20 +107,20 @@ public class ActivityLifeCycleCallbackImpl implements Application.ActivityLifecy
     }
 
     private void printActivityInfo(Activity activity, Bundle icicle) {
-        MLogger.d(TAG, "callActivityOnCreate : " + activity.getClass().getName());
-        MLogger.d(TAG, "ActivityName :" + activity.getClass().getName());
-        MLogger.d(TAG, "savedBundle:" + (icicle == null ? "null" : icicle.toString()));
-        MLogger.d(TAG, "intent : " + (activity.getIntent() == null ? "null" : activity.getIntent().toString()));
+        Logger.d(TAG, "callActivityOnCreate : " + activity.getClass().getName());
+        Logger.d(TAG, "ActivityName :" + activity.getClass().getName());
+        Logger.d(TAG, "savedBundle:" + (icicle == null ? "null" : icicle.toString()));
+        Logger.d(TAG, "intent : " + (activity.getIntent() == null ? "null" : activity.getIntent().toString()));
         if (activity.getIntent() != null) {
             Bundle extras = activity.getIntent().getExtras();
-            MLogger.d(TAG, "extras:" + (extras == null ? "null" : extras.toString()));
+            Logger.d(TAG, "extras:" + (extras == null ? "null" : extras.toString()));
             if (extras != null) {
-                MLogger.d("printBundle");
+                Logger.d("printBundle");
                 Set<String> ketSet = extras.keySet();
                 for (String key : ketSet) {
                     Object value = extras.get(key);
                     try {
-                        MLogger.d(TAG, "(key : value)=(" + key + " : " + value + ")");
+                        Logger.d(TAG, "(key : value)=(" + key + " : " + value + ")");
                     } catch (Exception ignore) {
                     }
                 }
@@ -138,7 +137,7 @@ public class ActivityLifeCycleCallbackImpl implements Application.ActivityLifecy
     public void onActivityResumed(Activity activity) {
 
         if (DEBUG) {
-            MLogger.d(TAG, "callActivityOnResume activityName : " + activity.getClass().getName());
+            Logger.d(TAG, "callActivityOnResume activityName : " + activity.getClass().getName());
         }
 
         for (ActivityLifeCycleObserver observer : mObserverList) {
@@ -159,7 +158,7 @@ public class ActivityLifeCycleCallbackImpl implements Application.ActivityLifecy
     @Override
     public void onActivityPaused(Activity activity) {
         if (DEBUG) {
-            MLogger.d(TAG, "callActivityOnPause activityName : " + activity.getClass().getName());
+            Logger.d(TAG, "callActivityOnPause activityName : " + activity.getClass().getName());
         }
 
         for (ActivityLifeCycleObserver observer : mObserverList) {
@@ -190,7 +189,7 @@ public class ActivityLifeCycleCallbackImpl implements Application.ActivityLifecy
     @Override
     public void onActivityDestroyed(Activity activity) {
         if (DEBUG) {
-            MLogger.d(TAG, "callActivityOnDestroy activityName : " + activity.getClass().getName());
+            Logger.d(TAG, "callActivityOnDestroy activityName : " + activity.getClass().getName());
         }
 
         for (ActivityLifeCycleObserver observer : mObserverList) {
@@ -228,7 +227,7 @@ public class ActivityLifeCycleCallbackImpl implements Application.ActivityLifecy
 
         synchronized (mActivityRecordStack) {
             if (deep < 0 || deep >= mActivityRecordStack.size()) {
-                MLogger.e("illegal size of deep,current deep = " + deep + " deep must greater " +
+                Logger.e("illegal size of deep,current deep = " + deep + " deep must greater " +
                         "than 0 and less than " + mActivityRecordStack.size() + " or current Activity stack is empty!", null);
                 return false;
             }
@@ -293,7 +292,7 @@ public class ActivityLifeCycleCallbackImpl implements Application.ActivityLifecy
                         }
                     });
                 } catch (Exception e) {
-                    MLogger.e("", e);
+                    Logger.e("", e);
                 }
             }
         }
@@ -335,7 +334,7 @@ public class ActivityLifeCycleCallbackImpl implements Application.ActivityLifecy
                 if (activity != null && activityFromWeakReference != null &&
                         activityFromWeakReference.equals(activity)) {
                     if (DEBUG) {
-                        MLogger.d(TAG, "hit an has destroyed activity( which name is '" +
+                        Logger.d(TAG, "hit an has destroyed activity( which name is '" +
                                 activity.getClass().getName() + "'),now remove it!");
                     }
                     activityStackIterator.remove();

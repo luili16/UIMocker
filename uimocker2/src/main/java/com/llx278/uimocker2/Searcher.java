@@ -67,7 +67,6 @@ public class Searcher {
             }
 
             if (!mScroller.scrollVertically(direction, scrollableView)) {
-                Log.d("main","scroller true");
                 break;
             }
         }

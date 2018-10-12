@@ -1,11 +1,11 @@
 package com.llx278.uimocker2;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -31,7 +31,6 @@ public class Solo {
 
     private static final String TAG = "Solo";
 
-
     private Clicker mClicker;
     private Scroller mScroller;
     private Searcher mSearcher;
@@ -41,16 +40,16 @@ public class Solo {
     private Gesture mGesture;
 
     private ActivityUtils mActivityUtils;
-    private Instrumentation mInstrumentation;
     private DialogUtils mDialogUtils;
     private WebUtils mWebUtils;
     private ActivityLifeCycleCallbackImpl mImpl;
     private Context mContext;
 
+    @SuppressLint("PrivateApi")
     public Solo(Application app, Instrumentation instrumentation) {
 
         try {
-
+            Instrumentation instrumentation1;
             if (instrumentation == null) {
                 Class<?> activityThreadClass = null;
                 activityThreadClass = Class.forName("android.app.ActivityThread");
@@ -59,25 +58,23 @@ public class Solo {
                 Class<?> aClass = sCurrentActivityThread.getClass();
                 Field mInstrumentationField = ReflectUtil.findFieldRecursiveImpl(aClass, "mInstrumentation");
                 mInstrumentationField.setAccessible(true);
-                mInstrumentation = (Instrumentation) mInstrumentationField.get(sCurrentActivityThread);
+                instrumentation1 = (Instrumentation) mInstrumentationField.get(sCurrentActivityThread);
             } else {
-                mInstrumentation = instrumentation;
+                instrumentation1 = instrumentation;
             }
-
-
 
             mContext = app.getApplicationContext();
             mImpl = new ActivityLifeCycleCallbackImpl();
             app.registerActivityLifecycleCallbacks(mImpl);
             mActivityUtils = new ActivityUtils(mImpl);
             mViewGetter = new ViewGetter(mContext);
-            mGesture = new Gesture(mInstrumentation,mActivityUtils);
+            mGesture = new Gesture(instrumentation1,mActivityUtils);
             mScroller = new Scroller(mContext, mViewGetter, mGesture);
             mSearcher = new Searcher(mViewGetter, mScroller);
             mWebUtils = new WebUtils(mContext);
             mWaiter = new Waiter( mActivityUtils, mViewGetter, mSearcher,mScroller,mWebUtils);
             mDialogUtils = new DialogUtils(mContext, mActivityUtils, mViewGetter);
-            mClicker = new Clicker( mViewGetter, mInstrumentation, mSearcher);
+            mClicker = new Clicker( mViewGetter, instrumentation1, mSearcher);
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -88,10 +85,6 @@ public class Solo {
             Thread.sleep(duration);
         } catch (InterruptedException ignore) {
         }
-    }
-
-    public ActivityLifeCycleCallbackImpl getActivityLifeCycleCallback() {
-        return mImpl;
     }
 
     public Clicker getClicker() {
@@ -153,7 +146,7 @@ public class Solo {
 
             Activity currentActivity = mActivityUtils.getCurrentActivity();
             if (currentActivity == null) {
-                MLogger.d(TAG,"Solo.findViewById(int) currentActivity is null");
+                Logger.d(TAG,"Solo.findViewById(int) currentActivity is null");
                 continue;
             }
             View view = currentActivity.findViewById(id);
@@ -179,9 +172,9 @@ public class Solo {
      * 根据id找到给定parent里面的view
      *
      * @param id     指定的id
-     * @param parent 待寻找的view
+     * @param parent 父View
      * @param timeout 超时时间
-     * @return 找到的view，如果为空则说明在超时时间里面没有找到
+     * @return 返回null:没有找到
      */
     public View findViewById(int id, View parent, long timeout) {
         if (parent == null) {
@@ -202,7 +195,7 @@ public class Solo {
     /**
      * 根据Id找到给定parent里面的所有view
      * @param id id
-     * @param parent 带寻找的view
+     * @param parent 父view
      * @return 找到的view的列表
      */
     public ArrayList<View> findViewByIds(int id,View parent) {

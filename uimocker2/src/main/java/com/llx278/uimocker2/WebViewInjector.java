@@ -1,6 +1,5 @@
 package com.llx278.uimocker2;
 
-import android.app.Instrumentation;
 import android.graphics.Bitmap;
 import android.os.Message;
 import android.text.TextUtils;
@@ -76,7 +75,7 @@ class WebViewInjector {
             }
 
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
         return false;
     }
@@ -95,13 +94,13 @@ class WebViewInjector {
                         try {
                             ((WebView) webView).setWebChromeClient(mInjectedClient.mOriginalWebChromeClient);
                         } catch (Exception e) {
-                            MLogger.e(e);
+                            Logger.e(e);
                         }
                     }
                 });
             }
         } catch (Exception e) {
-            MLogger.e(e);
+            Logger.e(e);
         }
 
     }
@@ -127,7 +126,7 @@ class WebViewInjector {
                     break;
                 case "debu":
                     //mWebElementCreator.setFinished(true);
-                    MLogger.d("js-debug : " + msg);
+                    Logger.d("js-debug : " + msg);
                     break;
                 default:
             }

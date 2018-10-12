@@ -29,7 +29,7 @@ import static com.llx278.uimocker2.Scroller.VerticalDirection.UP_TO_DOWN;
  */
 
 public class Scroller {
-    private static final String TAG = "uimocker";
+
     private static final long DEFAULT_DRAG_DURATION = 500;
     private static final long DEFAULT_PRESS_DURATION = 0;
     private static final long DEFAULT_UP_DURATION = 1000;
@@ -70,7 +70,7 @@ public class Scroller {
      * @param view      待滑动的view
      * @param direction 方向
      */
-    public void forceScrollViewVertically(View view, VerticalDirection direction){
+    public void forceScrollViewVertically(View view, VerticalDirection direction) {
         forceScrollViewVertically(view, direction, DEFAULT_DRAG_DURATION);
     }
 
@@ -82,10 +82,10 @@ public class Scroller {
      *
      * @param view      待滑动的view
      * @param direction 方向
-     * @param duration 滚动时间，这个参数对于不同height的view，应该取不同的时间，因为如果一个view的height很大（或很小）
-     *                 duration很小（或很大）的情况，会导致滚动的距离误差过大。
+     * @param duration  滚动时间，这个参数对于不同height的view，应该取不同的时间，因为如果一个view的height很大（或很小）
+     *                  duration很小（或很大）的情况，会导致滚动的距离误差过大。
      */
-    public void forceScrollViewVertically(View view, VerticalDirection direction,long duration) {
+    public void forceScrollViewVertically(View view, VerticalDirection direction, long duration) {
         if (view == null || !(view instanceof ViewGroup)) {
             return;
         }
@@ -97,20 +97,20 @@ public class Scroller {
 
         int[] viewLocation = new int[2];
         view.getLocationOnScreen(viewLocation);
-        int upXPosition = roundEdgeX(viewLocation[0] + view.getWidth()/2);
-        // 加2的目的是让点精确的落在view的内部，保证点击事件能准确的被传递给view
+        int upXPosition = roundEdgeX(viewLocation[0] + view.getWidth() / 2);
+        // 加2的目的是让点精确的落在view的内部，保证点击事件能准确的传递给view
         int upYPosition = roundEdgeY(viewLocation[1]) + 2;
-        PointF upPointF = new PointF(upXPosition,upYPosition);
+        PointF upPointF = new PointF(upXPosition, upYPosition);
 
         int downXPosition = roundEdgeX(viewLocation[0] + view.getWidth() / 2);
         // 减2的目的是让点精确的落在view的内部，保证点击事件能准确的被传递给view
         int downYPosition = roundEdgeY(viewLocation[1] + view.getHeight()) - 2;
-        PointF downPointF = new PointF(downXPosition,downYPosition);
+        PointF downPointF = new PointF(downXPosition, downYPosition);
 
         if (direction == VerticalDirection.UP_TO_DOWN) {
-            mGesture.dragOnScreen(upPointF,downPointF,duration, DEFAULT_PRESS_DURATION, DEFAULT_UP_DURATION);
+            mGesture.dragOnScreen(upPointF, downPointF, duration, DEFAULT_PRESS_DURATION, DEFAULT_UP_DURATION);
         } else if (direction == VerticalDirection.DOWN_TO_UP) {
-            mGesture.dragOnScreen(downPointF,upPointF,duration, DEFAULT_PRESS_DURATION, DEFAULT_UP_DURATION);
+            mGesture.dragOnScreen(downPointF, upPointF, duration, DEFAULT_PRESS_DURATION, DEFAULT_UP_DURATION);
         }
     }
 
@@ -124,7 +124,7 @@ public class Scroller {
      * @param direction 方向
      */
     public void forceScrollViewHorizontally(View view, HorizontalDirection direction) {
-        forceScrollViewHorizontally(view,direction, DEFAULT_DRAG_DURATION);
+        forceScrollViewHorizontally(view, direction, DEFAULT_DRAG_DURATION);
     }
 
     /**
@@ -135,10 +135,10 @@ public class Scroller {
      *
      * @param view      待滑动的view
      * @param direction 方向
-     * @param duration 滚动时间，这个参数对于不同weight的view，应该取不同的时间，因为如果一个view的weight很大（很小）
-     *                 duration很小（很大）的情况，会导致滚动的距离误差过大。
+     * @param duration  滚动时间，这个参数对于不同weight的view，应该取不同的时间，因为如果一个view的weight很大（很小）
+     *                  duration很小（很大）的情况，会导致滚动的距离误差过大。
      */
-    public void forceScrollViewHorizontally(View view, HorizontalDirection direction,long duration) {
+    public void forceScrollViewHorizontally(View view, HorizontalDirection direction, long duration) {
         if (view == null || !(view instanceof ViewGroup)) {
             return;
         }
@@ -153,23 +153,23 @@ public class Scroller {
         // 加2的目的是让点精确的落在view的内部，保证点击事件能准确的被传递给view
         int leftXPosition = roundEdgeX(viewLocation[0]) + 2;
         int leftYPosition = roundEdgeY(viewLocation[1] + view.getHeight() / 2);
-        PointF leftPointF = new PointF(leftXPosition,leftYPosition);
+        PointF leftPointF = new PointF(leftXPosition, leftYPosition);
 
         // 减2的目的是让点精确的落在view的内部，保证点击事件能准确的被传递给view
         int rightXPosition = roundEdgeX(viewLocation[0] + view.getWidth()) - 2;
         int rightYPosition = roundEdgeY(viewLocation[1] + view.getHeight() / 2);
 
-        PointF rightPointF = new PointF(rightXPosition,rightYPosition);
+        PointF rightPointF = new PointF(rightXPosition, rightYPosition);
 
         if (direction == HorizontalDirection.LEFT_TO_RIGHT) {
-            mGesture.dragOnScreen(leftPointF,rightPointF, duration, DEFAULT_PRESS_DURATION, DEFAULT_UP_DURATION);
+            mGesture.dragOnScreen(leftPointF, rightPointF, duration, DEFAULT_PRESS_DURATION, DEFAULT_UP_DURATION);
         } else if (direction == HorizontalDirection.RIGHT_TO_LEFT) {
-            mGesture.dragOnScreen(rightPointF,leftPointF, duration, DEFAULT_PRESS_DURATION, DEFAULT_UP_DURATION);
+            mGesture.dragOnScreen(rightPointF, leftPointF, duration, DEFAULT_PRESS_DURATION, DEFAULT_UP_DURATION);
         }
     }
 
     /**
-     * 垂直滚动一个View，注意，这种滚动的方式只适合像ScrollView这样的View不是被复用的View(区别于ListView)
+     * 垂直滚动一个View，注意，这种滚动的方式只适合像ScrollView不会复用子view的View(区别于ListView)
      * 注意：此方法对RecyclerView有效，但是无法判断是否滚动到了最下还是最上面，即对于RecyclerView来说此方法
      * 永远返回true
      *
@@ -209,7 +209,7 @@ public class Scroller {
     }
 
     /**
-     * 垂直滚动到终止的位置,这种滚动的方式只适合像ScrollView这样的View不是被复用的View(区别于ListView)
+     * 垂直滚动到终止的位置,这种滚动的方式只适合像ScrollView这样的不会复用子view的View(区别于ListView)
      * 注意：此方法对RecyclerView无效，只能滚动一次
      *
      * @param view      待滚动的view
@@ -227,12 +227,14 @@ public class Scroller {
     /**
      * 这个方法自动的查找当前view里面所有可能有滚动能力的view，
      * 并在所有的view里面找到最近被刷新的view，对这个view触发滚动事件
+     *
      * @param direction 方向
+     * @param scrollableView 待滚动的view，为null的话则从当前的页面里面找到一个可能的view
      * @return false 证明还没有滚动到最下面的view或者最上面的view， true 已经不能在滚动了
-     *          注意，对于listView来说，数据集是自动填充的，因此滚动了最下面有很大的可能会刷新数据集
-     *          从而重新填充adapter，这种情况下返回值就会变的不可信了
+     * 注意，对于listView来说，数据集是自动填充的，因此滚动了最下面有很大的可能会刷新数据集
+     * 从而重新填充adapter，这种情况下返回值就会变的不可信了
      */
-    public boolean scrollVertically(VerticalDirection direction,View scrollableView) {
+    public boolean scrollVertically(VerticalDirection direction, View scrollableView) {
         View view;
         if (scrollableView == null) {
             ArrayList<View> viewList = UIUtil.removeInvisibleViews(mViewGetter.getViewList(true));
@@ -261,7 +263,7 @@ public class Scroller {
     }
 
     public boolean scrollWebView(final WebView webView, VerticalDirection direction) {
-        return scrollWebView(webView,direction,false);
+        return scrollWebView(webView, direction, false);
     }
 
     public boolean scrollWebView(final WebView webView, VerticalDirection direction, final boolean allTheWay) {
@@ -291,8 +293,8 @@ public class Scroller {
      * @param <T>         extends AbsListVIew
      * @return false 证明还没有滚动到此Adapter数据集里的最后一条 true 已经滚动到最后了
      */
-    public <T extends AbsListView> boolean scrollListVertically(T absListView, VerticalDirection direction){
-        return scrollListVertically(absListView,direction,false);
+    public <T extends AbsListView> boolean scrollListVertically(T absListView, VerticalDirection direction) {
+        return scrollListVertically(absListView, direction, false);
     }
 
     /**
@@ -385,6 +387,7 @@ public class Scroller {
      * 水平滚动,注意，这种滚动的方式只适合像HorizontalScrollView这样的View不是被复用的View
      * 注意：此方法对RecyclerView有效，但是无法判断是否滚动到了最左面还是最右面，即对于RecyclerView来说此方法
      * 永远返回true
+     *
      * @param view      待水平滚动的view
      * @param direction 方向
      * @return 返回true 证明还没有滚动到最左面或者最右面，下次还可以滚动，false 已经不能在滚动了

@@ -18,7 +18,6 @@ public class Clicker {
     private final ViewGetter mViewGetter;
     private final Instrumentation mInst;
     private final Searcher mSearcher;
-    private final int MIN_CLICK_INTERCEPT = 50;
     private final int MINI_WAIT = 300;
 
     public Clicker(ViewGetter viewGetter,
@@ -43,12 +42,11 @@ public class Clicker {
             MotionEvent downEvent = getSimpleMotionEvent(MotionEvent.ACTION_DOWN, x, y);
             mInst.sendPointerSync(downEvent);
             downEvent.recycle();
-            //pause(MIN_CLICK_INTERCEPT);
             MotionEvent upEvent = getSimpleMotionEvent(MotionEvent.ACTION_UP, x, y);
             mInst.sendPointerSync(upEvent);
             upEvent.recycle();
         } catch (SecurityException e) {
-            MLogger.e(LOG_TAG,String.format("Clicker.clickOnScreen(float,float) : " +
+            Logger.e(LOG_TAG,String.format("Clicker.clickOnScreen(float,float) : " +
                     "click at (" + x + ", " + y + ") can not be completed!\n" +
                     "runtime:[x=%f,y=%f]",x,y),e);
             return false;
@@ -63,7 +61,6 @@ public class Clicker {
      * @param y    the y coordinate 在屏幕上的y坐标值
      * @param time 长按的时间
      */
-
     public boolean longClickOnScreen(float x, float y, long time) {
 
         try {
@@ -86,7 +83,7 @@ public class Clicker {
             pause(MINI_WAIT);
             return true;
         } catch (SecurityException e) {
-            MLogger.e(LOG_TAG,String.format("Clicker.longClickOnScreen(float,float) : " +
+            Logger.e(LOG_TAG,String.format("Clicker.longClickOnScreen(float,float) : " +
                     "long click at (" + x + ", " + y + ") can not be completed!\n" +
                     "runtime:[x=%f,y=%f]",x,y),e);
             return false;
@@ -110,7 +107,7 @@ public class Clicker {
      * 向targetView的这个View的中心位置分发点击事件，containerView为开始分发
      * 点击事件的开始，这里用view.dispatchTouchEvent实现,这种实现方式的
      * 好处是如果有其他的view拦截了你想发送点击的事件，那么通过这个方法可以绕过这个view，直接
-     * 将点击的事件发送给你想要的处理点击事件的目标
+     * 将点击的事件发送给你想要处理点击事件的view
      * 注意 ： targetView一定要是containerView的子view，否则不会产生点击事件
      * @param target 这个view定义了你想要发送点击事件的位置
      * @param container 从container开始分发点击事件
@@ -192,7 +189,7 @@ public class Clicker {
     private boolean clickOnView(final View target,final View container,final boolean longClick,final long time) {
         final float[] out = new float[2];
         if (!findTouchPosition(out,container,target)) {
-            MLogger.e("Clicker.clickOnView(View,View,boolean,long) find TouchPosition failed!",null);
+            Logger.e("Clicker.clickOnView(View,View,boolean,long) find TouchPosition failed!",null);
             return false;
         }
         if (!longClick) {
@@ -285,7 +282,7 @@ public class Clicker {
                 listItem = v;
             }
         } catch (ClassCastException e) {
-            MLogger.e(LOG_TAG,"targetView is not a child of container!",e);
+            Logger.e(LOG_TAG,"targetView is not a child of container!",e);
             return false;
         }
 
@@ -304,7 +301,7 @@ public class Clicker {
         if (tv != null) {
             return clickOnScreen(tv, longClick, time);
         }
-        MLogger.e(LOG_TAG,"can not search textView from regex:" + regex + " click failed!",null);
+        Logger.e(LOG_TAG,"can not search textView from regex:" + regex + " click failed!",null);
         return false;
     }
 }

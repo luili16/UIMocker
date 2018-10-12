@@ -1,6 +1,5 @@
 package com.llx278.uimocker2;
 
-import android.app.Instrumentation;
 import android.content.Context;
 import android.graphics.Point;
 import android.text.TextUtils;
@@ -321,7 +320,7 @@ public class ViewGetter {
             Object instance = instanceField.get(null);
             return Collections.unmodifiableList((ArrayList<View>) viewsField.get(instance));
         } catch (Exception e) {
-            MLogger.e("ViewGetter.getWindowViews", e);
+            Logger.e("ViewGetter.getWindowViews", e);
             return null;
         }
     }
